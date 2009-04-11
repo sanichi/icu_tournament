@@ -1,0 +1,11 @@
+== ChessIcu
+
+For parsing files describing the results of chess tournaments into ruby classes.
+
+== Install
+
+  sudo gem install sanichi-chess_icu --source http://gems.github.com
+
+== Usage
+
+TODO
