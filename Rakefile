@@ -11,9 +11,8 @@ begin
     gem.homepage = "http://github.com/sanichi/chess_icu"
     gem.authors = ["Mark Orr"]
     gem.email = "mark.j.l.orr@googlemail.com"
-    gem.files.include %w/LICENCE/
+    gem.files = FileList['[A-Z]*', '{lib,spec}/**/*', '.gitignore']
     gem.has_rdoc = true
-    # see http://www.rubygems.org/read/chapter/20 for additional settings
   end
 rescue LoadError
   puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
@@ -27,7 +26,7 @@ Spec::Rake::SpecTask.new(:spec) do |spec|
   spec.spec_opts = ['--colour --format nested --loadby mtime --reverse']
 end
 
-Rake::RDocTask.new do |rdoc|
+Rake::RDocTask.new do |doc|
   if File.exist?('VERSION.yml')
     config = YAML.load(File.read('VERSION.yml'))
     version = "#{config[:major]}.#{config[:minor]}.#{config[:patch]}"
@@ -35,7 +34,7 @@ Rake::RDocTask.new do |rdoc|
     version = ""
   end
 
-  rdoc.rdoc_dir = 'rdoc'
+  rdoc.rdoc_dir = 'doc'
   rdoc.title = "ChessIcu #{version}"
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
