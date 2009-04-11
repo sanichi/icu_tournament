@@ -1,6 +1,6 @@
 == ChessIcu
 
-For parsing files describing the results of chess tournaments into ruby classes.
+For parsing files of chess tournament data into ruby classes.
 
 == Install
 
