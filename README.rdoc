@@ -16,6 +16,7 @@ Tournament objects are created by parsing files of various formats. An instance 
 (see below for the available classes) is first created, and then it's parse or parse! method is called with the file's
 contents as argument.
 
+  require 'chess_icu'
   data = open('tournament.csv') { |f| f.read }
   tournament = parser.parse(data)
 
