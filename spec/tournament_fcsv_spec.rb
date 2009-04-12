@@ -31,8 +31,8 @@ Player,3364,Ui Laighleis,Gearoidin
 4,1,B,Powell,Linda,1850,,WLS
 Total,2
 CSV
-          @f = ForeignCSV.new(@csv)
-          @t = @f.tournament
+          @f = ForeignCSV.new
+          @t = @f.parse!(@csv)
         end
         
         it "should have a name" do
@@ -81,8 +81,8 @@ Player,1350,Orr,Mark
 2,1,B,Fischer,Bobby,2700,GM,USA
 Total,1.5
 CSV
-          @f = ForeignCSV.new(@csv)
-          @t = @f.tournament
+          @f = ForeignCSV.new
+          @t = @f.parse!(@csv)
         end
 
         it "should have the usual basic details" do
@@ -123,8 +123,8 @@ Player,1350,Orr,Mark
 2,=,W,Ui Laighleis,Gearoidin,1800,,IRL
 Total,1.0
 CSV
-          @f = ForeignCSV.new(@csv)
-          @t = @f.tournament
+          @f = ForeignCSV.new
+          @t = @f.parse!(@csv)
         end
 
         it "should have the usual basic details" do
@@ -162,8 +162,8 @@ Player ,3364 , ui Laighleis, gearoidin
 Total,1.0
 
 CSV
-          @f = ForeignCSV.new(@csv)
-          @t = @f.tournament
+          @f = ForeignCSV.new
+          @t = @f.parse!(@csv)
         end
 
         it "should have the correct basic details" do
@@ -184,9 +184,40 @@ CSV
         end
       end
       
+      context "#parse" do
+        before(:each) do
+          @f = ForeignCSV.new
+        end
+
+        it "should behave just like #parse! on success" do
+          csv = <<CSV
+Event,"Bratto Open, 2001"
+Start,7th March 2001
+Rounds,2
+Website,http://www.federscacchi.it/
+
+Player,3364,Ui Laighleis,Gearoidin
+1,=,W,Kasparov,Gary,2800,GM,RUS
+2,=,B,Orr,Mark,2100,IM,IRL
+Total,1.0
+CSV
+          @f.parse(csv).should be_an_instance_of(ICU::Tournament)
+          @f.error.should be_nil
+        end
+        
+        it "should not throw an exception but return nil on error" do
+          @f.parse(' ').should be_nil
+          @f.error.should match(/event/)
+        end
+      end
+
       context "invalid files" do
+        before(:each) do
+          @f = ForeignCSV.new
+        end
+        
         it "a blank file is invalid" do
-          lambda { ForeignCSV.new(' ') }.should raise_error(/event/i)
+          lambda { @f.parse!(' ') }.should raise_error(/event/i)
         end
         
         it "the event should come first" do
@@ -196,7 +227,7 @@ Event,"Bratto Open, 2001"
 Rounds,2
 Website,http://www.federscacchi.it/
 CSV
-          lambda { ForeignCSV.new(csv) }.should raise_error(/line 1.*event/i)
+          lambda { @f.parse!(csv) }.should raise_error(/line 1.*event/i)
         end
         
         it "the start should come second" do
@@ -206,7 +237,7 @@ Rounds,2
 Start,7th March 2001
 Website,http://www.federscacchi.it/
 CSV
-          lambda { ForeignCSV.new(csv) }.should raise_error(/line 2.*start/i)
+          lambda { @f.parse!(csv) }.should raise_error(/line 2.*start/i)
         end
         
         it "the number of rounds should come third" do
@@ -216,7 +247,7 @@ Start,7th March 2001
 Website,http://www.federscacchi.it/
 Rounds,2
 CSV
-          lambda { ForeignCSV.new(csv) }.should raise_error(/line 3.*rounds/i)
+          lambda { @f.parse!(csv) }.should raise_error(/line 3.*rounds/i)
         end
         
         it "there should be a web site" do
@@ -226,7 +257,7 @@ Start,7th March 2001
 Rounds,2
 
 CSV
-          lambda { ForeignCSV.new(csv) }.should raise_error(/line 4.*site/i)
+          lambda { @f.parse!(csv) }.should raise_error(/line 4.*site/i)
         end
         
         it "should have at least one player" do
@@ -236,7 +267,7 @@ Start,7th March 2001
 Rounds,2
 Website,http://www.federscacchi.it/
 CSV
-          lambda { ForeignCSV.new(csv) }.should raise_error(/line 4.*no players/i)
+          lambda { @f.parse!(csv) }.should raise_error(/line 4.*no players/i)
         end
         
         it "the player needs to have a valid ID number" do
@@ -248,7 +279,7 @@ Website,http://www.federscacchi.it/
 
 Player,0,Ui Laighleis,Gearoidin
 CSV
-          lambda { ForeignCSV.new(csv) }.should raise_error(/line 6.*number/i)
+          lambda { @f.parse!(csv) }.should raise_error(/line 6.*number/i)
         end
         
         it "should have the right number of results for each player" do
@@ -262,7 +293,7 @@ Player,3364,Ui Laighleis,Gearoidin
 1,=,W,Kasparov,Gary,2800,GM,RUS
 Total,0.5
 CSV
-          lambda { ForeignCSV.new(csv) }.should raise_error(/line 8.*round/i)
+          lambda { @f.parse!(csv) }.should raise_error(/line 8.*round/i)
         end
         
         it "should have correct totals" do
@@ -277,7 +308,7 @@ Player,3364,Ui Laighleis,Gearoidin
 2,=,B,Orr,Mark,2100,IM,IRL
 Total,1.5
 CSV
-          lambda { ForeignCSV.new(csv) }.should raise_error(/line 9.*total/i)
+          lambda { @f.parse!(csv) }.should raise_error(/line 9.*total/i)
         end
         
         
@@ -298,7 +329,7 @@ Player,1350,Orr,Mark
 2,=,B,Kasparov,Gary,2850,GM,RUS
 Total,1.0
 CSV
-          lambda { ForeignCSV.new(csv) }.should raise_error(/line 13.*same name.*conflicting/i)
+          lambda { @f.parse!(csv) }.should raise_error(/line 13.*same name.*conflicting/i)
         end
       end
     end

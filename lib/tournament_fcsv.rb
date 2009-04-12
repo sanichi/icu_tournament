@@ -3,18 +3,23 @@ require 'fastercsv'
 module ICU
   class Tournament
     class ForeignCSV
-      attr_reader :tournament
-    
-      # Constructor.
-      def initialize(csv)
-        @state, @line, @round, @sum = 0, 0, nil, nil
-        parse(csv)
+      attr_reader :error
+      
+      # Parse CSV data returning a Tournament on success or a nil on failure (and a message retrievable via the error method).
+      def parse(csv)
+        begin
+          parse!(csv)
+        rescue => ex
+          @error = ex.message
+          nil
+        end
       end
       
-      private
-      
-      def parse(csv)
+      # Parse CSV data returning a Tournament on success or raising an exception on error.
+      def parse!(csv)
+        @state, @line, @round, @sum, @error = 0, 0, nil, nil, nil
         @tournament = Tournament.new('Dummy', '2000-01-01')
+        
         FasterCSV.parse(csv, :row_sep => :auto) do |r|
           @line += 1                            # increment line number
           next if r.size == 0                   # skip empty lines
@@ -51,7 +56,11 @@ module ICU
           raise "line #{@line}: premature termination - expected #{exp}"
         end
         raise "line #{@line}: no players found in file" if @tournament.players.size == 0
+        
+        @tournament
       end
+
+      private
       
       def event
         abort "the 'Event' keyword", 0 unless @r[0].match(/^(Event|Tournament)$/i)

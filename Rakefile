@@ -26,7 +26,13 @@ Spec::Rake::SpecTask.new(:spec) do |spec|
   spec.spec_opts = ['--colour --format nested --loadby mtime --reverse']
 end
 
-Rake::RDocTask.new do |doc|
+Spec::Rake::SpecTask.new(:fcsv) do |spec|
+  spec.libs << 'lib' << 'spec'
+  spec.spec_files = FileList['spec/tournament_fcsv_spec.rb']
+  spec.spec_opts = ['--colour --format nested']
+end
+
+Rake::RDocTask.new(:doc) do |doc|
   if File.exist?('VERSION.yml')
     config = YAML.load(File.read('VERSION.yml'))
     version = "#{config[:major]}.#{config[:minor]}.#{config[:patch]}"
