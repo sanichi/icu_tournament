@@ -12,8 +12,9 @@ For parsing files of chess tournament data into ruby classes.
 
 A tournament (ICU::Tournament) has two or more players (ICU::Player), and each player has one or more results (ICU::Result).
 
-Tournament objects are created by parsing files of various formats. An instance of a class taylored for the type of data
-in the file is first created (see below), and then it's parse or parse! method is called with the file's contents as argument.
+Tournament objects are created by parsing files of various formats. An instance of a class that can handle the format
+(see below for the available classes) is first created, and then it's parse or parse! method is called with the file's
+contents as argument.
 
   data = open('tournament.csv') { |f| f.read }
   tournament = parser.parse(data)
@@ -34,8 +35,8 @@ The file formats supported in the current version are:
 
 === Foreign CSV
 
-This is a format specific to the ICU[http://icu.ie] ({specification}[http://www.icu.ie/articles/display.php?id=172])
-and is used by players to submit their individual results in foreign tournaments for domestic rating.
+This is a format used by the ICU[http://icu.ie] ({specification}[http://www.icu.ie/articles/display.php?id=172])
+for players to submit their individual results in foreign tournaments for domestic rating.
 It's parsed by instances of ICU::Tournament::ForeignCSV.
 
   parser = ICU::Tournament::ForeignCSV.new
