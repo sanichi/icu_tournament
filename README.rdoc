@@ -48,4 +48,4 @@ Future versions of this software will be able to parse more common formats such 
 
 == Author
 
-  Mark Orr, rating officer for the Irish Chess Union (ICU[http://icu.ie]).
+Mark Orr, rating officer for the Irish Chess Union (ICU[http://icu.ie]).
