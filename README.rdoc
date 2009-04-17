@@ -13,19 +13,19 @@ For parsing files of chess tournament data into ruby classes.
 A tournament (ICU::Tournament) has two or more players (ICU::Player), and each player has one or more results (ICU::Result).
 
 Tournament objects are created by parsing files of various formats. An instance of a class that can handle the format
-(see below for the available classes) is first created, and then it's parse or parse! method is called with the file's
-contents as argument.
+(see below for the available classes) is first created, and then it's <em>parse</em> or <em>parse!</em> method is called
+with the file's contents as the only argument.
 
   require 'chess_icu'
   data = open('tournament.csv') { |f| f.read }
   tournament = parser.parse(data)
 
-On success, the parse method returns an object of type ICU::Tournament. On error, it returns nil and an error message
+On success, the parse method returns an object of type ICU::Tournament. On error, it returns _nil_ and an error message
 can be retrieved from the parser instance:
 
   parser.error  # => error message or nil on success
   
-Alternatively, if an exception is preferred on error, the parse! method can be used:
+Alternatively, if an exception is preferred on error, the <em>parse!</em> method can be used:
 
   tournament = parser.parse!(data)
 
@@ -36,7 +36,7 @@ The file formats supported in the current version are:
 
 == TODO
   
-Future versions of this software will be able to parse more common formats such as SwissPerfect and FIDE's Krause format.
+Future versions of this software will be able to parse other types of files such as SwissPerfect and FIDE's Krause format.
 
 
 == Author
