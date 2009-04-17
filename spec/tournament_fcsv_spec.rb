@@ -62,6 +62,59 @@ CSV
           check_player(4, 'Linda',     'Powell',       1, 0, 0.0, :rating => 1850, :fed => 'WLS')
         end
       end
+      
+      context "the rdoc example tournament" do
+        before(:all) do
+          @csv = <<CSV
+Event,"Isle of Man Masters, 2007"
+Start,2007-09-22
+Rounds,9
+Website,http://www.bcmchess.co.uk/monarch2007/
+
+Player,456,Fox,Anthony
+1,0,B,Taylor,Peter P.,2209,,ENG
+2,=,W,Nadav,Egozi,2205,,ISR
+3,=,B,Cafolla,Peter,2048,,IRL
+4,1,W,Spanton,Tim R.,1982,,ENG
+5,1,B,Grant,Alan,2223,,SCO
+6,0,-
+7,=,W,Walton,Alan J.,2223,,ENG
+8,0,B,Bannink,Bernard,2271,FM,NED
+9,=,W,Phillips,Roy,2271,,MAU
+Total,4
+CSV
+          @f = ForeignCSV.new
+          @t = @f.parse!(@csv)
+          @p = @t.player(1)
+          @o = @t.players.reject { |o| o.num == 1 }
+          @r = @t.player(2)
+        end
+        
+        it "should have correct basic details" do
+          @t.name.should == 'Isle of Man Masters, 2007'
+          @t.start.should == '2007-09-22'
+          @t.rounds.should == 9
+          @t.site.should == 'http://www.bcmchess.co.uk/monarch2007/'
+        end
+        
+        it "should have the right number of players" do
+          @t.players.size.should == 9
+        end
+        
+        it "should have the right details for the main player" do
+          @p.name.should == "Fox, Anthony"
+          @p.results.size == 9
+          @p.results.find_all{ |r| r.rateable }.size.should == 8
+          @p.points.should == 4.0
+        end
+        
+        it "should have the right details for the opponents" do
+          @o.size.should == 8
+          @o.find_all{ |o| o.results.size == 1}.size.should == 8
+          @r.name.should == "Taylor, Peter P."
+          @r.results[0].rateable.should be_false
+        end
+      end
     
       context "a tournament with more than one player" do
         before(:all) do

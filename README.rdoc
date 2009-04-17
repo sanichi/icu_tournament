@@ -31,17 +31,8 @@ Alternatively, if an exception is preferred on error, the parse! method can be u
 
 The file formats supported in the current version are:
 
-* Foreign CSV
+* Foreign CSV (ICU::Tournament::ForeignCSV) - for players to report their individual results in foreign tournaments
 
-
-=== Foreign CSV
-
-This is a format used by the ICU[http://icu.ie] ({specification}[http://www.icu.ie/articles/display.php?id=172])
-for players to submit their individual results in foreign tournaments for domestic rating.
-It's parsed by instances of ICU::Tournament::ForeignCSV.
-
-  parser = ICU::Tournament::ForeignCSV.new
-  
 
 == TODO
   

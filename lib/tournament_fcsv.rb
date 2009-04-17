@@ -2,10 +2,85 @@ require 'fastercsv'
 
 module ICU
   class Tournament
+    
+=begin rdoc
+
+== Foreign CSV
+
+This is a format ({specification}[http://www.icu.ie/articles/display.php?id=172]) used by the ICU[http://icu.ie]
+for players to submit their individual results in foreign tournaments for domestic rating.
+
+Suppose, for example, that the following data is the file <em>tournament.csv</em>:
+
+  Event,"Isle of Man Masters, 2007"
+  Start,2007-09-22
+  Rounds,9
+  Website,http://www.bcmchess.co.uk/monarch2007/
+
+  Player,456,Fox,Anthony
+  1,0,B,Taylor,Peter P.,2209,,ENG
+  2,=,W,Nadav,Egozi,2205,,ISR
+  3,=,B,Cafolla,Peter,2048,,IRL
+  4,1,W,Spanton,Tim R.,1982,,ENG
+  5,1,B,Grant,Alan,2223,,SCO
+  6,0,-
+  7,=,W,Walton,Alan J.,2223,,ENG
+  8,0,B,Bannink,Bernard,2271,FM,NED
+  9,=,W,Phillips,Roy,2271,,MAU
+  Total,4
+
+This file can be parsed as follows.
+
+  data = open('tournament.csv') { |f| f.read }
+  parser = ICU::Tournament::ForeignCSV.new
+  tournament = parser.parse(data)
+
+If the file is correctly specified, the return value from the <em>parse</em> method is an instance of
+ICU::Tournament (rather than <em>nil</em>, which indicates an error). In this example the file is valid, so:
+  
+  tournament.name                                    # => "Isle of Man Masters, 2007"
+  tournament.start                                   # => "2007-09-22"
+  tournament.rounds                                  # => 9
+  tournament.website                                 # => "http://www.bcmchess.co.uk/monarch2007/"
+
+The main player (the player whose results are being reported for rating) played 9 rounds
+but only 8 other players (he had a bye in round 6), so the total number of players is 9.
+
+  tournament.players.size                            # => 9
+  
+Each player has a unique number for the tournament. The main player always occurs first in this type of file, so his number is 1.
+
+  player = tournament.player(1)
+  player.name                                        # => "Fox, Anthony"
+
+This player has 4 points from 9 rounds but only 8 of his results are are rateable (because of the bye).
+
+  player.points                                      # => 4.0
+  player.results.size                                # => 9
+  player.results.find_all{ |r| r.rateable }.size     # => 8
+
+The other players all have numbers greater than 1.
+
+  opponents = tournamnet.players.reject { |o| o.num == 1 }
+
+There are 8 opponents of the main player, each with exactly one game.
+
+  opponents.size                                     # => 8
+  opponents.find_all{ |o| o.results.size == 1}.size  # => 8
+
+However, none of the opponents' results are rateable. For example:
+
+  opponent = tournament.players(2)
+  opponent.name                                      # => "Taylor, Peter P."
+  opponent.results[0].rateable                       # => false
+  
+=end
+
     class ForeignCSV
       attr_reader :error
       
-      # Parse CSV data returning a Tournament on success or a nil on failure (and a message retrievable via the error method).
+      # Parse CSV data returning a Tournament on success or a nil on failure.
+      # In the case of failure, an error message can be retrived via the <em>error</em> method.
       def parse(csv)
         begin
           parse!(csv)
