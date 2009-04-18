@@ -19,16 +19,16 @@ a bye or walkover since there is no opponent. Without an opponent, it is unratea
 
   result.rateable     # => false
 
-We can fill in opponent details as follows:
+The player's colour and the number of their opponent can be set as follows:
 
-  result.opponent = 13
   result.colour = 'B'
+  result.opponent = 13
 
 Specifying an opponent always makes a result rateable.
 
   result.rateable     # => true
 
-This result now represents a win by player 10 with the black pieces over player number 13 in round 2.
+This example now represents a win by player 10 with the black pieces over player number 13 in round 2.
 Alternatively, all this can been specified in the constructor.
 
   result = ICU::Result.new(2, 10, 'W', :opponent => 13, :colour => 'B')
@@ -41,7 +41,7 @@ or include it in the constructor:
 
   result = ICU::Result.new(2, 10, 'W', :opponent => 13, :colour => 'B', :rateable => false)
 
-The result of the same game from the perspective of an opponent is:
+The result of the same game from the perspective of the opponent is:
 
   tluser = result.reverse
 
