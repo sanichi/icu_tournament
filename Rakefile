@@ -6,13 +6,14 @@ require 'spec/rake/spectask'
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
-    gem.name = "chess_icu"
-    gem.summary = "For parsing files of chess tournament data into ruby classes."
-    gem.homepage = "http://github.com/sanichi/chess_icu"
-    gem.authors = ["Mark Orr"]
-    gem.email = "mark.j.l.orr@googlemail.com"
-    gem.files = FileList['[A-Z]*', '{lib,spec}/**/*', '.gitignore']
-    gem.has_rdoc = true
+    gem.name         = "chess_icu"
+    gem.summary      = "For parsing files of chess tournament data into ruby classes."
+    gem.homepage     = "http://github.com/sanichi/chess_icu"
+    gem.authors      = ["Mark Orr"]
+    gem.email        = "mark.j.l.orr@googlemail.com"
+    gem.files        = FileList['[A-Z]*', '{lib,spec}/**/*', '.gitignore']
+    gem.has_rdoc     = true
+    gem.rdoc_options = "--charset=UTF-8"
   end
 rescue LoadError
   puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
@@ -32,7 +33,7 @@ Spec::Rake::SpecTask.new(:fcsv) do |spec|
   spec.spec_opts = ['--colour --format nested']
 end
 
-Rake::RDocTask.new(:doc) do |doc|
+Rake::RDocTask.new(:rdoc) do |rdoc|
   if File.exist?('VERSION.yml')
     config = YAML.load(File.read('VERSION.yml'))
     version = "#{config[:major]}.#{config[:minor]}.#{config[:patch]}"
@@ -40,8 +41,8 @@ Rake::RDocTask.new(:doc) do |doc|
     version = ""
   end
 
-  doc.rdoc_dir = 'doc'
-  doc.title = "ChessIcu #{version}"
-  doc.rdoc_files.include('README*')
-  doc.rdoc_files.include('lib/**/*.rb')
+  rdoc.rdoc_dir = 'rdoc'
+  rdoc.title = "ChessIcu #{version}"
+  rdoc.rdoc_files.include('README*')
+  rdoc.rdoc_files.include('lib/**/*.rb')
 end

@@ -1,4 +1,58 @@
 module ICU
+
+=begin rdoc
+
+== Names
+
+This class exists for two main reasons:
+
+* to normalise to a common format the different ways names are typed in practice
+* to be able to match two names even if they are not exactly the same
+
+To create a name object, supply both the first and second names separately to the constructor.
+
+  robert = ICU::Name.new(' robert  j ', ' FISHER ')
+
+Capitalisation, white space and punctuation will all be automatically corrected:
+
+  robert.name                                    # => 'Robert J. Fischer'
+  robert.rname                                   # => 'Fischer, Robert J.'  (reversed name)
+
+To avoid ambiguity when either the first or second names consist of multiple words, it is better to
+supply the two separately, if known. However, the full name can be supplied alone to the constructor
+and a guess will be made as to the first and last names.
+
+  bobby = ICU::Name.new(' bobby fischer ')
+  
+  bobby.first                                    # => 'Bobby'
+  bobby.last                                     # => 'Fischer'
+
+Names will match even if one is missing middle initials or if a nickname is used for one of the first names.
+
+  bobby.match(robert)                            # =>  true
+
+Note that the class is aware of only common nicknames (e.g. _Bobby_ and _Robert_, _Bill_ and _William_, etc), not all possibilities.
+
+Supplying the _match_ method with strings is equivalent to instantiating a Name instance with the same
+strings and then matching it. So, for example the following are equivalent:
+
+  robert.match('R. J.', 'Fischer')               # => true
+  robert.match(ICU::Name('R. J.', 'Fischer'))    # => true
+
+In those examples, the inital _R_ matches the first letter of _Robert_. However, nickname matches will not
+always work with initials. In the next example, the initial _R_ does not match the first letter _B_ of the
+nickname _Bobby_.
+
+  bobby.match('R. J.', 'Fischer')                # => false
+
+Some of the ways last names are canonicalised are illustrated below:
+
+  ICU::Name.new('John', 'O Reilly').last         # => "O'Reilly"
+  ICU::Name.new('dave', 'mcmanus').last          # => "McManus"
+  ICU::Name.new('pete', 'MACMANUS').last         # => "MacManus"
+  
+=end
+
   class Name
     attr_reader :first, :last
     
@@ -206,6 +260,7 @@ Patrick Pat Paddy
 Peter Pete
 Philippe Philip Phillippe Phillip
 Rick Ricky
+Robert Bob Bobby
 Samual Sam Samuel
 Stefanie Stef
 Stephen Steven Steve

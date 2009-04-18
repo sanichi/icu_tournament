@@ -20,6 +20,10 @@ module ICU
         Util.parsedate('02/03/2009').should == '2009-03-02'
       end
       
+      it "should handle US style when there's no alternative" do
+        Util.parsedate('02/23/2009').should == '2009-02-23'
+      end
+
       it "should handle single digits" do
         Util.parsedate('9/8/2006').should == '2006-08-09'
       end

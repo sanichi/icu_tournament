@@ -1,6 +1,17 @@
 module ICU
   class Util
-    # Parse dates into yyyy-mm-dd format, preferring European format. Return nil on error.
+
+=begin rdoc
+
+Parse dates into yyyy-mm-dd format, preferring European over US convention. Return nil on error.
+
+  Util.parsedate('1955-11-09')       # => '1955-11-09'
+  Util.parsedate('02/03/2009')       # => '2009-03-02'
+  Util.parsedate('02/23/2009')       # => '2009-02-23'
+  Util.parsedate('16th June 1986')   # => '1986-06-16'
+
+=end
+
     def self.parsedate(date)
       date = date.to_s
       return nil unless date.match(/[1-9]/)

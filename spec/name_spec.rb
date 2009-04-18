@@ -33,6 +33,34 @@ module ICU
       end
     end
     
+    context "rdoc expample" do
+      before(:each) do
+        @robert = Name.new(' robert  j ', ' FISCHER ')
+        @bobby = Name.new(' bobby fischer ')
+      end
+      
+      it "should get Robert" do
+        @robert.name.should == 'Robert J. Fischer'
+      end
+      
+      it "should get Bobby" do
+        @bobby.last.should == 'Fischer'
+        @bobby.first.should == 'Bobby'
+      end
+      
+      it "should match Robert and Bobby" do
+        @robert.match(@bobby).should be_true
+        @robert.match('R. J.', 'Fischer').should be_true
+        @bobby.match('R. J.', 'Fischer').should be_false
+      end
+      
+      it "should canconicalise last names" do
+        Name.new('John', 'O Reilly').last.should == "O'Reilly"
+        Name.new('dave', 'mcmanus').last.should == "McManus"
+        Name.new('pete', 'MACMANUS').last.should == "MacManus"
+      end
+    end
+    
     context "names that are already canonical" do
       it "should not be altered" do
         Name.new('Mark J. L.', 'Orr').name.should == 'Mark J. L. Orr'
@@ -81,10 +109,18 @@ module ICU
     end
     
     context "construction from a single string" do
+      before(:each) do
+        @mark1 = Name.new('ORR, mark j l')
+        @mark2 = Name.new('MARK J L ORR')
+        @oreil = Name.new("O'Reilly, j-k")
+      end
+      
       it "should be possible in simple cases" do
-        Name.new('ORR, mark j l').name.should == 'Mark J. L. Orr'
-        Name.new('MARK J L ORR').name.should == 'Mark J. L. Orr'
-        Name.new("O'Reilly, j-k").name.should == "J.-K. O'Reilly"
+        @mark1.first.should == 'Mark J. L.'
+        @mark1.last.should == 'Orr'
+        @mark2.first.should == 'Mark J. L.'
+        @mark2.last.should == 'Orr'
+        @oreil.name.should == "J.-K. O'Reilly"
       end
     end
     

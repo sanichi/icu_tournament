@@ -1,5 +1,82 @@
 module ICU
+
+=begin rdoc
+
+== Result
+
+A result is the outcome of a game from the perspective of one of the players.
+If the game was not a bye or a walkover and involved a second player, then
+that second player will also have a result for the same game, and the two
+results will be mirror images of each other.
+
+A result always involves a round number, a player number and a score, so these
+three attributes must be supplied in the constructor.
+
+  result = ICU::Result.new(2, 10, 'W')
+
+The above example represents player 10 winning in round 2. As it stands, it represends
+a bye or walkover since there is no opponent. Without an opponent it is unrateable.
+
+  result.rateable     # => false
+
+We can fill in opponent details as follows:
+
+  result.opponent = 13
+  result.colour = 'B'
+
+Specifying an opponent via a setter always makes a result rateable.
+
+  result.rateable     # => true
+
+This result now represents a win with the black pieces over player number 13 in round 2.
+Alternatively, all this could have been specified in the constructor.
+
+  result = ICU::Result.new(2, 10, 'W', :opponent => 13, :colour => 'B')
+
+To make a game unratable, even it involves an opponent, set the _rateable_ atribute explicity:
+
+  result.rateable = false
+
+or include it in the constructor:
+
+  result = ICU::Result.new(2, 10, 'W', :opponent => 13, :colour => 'B', :rateable => false)
+
+The result of the same game from the perspective of an opponent is:
+
+  tluser = result.reverse
+
+which, with the above example, would be:
+
+  tluser.player       # => 13
+  tluser.opponent     # => 10
+  tluser.score        # => 'L'
+  tluser.colour       # => 'B'
+  tluser.round        # => 2
+
+The reversed result will copy the _rateable_ attribute of the original unless an
+explicit override is supplied.
+
+  result.rateable                 # => true
+  result.reverse.rateable         # => true (copied from original)
+  result.reverse(false).rateable  # => false (overriden)
+
+A result which has no opponent is not reversible (the _reverse_ method returns _nil_).
+
+The return value from the _score_ method is always one of _W_, _L_ or _D_. However,
+when setting the score, a certain amount of variation is permitted as long as it is
+clear what is meant. For eample, the following would all be converted to _D_:
+
+  result.score = ' D '
+  result.score = 'd'
+  result.score = '='
+  result.score = '0.5'
+
+The _points_ read-only accessor always returns a floating point number, either 0.0, 0.5 or 1.0.
+
+=end
+
   class Result
+
     attr_reader :round, :player, :score, :colour, :opponent, :rateable
     
     # Constructor. Round number, player number and score must be supplied.
@@ -76,7 +153,7 @@ module ICU
         return
       end
       @rateable = case rateable
-        when nil   then true   # default (when absent) is true
+        when nil   then true   # default is true
         when false then false  # this is the only way to turn it off
         else true
       end
