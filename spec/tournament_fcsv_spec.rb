@@ -97,8 +97,9 @@ CSV
           @t.site.should == 'http://www.bcmchess.co.uk/monarch2007/'
         end
         
-        it "should have the right number of players" do
+        it "should have the right number of players in the right order" do
           @t.players.size.should == 9
+          @t.players.inject(''){ |a,o| a << o.num.to_s }.should == '123456789'
         end
         
         it "should have the right details for the main player" do

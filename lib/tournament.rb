@@ -2,7 +2,7 @@ module ICU
   class Tournament
     attr_reader :name, :start, :rounds, :site
     
-    # Constructor.
+    # Constructor. Name and start date must be supplied. Other attributes are optional.
     def initialize(name, start, opt={})
       self.name  = name
       self.start = start
@@ -10,20 +10,20 @@ module ICU
       @player = {}
     end
     
-    # Tournament name.
+    # Set the tournament name.
     def name=(name)
       raise "invalid tournament name (#{name})" unless name.to_s.match(/[a-z]/i)
       @name = name.to_s.strip
     end
     
-    # Start data in yyyy-mm-dd format.
+    # Set a start date in yyyy-mm-dd format.
     def start=(start)
       start = start.to_s.strip
       @start = Util.parsedate(start)
       raise "invalid start date (#{start})" unless @start
     end
     
-    # Number of rounds. Is either unknown (nil) or a positive integer.
+    # Set the number of rounds. Is either unknown (_nil_) or a positive integer.
     def rounds=(rounds)
       @rounds = case rounds
         when nil     then nil
@@ -34,7 +34,7 @@ module ICU
       raise "invalid number of rounds (#{rounds})" unless @rounds.nil? || @rounds > 0
     end
     
-    # Web site. Either unknown or a reasonably valid looking URL.
+    # Set the tournament web site. Should be either unknown (_nil_) or a reasonably valid looking URL.
     def site=(site)
       @site = site.to_s.strip
       @site = nil if @site == ''
@@ -42,7 +42,7 @@ module ICU
       raise "invalid site (#{site})" unless @site.nil? || @site.match(/^https?:\/\/[-\w]+(\.[-\w]+)+(\/[^\s]*)?$/i)
     end
     
-    # Add players.
+    # Add a new player to the tournament. Must have a unique player number.
     def add_player(player)
       raise "invalid player" unless player.class == ICU::Player
       raise "player number (#{player.num}) should be unique" if @player[player.num]
@@ -54,17 +54,22 @@ module ICU
       @player[num]
     end
     
-    # Return an array of all the players.
+    # Return an array of all players in order of their player numbers.
     def players
-      @player.values
+      @player.values.sort_by{ |p| p.num }
     end
     
-    # Lookup a player in the tournament.
+    # Lookup a player in the tournament by player number, returning _nil_ if the player number does not exist.
     def find_player(player)
       players.find { |p| p == player }
     end
     
-    # Add results.
+    # Add a result to a tournament. An exception is raised if the players referenced in the result (by number)
+    # do not exist in the tournament. The result, which remember is from the perspective of one of the players,
+    # is added to that player's results. Additionally, the reverse of the result is automatically added to the player's
+    # opponent, unless the opponent does not exist (e.g. byes, walkovers). By default, if the result is rateable
+    # then the opponent's result will also be rateable. To make the opponent's result unrateable, set the optional
+    # second parameter to false.
     def add_result(result, reverse_rateable=true)
       raise "invalid result" unless result.class == ICU::Result
       raise "result round number (#{result.round}) inconsistent with number of tournament rounds" if @rounds && result.round > @rounds
