@@ -15,7 +15,7 @@ three attributes must be supplied in the constructor.
   result = ICU::Result.new(2, 10, 'W')
 
 The above example represents player 10 winning in round 2. As it stands, it represends
-a bye or walkover since there is no opponent. Without an opponent it is unrateable.
+a bye or walkover since there is no opponent. Without an opponent, it is unrateable.
 
   result.rateable     # => false
 
@@ -24,16 +24,16 @@ We can fill in opponent details as follows:
   result.opponent = 13
   result.colour = 'B'
 
-Specifying an opponent via a setter always makes a result rateable.
+Specifying an opponent always makes a result rateable.
 
   result.rateable     # => true
 
-This result now represents a win with the black pieces over player number 13 in round 2.
-Alternatively, all this could have been specified in the constructor.
+This result now represents a win by player 10 with the black pieces over player number 13 in round 2.
+Alternatively, all this can been specified in the constructor.
 
   result = ICU::Result.new(2, 10, 'W', :opponent => 13, :colour => 'B')
 
-To make a game unratable, even it involves an opponent, set the _rateable_ atribute explicity:
+To make a game unratable, even if it involves an opponent, set the _rateable_ atribute explicity:
 
   result.rateable = false
 
@@ -53,7 +53,7 @@ which, with the above example, would be:
   tluser.colour       # => 'B'
   tluser.round        # => 2
 
-The reversed result will copy the _rateable_ attribute of the original unless an
+The reversed result copies the _rateable_ attribute of the original unless an
 explicit override is supplied.
 
   result.rateable                 # => true
@@ -71,7 +71,7 @@ clear what is meant. For eample, the following would all be converted to _D_:
   result.score = '='
   result.score = '0.5'
 
-The _points_ read-only accessor always returns a floating point number, either 0.0, 0.5 or 1.0.
+The _points_ read-only accessor always returns a floating point number: either 0.0, 0.5 or 1.0.
 
 =end
 
