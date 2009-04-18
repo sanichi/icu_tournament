@@ -1,4 +1,40 @@
 module ICU
+
+=begin rdoc
+
+== Generic Tournament
+
+Normally a tournament object is created by parsing a data file (e.g. with ICU::Tournament::ForeignCSV).
+However, it is also possible to build a tournament by first creating a bare tournament instance and then
+firstly adding all the players and then adding all the results.
+
+  require 'rubygems'
+  require 'chess_icu'
+
+  t = ICU::Tournament.new('Bangor Masters', '2009-11-09')
+
+  t.add_player(ICU::Player.new('Bobby', 'Fischer', 10))
+  t.add_player(ICU::Player.new('Garry', 'Kasparov', 20))
+  t.add_player(ICU::Player.new('Mark', 'Orr', 30))
+
+  t.add_result(ICU::Result.new(1, 10, 'D', :opponent => 30, :colour => 'W'))
+  t.add_result(ICU::Result.new(2, 20, 'W', :opponent => 30, :colour => 'B'))
+  t.add_result(ICU::Result.new(3, 20, 'L', :opponent => 10, :colour => 'W'))
+
+  [10, 20, 30].each { |n| puts "#{t.player(n).points} #{t.player(n).name}" }
+
+Would result in the following output.
+
+  1.5 Bobby Fischer
+  1.0 Gary Kasparov
+  0.5 Mark Orr
+
+Note that the players should be added first because the _add_result_ method will
+raise an exception if the players it references through their numbers (10, 20
+and 30 in this example) have not already been added to the tournament.
+
+=end
+
   class Tournament
     attr_reader :name, :start, :rounds, :site
     

@@ -7,7 +7,7 @@ module ICU
         lambda do
           t = Tournament.new('Bangor Bash', '2009-11-09')
           t.add_player(Player.new('Bobby', 'Fischer', 1))
-          t.add_player(Player.new('Garry', 'Gary Kasparov', 2))
+          t.add_player(Player.new('Garry', 'Kasparov', 2))
           t.add_player(Player.new('Mark', 'Orr', 3))
           t.add_result(Result.new(1, 1, '=', :opponent => 2, :colour => 'W'))
           t.add_result(Result.new(2, 2, 'L', :opponent => 3, :colour => 'W'))

@@ -2,6 +2,8 @@ module ICU
   class Result
     attr_reader :round, :player, :score, :colour, :opponent, :rateable
     
+    # Constructor. Round number, player number and score must be supplied.
+    # Optional hash attribute are _opponent_, _colour_ and _rateable_.
     def initialize(round, player, score, opt={})
       self.round  = round
       self.player = player
@@ -25,7 +27,7 @@ module ICU
       raise "invalid player number (#{player})" if @player == 0 && !player.to_s.match(/\d/)
     end
     
-    # Score for the game, even if a default. One of 'W', 'L' or 'D' (after some cleaning up).
+    # Score for the game, even if a default. One of 'W', 'L' or 'D'. Reasonable inputs like 1, 0, =, ½, etc will be converted.
     def score=(score)
       @score = case score.to_s.strip
         when /^(1\.0|1|\+|W|w)$/ then 'W'
@@ -35,7 +37,7 @@ module ICU
       end
     end
     
-    # The score as a number.
+    # Return the score as a floating point number.
     def points
       case @score
         when 'W' then 1.0
@@ -44,7 +46,7 @@ module ICU
       end
     end
     
-    # Colour. Either 'W' or 'B' after some cleaning up.
+    # Colour. Either 'W' (white) or 'B' (black).
     def colour=(colour)
       @colour = case colour.to_s
         when ''   then nil
@@ -54,7 +56,7 @@ module ICU
       end
     end
     
-    # Opponent player number. Either absent (nil) or any integer except the player number.
+    # Opponent player number. Either absent (_nil_) or any integer except the player number.
     def opponent=(opponent)
       @opponent = case opponent
         when nil     then nil
@@ -67,7 +69,7 @@ module ICU
       self.rateable = true if @opponent
     end
     
-    # Rateable flag. If false, game is not rateable. Can only be true if there is an opponent.
+    # Rateable flag. If false, result is not rateable. Can only be true if there is an opponent.
     def rateable=(rateable)
       if opponent.nil?
         @rateable = false
@@ -91,7 +93,7 @@ module ICU
       r
     end
     
-    # Loose equality.
+    # Loose equality. True if the round, player and opponent numbers, colour and score all match.
     def ==(other)
       return unless other.is_a? Result
       [:round, :player, :opponent, :colour, :score].each do |m|
