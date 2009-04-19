@@ -30,19 +30,19 @@ Would result in the following output.
   0.5 Mark Orr
 
 Note that the players should be added first because the _add_result_ method will
-raise an exception if the players it references through their numbers (10, 20
-and 30 in this example) have not already been added to the tournament.
+raise an exception if the players it references through their tournament numbers
+(10, 20 and 30 in this example) have not already been added to the tournament.
 
 =end
 
   class Tournament
-    attr_reader :name, :start, :rounds, :site
+    attr_reader :name, :start, :finish, :rounds, :site, :city, :fed, :type, :arbiter, :deputy, :time_control
     
     # Constructor. Name and start date must be supplied. Other attributes are optional.
     def initialize(name, start, opt={})
       self.name  = name
       self.start = start
-      [:rounds, :site].each { |a| self.send("#{a}=", opt[a]) unless opt[a].nil? }
+      [:finish, :rounds, :site, :city, :fed, :type, :arbiter, :deputy, :time_control].each { |a| self.send("#{a}=", opt[a]) unless opt[a].nil? }
       @player = {}
     end
     
@@ -52,11 +52,45 @@ and 30 in this example) have not already been added to the tournament.
       @name = name.to_s.strip
     end
     
+    # Set the tournament city. Can be _nil.
+    def city=(city)
+      city = city.to_s.strip
+      if city == ''
+        @city = nil
+      else
+        raise "invalid tournament city (#{city})" unless city.match(/[a-z]/i)
+        @city = city
+      end
+    end
+    
+    # Set the tournament federation. Can be _nil.
+    def fed=(fed)
+      fed = fed.to_s.strip
+      if fed == ''
+        @fed = nil
+      else
+        raise "invalid tournament federation (#{fed})" unless fed.match(/^[-a-z ]+/i) && fed.length >= 3
+        fed.upcase! if fed.length == 3
+        @fed = fed
+      end
+    end
+    
     # Set a start date in yyyy-mm-dd format.
     def start=(start)
       start = start.to_s.strip
       @start = Util.parsedate(start)
       raise "invalid start date (#{start})" unless @start
+    end
+    
+    # Set an end date in yyyy-mm-dd format.
+    def finish=(finish)
+      finish = finish.to_s.strip
+      if finish == ''
+        @finish = nil
+      else
+        @finish = Util.parsedate(finish)
+        raise "invalid finish date (#{finish})" unless @finish
+      end
     end
     
     # Set the number of rounds. Is either unknown (_nil_) or a positive integer.
@@ -76,6 +110,34 @@ and 30 in this example) have not already been added to the tournament.
       @site = nil if @site == ''
       @site = "http://#{@site}" if @site && !@site.match(/^https?:\/\//)
       raise "invalid site (#{site})" unless @site.nil? || @site.match(/^https?:\/\/[-\w]+(\.[-\w]+)+(\/[^\s]*)?$/i)
+    end
+    
+    # Set the tournament type. Should be either unknown (_nil_) or contain some letters.
+    def type=(type)
+      @type = type.to_s.strip
+      @type = nil if @type == ''
+      raise "invalid tournament type (#{type})" unless @type.nil? || @type.match(/[a-z]/i)
+    end
+    
+    # Set the tournament arbiter. Should be either unknown (_nil_) or contain some letters.
+    def arbiter=(arbiter)
+      @arbiter = arbiter.to_s.strip
+      @arbiter = nil if @arbiter == ''
+      raise "invalid tournament arbiter (#{arbiter})" unless @arbiter.nil? || @arbiter.match(/[a-z]/i)
+    end
+    
+    # Set the tournament deputy. Should be either unknown (_nil_) or contain some letters.
+    def deputy=(deputy)
+      @deputy = deputy.to_s.strip
+      @deputy = nil if @deputy == ''
+      raise "invalid tournament deputy (#{deputy})" unless @deputy.nil? || @deputy.match(/[a-z]/i)
+    end
+    
+    # Set the time control. Should be either unknown (_nil_) or contain some numbers.
+    def time_control=(time_control)
+      @time_control = time_control.to_s.strip
+      @time_control = nil if @time_control == ''
+      raise "invalid tournament time control (#{time_control})" unless @time_control.nil? || @time_control.match(/[1-9]\d/)
     end
     
     # Add a new player to the tournament. Must have a unique player number.

@@ -37,6 +37,61 @@ module ICU
       end
     end
     
+    # Tournament city.
+    context "city" do
+      before(:each) do
+        @t = Tournament.new('Edinburgh Masters', '2009-11-09', :city => 'Edinburgh')
+      end
+      
+      it "may be specified in constructor" do
+        @t.city.should == 'Edinburgh'
+      end
+      
+      it "can be replaced by accessor" do
+        @t.city = 'Glasgow'
+        @t.city.should == 'Glasgow'
+      end
+      
+      it "can be set to nil" do
+        @t.city = ''
+        @t.city.should be_nil
+      end
+      
+      it "should not be without letters if set" do
+        lambda { @t.city = '123' }.should raise_error(/invalid.*city/)
+      end
+    end
+
+    # Tournament federation.
+    context "federation" do
+      before(:each) do
+        @t = Tournament.new('Edinburgh Masters', '2009-11-09', :fed => 'SCO')
+      end
+      
+      it "may be specified in constructor" do
+        @t.fed.should == 'SCO'
+      end
+      
+      it "can be replaced by accessor" do
+        @t.fed = 'IRL'
+        @t.fed.should == 'IRL'
+      end
+      
+      it "can be set to nil" do
+        @t.fed = ''
+        @t.fed.should be_nil
+      end
+      
+      it "three letters will automatically be upcased" do
+        @t.fed = 'rus'
+        @t.fed.should == 'RUS'
+      end
+      
+      it "should not be without letters if set" do
+        lambda { @t.fed = '123' }.should raise_error(/invalid.*federation/)
+      end
+    end
+
     # Tournament start date.
     context "start date" do
       before(:each) do
@@ -55,6 +110,32 @@ module ICU
       it "should be a valid date" do
         lambda { Tournament.new('Edinburgh Masters', '  ') }.should raise_error(/invalid.*date/)
         lambda { @t.start = 'X' }.should raise_error(/invalid.*date/)
+      end
+    end
+    
+    # Tournament finish date.
+    context "finish date" do
+      before(:each) do
+        @t = Tournament.new('Edinburgh Masters', '2009-11-09', :finish => '12th November 2009')
+      end
+      
+      it "may be specified in constructor" do
+        @t.finish.should == '2009-11-12'
+      end
+      
+      it "can be replaced by accessor" do
+        @t.finish = '16th December 2009'
+        @t.finish.should == '2009-12-16'
+      end
+      
+      it "can be set to nil" do
+        @t.finish = ''
+        @t.finish.should be_nil
+      end
+      
+      it "should be a valid date" do
+        lambda { Tournament.new('Edinburgh Masters', '2009-11-09', :finish => 'next week') }.should raise_error(/invalid.*date/)
+        lambda { @t.finish = 'X' }.should raise_error(/invalid.*date/)
       end
     end
     
@@ -81,6 +162,49 @@ module ICU
         Tournament.new('Edinburgh Masters', '2009-11-09', :site => 'https://www.bbc.co.uk').site.should == 'https://www.bbc.co.uk'
         Tournament.new('Edinburgh Masters', '2009-11-09', :site => 'www.icu.ie/event.php?id=1').site.should == 'http://www.icu.ie/event.php?id=1'
         lambda { Tournament.new('Edinburgh Masters', '2009-11-09', :site => 'X') }.should raise_error(/invalid.*site/)
+      end
+    end
+    
+    # Type, arbiter, deputy and time control.
+    context "type, arbiter, deputy and time control" do
+      before(:each) do
+        @t = Tournament.new('Edinburgh Masters', '2009-11-09', :type => 'Swiss', :arbiter => 'Gerry Graham', :deputy => 'Herbert Scarry', :time_control => '120 minutes')
+      end
+      
+      it "may be specified in constructor" do
+        @t.type.should == 'Swiss'
+        @t.arbiter.should == 'Gerry Graham'
+        @t.deputy.should == 'Herbert Scarry'
+        @t.time_control.should == '120 minutes'
+      end
+      
+      it "can be replaced by accessor" do
+        @t.type = 'all-play-all'
+        @t.type.should == 'all-play-all'
+        @t.arbiter = 'Michael Crowe'
+        @t.arbiter.should == 'Michael Crowe'
+        @t.deputy = 'Mark Orr'
+        @t.deputy.should == 'Mark Orr'
+        @t.time_control = '90 minutes'
+        @t.time_control.should == '90 minutes'
+      end
+      
+      it "can be set to nil" do
+        @t.type = ''
+        @t.type.should be_nil
+        @t.arbiter = ''
+        @t.arbiter.should be_nil
+        @t.deputy = ''
+        @t.deputy.should be_nil
+        @t.time_control = ''
+        @t.time_control.should be_nil
+      end
+      
+      it "should be valid" do
+        lambda { @t.type         = '123' }.should raise_error(/invalid.*type/)
+        lambda { @t.arbiter      = '123' }.should raise_error(/invalid.*arbiter/)
+        lambda { @t.deputy       = '123' }.should raise_error(/invalid.*deputy/)
+        lambda { @t.time_control = 'abc' }.should raise_error(/invalid.*time control/)
       end
     end
     
