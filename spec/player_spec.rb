@@ -144,6 +144,22 @@ module ICU
       end
     end
     
+    context "gender" do
+      it "defaults to nil" do
+        Player.new('Mark', 'Orr', 3).gender.should be_nil
+        Player.new('Mark', 'Orr', 3, :gender => '   ').gender.should be_nil
+      end
+
+      it "should be either M or F" do
+        Player.new('Mark', 'Orr', 3, :gender => 'male').gender.should == 'M'
+        Player.new('April', 'Cronin', 3, :gender => 'woman').gender.should == 'F'
+      end
+      
+      it "should raise an exception if the gender is not specified properly" do
+        lambda { Player.new('Mark', 'Orr', 3, :gender => 'X') }.should raise_error(/invalid gender/)
+      end
+    end
+    
     context "results and points" do
       it "should initialise to an empty array" do
         results = Player.new('Mark', 'Orr', 3).results

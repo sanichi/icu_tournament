@@ -47,14 +47,15 @@ The player number is irrelevant.
   john1 == john2                   # => true (federations don't disagree because one is unset)
   john2 == john3                   # => false (federations disagree)
 
-If, in addition, none of _rating_, _dob_ and _id_ disagree then two players are equal according to _eql?_.
+If, in addition, _rating_, _dob_, _gender_ and _id_ do not disagree then two players are equal
+according to the stricter criteria of _eql?_.
 
   mark1 = ICU::Player.new('Mark', 'Orr', 31, :fed = 'IRL', :rating => 2100)
   mark2 = ICU::Player.new('Mark', 'Orr', 33, :fed = 'IRL', :rating => 2100, :title => 'IM')
   mark3 = ICU::Player.new('Mark', 'Orr', 37, :fed = 'IRL', :rating => 2200, :title => 'IM')
 
   mark1.eql?(mark2)                # => true (ratings agree and titles don't disagree)
-  mark2.eql?(mark3)                # => false (the ratings are unequl)
+  mark2.eql?(mark3)                # => false (the ratings are not the same)
 
 The presence of two players in the same tournament that are equal according to _==_ but unequal
 according to _eql?__ is likely to indicate a data entry error.
@@ -63,7 +64,7 @@ If two instances represent the same player and are equal according to _==_ then 
 _title_ and _fed_ attributes of the two can be merged. For example:
 
   fox1 = ICU::Player.new('Tony', 'Fox', 12, :id => 456)
-  fox2 = ICU::Player.new('Tony', 'Fox', 21, :rating => 2100, :fed => 'IRL')
+  fox2 = ICU::Player.new('Tony', 'Fox', 21, :rating => 2100, :fed => 'IRL', :gender => 'M')
   fox1.merge(fox2)
 
 Any attributes present in the second player but not in the first are copied to the first.
@@ -71,11 +72,12 @@ All other attributes are unaffected.
 
   fox1.rating                      # => 2100
   fox1.fed                         # => 'IRL'
+  fox1.gender                      # => 'M'
 
 =end
 
   class Player
-    attr_accessor :first_name, :last_name, :num, :id, :fed, :title, :rating, :rank, :dob
+    attr_accessor :first_name, :last_name, :num, :id, :fed, :title, :rating, :rank, :dob, :gender
     attr_reader :results
     
     # Constructor. Must supply both names and a unique number for the tournament.
@@ -83,7 +85,7 @@ All other attributes are unaffected.
       self.first_name = first_name
       self.last_name  = last_name
       self.num        = num
-      [:id, :fed, :title, :rating, :rank, :dob].each do |atr|
+      [:id, :fed, :title, :rating, :rank, :dob, :gender].each do |atr|
         self.send("#{atr}=", opt[atr]) unless opt[atr].nil?
       end
       @results = []
@@ -174,7 +176,15 @@ All other attributes are unaffected.
       raise "invalid DOB (#{dob})" if @dob.nil? && dob.length > 0
     end
     
-    # Add a result.
+    # Gender. Is either unknown (nil) or one of _M_ or _F_.
+    def gender=(gender)
+      @gender = gender.to_s.strip[0,1].upcase
+      @gender = nil if @gender == ''
+      @gender = 'F' if @gender == 'W'
+      raise "invalid gender (#{gender})" unless @gender.nil? || @gender.match(/^[MF]$/)
+    end
+    
+    # Add a result. Use the same name method in ICU::Tournament instead.
     def add_result(result)
       raise "invalid result" unless result.class == ICU::Result
       raise "player number (#{@num}) is not matched to result player number (#{result.player})" unless @num == result.player
@@ -202,11 +212,11 @@ All other attributes are unaffected.
       true
     end
     
-    # Strict equality test. Passes if the playes are loosly equal and also if their ID, rating and title are not different.
+    # Strict equality test. Passes if the playes are loosly equal and also if their ID, rating, gender and title are not different.
     def eql?(other)
       return true if equal?(other)
       return false unless self == other
-      [:id, :rating, :title].each do |m|
+      [:id, :rating, :title, :gender].each do |m|
         return false if self.send(m) && other.send(m) && self.send(m) != other.send(m)
       end
       true
@@ -215,7 +225,7 @@ All other attributes are unaffected.
     # Merge in some of the details of another player.
     def merge(other)
       raise "cannot merge two players that are not equal" unless self == other
-      [:id, :rating, :title, :fed].each do |m|
+      [:id, :rating, :title, :fed, :gender].each do |m|
         self.send("#{m}=", other.send(m)) unless self.send(m)
       end
     end
