@@ -386,6 +386,37 @@ CSV
           lambda { @f.parse!(csv) }.should raise_error(/line 13.*same name.*conflicting/i)
         end
       end
+      
+      context "serialisation" do
+        before(:each) do
+          @csv = <<CSV
+Event,"Edinburgh Masters, 2007"
+Start,2007-08-09
+Rounds,2
+Website,http://www.chesscenter.com/twic/twic.html
+
+Player,3364,Ui Laighleis,Gearoidin
+1,0,W,Kasparov,Gary,2800,GM,RUS
+2,1,B,Cronin,April,2005,,IRL
+Total,1.0
+
+Player,1350,Orr,Mark
+1,=,W,Cronin,April,2005,,IRL
+2,=,-
+Total,1.0
+CSV
+          @f = ForeignCSV.new
+          @t = @f.parse!(@csv)
+        end
+
+        it "should serialize back to the original" do
+          @f.serialise(@t).should == @csv
+        end
+
+        it "should return nil on invalid input" do
+          @f.serialise('Rubbish').should be_nil
+        end
+      end
     end
   end
 end

@@ -73,6 +73,10 @@ However, none of the opponents' results are rateable. For example:
   opponent = tournament.players(2)
   opponent.name                                      # => "Taylor, Peter P."
   opponent.results[0].rateable                       # => false
+
+A tournament can be serialized back to CSV format (the reverse of parsing) with the serialise method.
+
+  csv = parser.serialize(tournament)
   
 =end
 
@@ -133,6 +137,41 @@ However, none of the opponents' results are rateable. For example:
         raise "line #{@line}: no players found in file" if @tournament.players.size == 0
         
         @tournament
+      end
+      
+      # Serialise a tournament back into CSV format.
+      def serialise(t)
+        return nil unless t.class == ICU::Tournament;
+        FasterCSV.generate do |csv|
+          csv << ["Event", t.name]
+          csv << ["Start", t.start]
+          csv << ["Rounds", t.rounds]
+          csv << ["Website", t.site]
+          t.players.each do |p|
+            next unless p.id
+            csv << []
+            csv << ["Player", p.id, p.last_name, p.first_name]
+            (1..t.rounds).each do |n|
+              data = []
+              data << n
+              r = p.find_result(n)
+              data << case r.score; when 'W' then '1'; when 'L' then '0'; else '='; end
+              if r.rateable
+                data << r.colour
+                o = t.player(r.opponent)
+                data << o.last_name
+                data << o.first_name
+                data << o.rating
+                data << o.title
+                data << o.fed
+              else
+                data << '-'
+              end
+              csv << data
+            end
+            csv << ["Total", p.points]
+          end
+        end
       end
 
       private
