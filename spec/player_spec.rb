@@ -191,7 +191,7 @@ module ICU
       end
     end
     
-    context "subsumption" do
+    context "merge" do
       before(:each) do
         @p1 = Player.new('Mark', 'Orr', 1, :id => 1350)
         @p2 = Player.new('Mark', 'Orr', 2, :rating => 2100, :title => 'IM', :fed => 'IRL')
@@ -199,7 +199,7 @@ module ICU
       end
       
       it "takes on the ID, rating, title and fed of the other player but not the player number" do
-        @p1.subsume(@p2)
+        @p1.merge(@p2)
         @p1.num.should == 1
         @p1.id.should == 1350
         @p1.rating.should == 2100
@@ -210,11 +210,11 @@ module ICU
       it "should have a kind of symmetry" do
         p1 = @p1.dup
         p2 = @p2.dup
-        p1.subsume(p2).eql?(@p2.subsume(@p1))
+        p1.merge(p2).eql?(@p2.merge(@p1))
       end
       
       it "cannot be done with unequal objects" do
-        lambda { @p1.subsume(@p3) }.should raise_error(/cannot merge.*not strictly equal/)
+        lambda { @p1.merge(@p3) }.should raise_error(/cannot merge.*not equal/)
       end
     end
     

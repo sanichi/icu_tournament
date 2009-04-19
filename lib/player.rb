@@ -1,8 +1,84 @@
 module ICU
+
+=begin rdoc
+
+== Player
+
+A player in a tournament must have a first name, a last name and a number
+which is unique in the tournament but otherwise arbitary.
+
+  bobby = ICU::Player.new('robert j', 'fischer', 17)
+
+Names are automatically cannonicalised (tidied up).
+
+  bobby.first_name                 # => 'Robert J.'
+  bobby.last_name                  # => 'Fischer'
+
+In addition, players have a number of optional attributes which can be specified
+via setters or in constructor hash options: _id_ (either FIDE or national),
+_fed_ (federation), _title_, _rating_, _rank_ and _dob_ (date of birth).
+
+  peter = ICU::Player.new('Peter', 'Svidler', 21, :fed => 'rus', :title => 'g', :rating = 2700)
+  peter.dob = '17th June, 1976'
+  peter.rank = 1
+
+Some of these values will also be canonicalised to some extent. For example,
+the date of birth conforms to a _yyyy-mm-dd_ format, the chess title will be two
+to three capital letters always ending in _M_ and the federation, if it's three
+letters long, will be upcased.
+
+  peter.dob                        # => 1976-07-17
+  peter.title                      # => 'GM'
+  peter.fed                        # => 'RUS'
+
+Results (ICU::Result) should be added to players via the tournament (ICU::Tournament) object
+to which the player instance have been added. Their total score is available via the _points_ method.
+
+  peter.points                     # => 5.5
+
+Players can be compared to see if they're roughly or exactly the same, which may be useful in detecting duplicates.
+If the names match and the federations don't disagree then two players are equal according to the _==_ operator.
+The player number is irrelevant.
+
+  john1 = ICU::Player.new('John', 'Smith', 12)
+  john2 = ICU::Player.new('John', 'Smith', 22, :fed = 'IRL')
+  john2 = ICU::Player.new('John', 'Smith', 32, :fed = 'ENG')
+
+  john1 == john2                   # => true (federations don't disagree because one is unset)
+  john2 == john3                   # => false (federations disagree)
+
+If, in addition, none of _rating_, _dob_ and _id_ disagree then two players are equal according to _eql?_.
+
+  mark1 = ICU::Player.new('Mark', 'Orr', 31, :fed = 'IRL', :rating => 2100)
+  mark2 = ICU::Player.new('Mark', 'Orr', 33, :fed = 'IRL', :rating => 2100, :title => 'IM')
+  mark3 = ICU::Player.new('Mark', 'Orr', 37, :fed = 'IRL', :rating => 2200, :title => 'IM')
+
+  mark1.eql?(mark2)                # => true (ratings agree and titles don't disagree)
+  mark2.eql?(mark3)                # => false (the ratings are unequl)
+
+The presence of two players in the same tournament that are equal according to _==_ but unequal
+according to _eql?__ is likely to indicate a data entry error.
+
+If two instances represent the same player and are equal according to _==_ then the _id_, _rating_,
+_title_ and _fed_ attributes of the two can be merged. For example:
+
+  fox1 = ICU::Player.new('Tony', 'Fox', 12, :id => 456)
+  fox2 = ICU::Player.new('Tony', 'Fox', 21, :rating => 2100, :fed => 'IRL')
+  fox1.merge(fox2)
+
+Any attributes present in the second player but not in the first are copied to the first.
+All other attributes are unaffected.
+
+  fox1.rating                      # => 2100
+  fox1.fed                         # => 'IRL'
+
+=end
+
   class Player
     attr_accessor :first_name, :last_name, :num, :id, :fed, :title, :rating, :rank, :dob
     attr_reader :results
     
+    # Constructor. Must supply both names and a unique number for the tournament.
     def initialize(first_name, last_name, num, opt={})
       self.first_name = first_name
       self.last_name  = last_name
@@ -13,23 +89,26 @@ module ICU
       @results = []
     end
     
+    # Canonicalise and set the first name(s).
     def first_name=(first_name)
       name = Name.new(first_name, 'Last')
       raise "invalid first name" unless name.first.length > 0
       @first_name = name.first
     end
     
+    # Canonicalise and set the last name(s).
     def last_name=(last_name)
       name = Name.new('First', last_name)
       raise "invalid last name" unless name.last.length > 0 && name.first.length > 0
       @last_name = name.last
     end
     
+    # Return the full name, last name first.
     def name
       "#{last_name}, #{first_name}"
     end
     
-    # Player number. Any integer.
+    # Player number. Any integer is valid including zero and negative numbers, as long as it's unique in the tournament.
     def num=(num)
       @num = case num
         when Fixnum then num
@@ -49,7 +128,7 @@ module ICU
       raise "invalid ID (#{id})" unless @id.nil? || @id > 0
     end
     
-    # Federation. Is either unknown (nil) or contains at least three letters.
+    # Federation. Is either unknown (nil) or a string containing at least three letters.
     def fed=(fed)
       @fed = fed.to_s.strip
       @fed.upcase! if @fed.length == 3
@@ -57,7 +136,8 @@ module ICU
       raise "invalid federation (#{fed})" unless @fed.nil? || @fed.match(/[a-z]{3}/i)
     end
     
-    # Chess title. Is either unknown (nil) or one of a set of possibilities (after a little cleaning up).
+    # Chess title. Is either unknown (nil) or one of: _GM_, _IM_, _FM_, _CM_, _NM_,
+    # or any of these preceeded by the letter _W_.
     def title=(title)
       @title = title.to_s.strip.upcase
       @title << 'M' if @title.match(/[A-LN-Z]$/)
@@ -65,7 +145,7 @@ module ICU
       raise "invalid chess title (#{title})" unless @title.nil? || @title.match(/^W?[GIFCN]M$/)
     end
     
-    # Elo rating. Is either unknown (nil) or a positive integer.
+    # Rating. Is either unknown (nil) or a positive integer.
     def rating=(rating)
       @rating = case rating
         when nil     then nil
@@ -76,7 +156,7 @@ module ICU
       raise "invalid rating (#{rating})" unless @rating.nil? || @rating > 0
     end
     
-    # Rank in the tournament. Is either unknown (nil) or a positive integer.
+    # Rank in the tournament. Is either unknown (nil) or a positive integer. Must be unique in the tournament.
     def rank=(rank)
       @rank = case rank
         when nil     then nil
@@ -112,7 +192,7 @@ module ICU
       @results.inject(0.0) { |t, r| t += r.points }
     end
     
-    # Loose equality test.
+    # Loose equality test. Passes if the names match and the federations are not different.
     def ==(other)
       return true if equal?(other)
       return false unless other.is_a? Player
@@ -122,7 +202,7 @@ module ICU
       true
     end
     
-    # Strict equality test.
+    # Strict equality test. Passes if the playes are loosly equal and also if their ID, rating and title are not different.
     def eql?(other)
       return true if equal?(other)
       return false unless self == other
@@ -133,10 +213,10 @@ module ICU
     end
     
     # Merge in some of the details of another player.
-    def subsume(other)
-      raise "cannot merge two players that are not strictly equal" unless eql?(other)
+    def merge(other)
+      raise "cannot merge two players that are not equal" unless self == other
       [:id, :rating, :title, :fed].each do |m|
-        self.send("#{m}=", other.send(m)) if other.send(m)
+        self.send("#{m}=", other.send(m)) unless self.send(m)
       end
     end
   end

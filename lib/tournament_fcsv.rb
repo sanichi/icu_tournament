@@ -175,7 +175,7 @@ However, none of the opponents' results are rateable. For example:
         if old_player
           raise "two players with the same name (#{@player.name}) have conflicting details" unless old_player.eql?(@player)
           raise "same player (#{@player.name}) has more than one set of results" if old_player.id
-          old_player.subsume(@player)
+          old_player.merge(@player)
           @player = old_player
         else
           @tournament.add_player(@player)
@@ -200,7 +200,7 @@ However, none of the opponents' results are rateable. For example:
             raise "two players with the same name (#{opponent.name}) have conflicting details" unless old_player.eql?(opponent)
             result.opponent = old_player.num
             if old_player.id
-              old_player.subsume(opponent)
+              old_player.merge(opponent)
               old_result = @player.find_result(@round)
               raise "missing result for player (#{@player.name}) in round #{@round}" unless old_result
               raise "mismatched results for player (#{old_player.name}) in round #{@round}" unless result == old_result
