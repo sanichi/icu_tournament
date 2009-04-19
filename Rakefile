@@ -14,6 +14,7 @@ begin
     gem.files        = FileList['[A-Z]*', '{lib,spec}/**/*', '.gitignore']
     gem.has_rdoc     = true
     gem.rdoc_options = "--charset=UTF-8"
+    gem.add_dependency('fastercsv', '>= 1.4.0')
   end
 rescue LoadError
   puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
