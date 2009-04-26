@@ -38,43 +38,44 @@ This file can be parsed as follows.
 If the file is correctly specified, the return value from the <em>parse</em> method is an instance of
 ICU::Tournament (rather than <em>nil</em>, which indicates an error). In this example the file is valid, so:
   
-  tournament.name                                    # => "Isle of Man Masters, 2007"
-  tournament.start                                   # => "2007-09-22"
-  tournament.rounds                                  # => 9
-  tournament.website                                 # => "http://www.bcmchess.co.uk/monarch2007/"
+  tournament.name                                     # => "Isle of Man Masters, 2007"
+  tournament.start                                    # => "2007-09-22"
+  tournament.rounds                                   # => 9
+  tournament.website                                  # => "http://www.bcmchess.co.uk/monarch2007/"
 
 The main player (the player whose results are being reported for rating) played 9 rounds
 but only 8 other players (he had a bye in round 6), so the total number of players is 9.
 
-  tournament.players.size                            # => 9
+  tournament.players.size                             # => 9
   
 Each player has a unique number for the tournament. The main player always occurs first in this type of file, so his number is 1.
 
   player = tournament.player(1)
-  player.name                                        # => "Fox, Anthony"
+  player.name                                         # => "Fox, Anthony"
 
 This player has 4 points from 9 rounds but only 8 of his results are are rateable (because of the bye).
 
-  player.points                                      # => 4.0
-  player.results.size                                # => 9
-  player.results.find_all{ |r| r.rateable }.size     # => 8
+  player.points                                       # => 4.0
+  player.results.size                                 # => 9
+  player.results.find_all{ |r| r.rateable }.size      # => 8
 
 The other players all have numbers greater than 1.
 
   opponents = tournamnet.players.reject { |o| o.num == 1 }
 
-There are 8 opponents of the main player, each with exactly one game.
+There are 8 opponents (of the main player) each with exactly one game.
 
-  opponents.size                                     # => 8
-  opponents.find_all{ |o| o.results.size == 1}.size  # => 8
+  opponents.size                                      # => 8
+  opponents.find_all{ |o| o.results.size == 1 }.size  # => 8
 
-However, none of the opponents' results are rateable. For example:
+However, none of the opponents' results are rateable because they are foreign to the domestic rating list
+to which the main player belongs. For example:
 
   opponent = tournament.players(2)
-  opponent.name                                      # => "Taylor, Peter P."
-  opponent.results[0].rateable                       # => false
+  opponent.name                                       # => "Taylor, Peter P."
+  opponent.results[0].rateable                        # => false
 
-A tournament can be serialized back to CSV format (the reverse of parsing) with the serialise method.
+A tournament can be serialized back to CSV format (the reverse of parsing) with the _serialize_ method.
 
   csv = parser.serialize(tournament)
   
@@ -140,7 +141,7 @@ A tournament can be serialized back to CSV format (the reverse of parsing) with 
       end
       
       # Serialise a tournament back into CSV format.
-      def serialise(t)
+      def serialize(t)
         return nil unless t.class == ICU::Tournament;
         FasterCSV.generate do |csv|
           csv << ["Event", t.name]

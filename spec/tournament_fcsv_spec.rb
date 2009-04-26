@@ -410,11 +410,11 @@ CSV
         end
 
         it "should serialize back to the original" do
-          @f.serialise(@t).should == @csv
+          @f.serialize(@t).should == @csv
         end
 
         it "should return nil on invalid input" do
-          @f.serialise('Rubbish').should be_nil
+          @f.serialize('Rubbish').should be_nil
         end
       end
     end
