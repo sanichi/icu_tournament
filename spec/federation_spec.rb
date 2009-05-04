@@ -82,14 +82,35 @@ module ICU
         Federation.find('Republic of Macedonia').name.should == 'Macedonia'
         Federation.find('former yugoslav republic').name.should == 'Macedonia'
       end
+    end
       
-      context "#find and alternative inputs" do
-        it "should behave robustly with silly inputs" do
-          Federation.find().should be_nil
-          Federation.find(nil).should be_nil
-          Federation.find('').should be_nil
-          Federation.find(1).should be_nil
-        end
+    context "#find with alternative inputs" do
+      it "should behave robustly with completely invalid inputs" do
+        Federation.find().should be_nil
+        Federation.find(nil).should be_nil
+        Federation.find('').should be_nil
+        Federation.find(1).should be_nil
+      end
+    end
+    
+    context "#new is private" do
+      it "#new cannot be called directly" do
+        lambda { Federation.new('IRL', 'Ireland') }.should raise_error(/private method/)
+      end
+    end
+    
+    context "documentation examples" do
+      it "should all be correct for valid input" do
+        ICU::Federation.find('IRL').name.should == 'Ireland'
+        ICU::Federation.find('IRL').code.should == 'IRL'
+        ICU::Federation.find('rUs').code.should == 'RUS'
+        ICU::Federation.find('ongoli').name.should == 'Mongolia'
+        ICU::Federation.find('  united   states   ').code.should == 'USA'
+      end
+      
+      it "should return nil for invalid input" do
+        ICU::Federation.find('ZYX').should be_nil
+        ICU::Federation.find('land').should be_nil
       end
     end
   end

@@ -17,10 +17,11 @@ Tournament objects are created by parsing files of various formats. An instance 
 with the file's contents as the only argument.
 
   require 'chess_icu'
-  data = open('tournament.csv') { |f| f.read }
+  data = open('tournament.txt') { |f| f.read }
+  parser = ICU::Tournament::Parser.new  # substitute the name of an available parser (see below) for "Parser"
   tournament = parser.parse(data)
 
-On success, the parse method returns an object of type ICU::Tournament. On error, it returns _nil_ and an error message
+On success, the _parse_ method returns an object of type ICU::Tournament. On error, it returns _nil_ and an error message
 can be retrieved from the parser instance:
 
   parser.error  # => error message or nil on success
@@ -29,14 +30,15 @@ Alternatively, if an exception is preferred on error, the <em>parse!</em> method
 
   tournament = parser.parse!(data)
 
-The file formats supported in the current version are:
+The currently available parsers are:
 
 * Foreign CSV (ICU::Tournament::ForeignCSV) - for players to report their individual results in foreign tournaments
+* Krause (ICU::Tournament::Krause) - the format used by FIDE
 
 
 == TODO
   
-Future versions of this software will be able to parse other types of files such as SwissPerfect and FIDE's Krause format.
+Future versions of this software will be able to parse additional file formats (such as SwissPerfect).
 
 
 == Author

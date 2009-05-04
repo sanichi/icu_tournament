@@ -33,7 +33,7 @@ ICU::Tournament (rather than <em>nil</em>, which indicates an error). In this ex
   tournament.fed                                      # => "IRL"
   tournament.players.size                             # => 9
   
-Player can be retrieved from the tournament via the _players_ array or their player numbers.
+A player can be retrieved from the tournament via the _players_ array or by sending a valid player number to the _player_ method.
 
   minnie = tournament.player(1)
   minnie.name                                         # => "Mouse, Minerva"
