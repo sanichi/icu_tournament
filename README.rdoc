@@ -32,8 +32,8 @@ Alternatively, if an exception is preferred on error, the <em>parse!</em> method
 
 The currently available parsers are:
 
-* Foreign CSV (ICU::Tournament::ForeignCSV) - for players to report their individual results in foreign tournaments
-* Krause (ICU::Tournament::Krause) - the format used by FIDE
+* ICU::Tournament::Krause - the format used by FIDE
+* ICU::Tournament::ForeignCSV - used by Irish players to report their individual results in foreign tournaments
 
 
 == TODO

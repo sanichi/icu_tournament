@@ -63,8 +63,8 @@ The following lists Krause data identification numbers, their description and, w
 [013 Teams]                   Not implemented yet.
 [022 City]                    Get or set with _city_. Free text.
 [032 Federation]              Get or set with _fed_. Getter returns either _nil_ or a three letter code. Setter can take various formats (see ICU::Federation).
-[042 Start date]              Get or set with _start_. Getter returns _yyyy-mm-dd_ format, but setter can use any reasonable date format. Start date is mandadory.
-[052 End date]                Get or set with _finish_. Returns either _yyyy-mm-dd_ format or _nil_ if not set. Like _start_, can be set with various date formats.
+[042 Start date]              Get or set with _start_. Getter returns <em>yyyy-mm-dd</em> format, but setter can use any reasonable date format. Start date is mandadory.
+[052 End date]                Get or set with _finish_. Returns either <em>yyyy-mm-dd</em> format or _nil_ if not set. Like _start_, can be set with various date formats.
 [062 Number of players]       Not used. Treated as comment in parsed files. Can be determined from the size of the _players_ array.
 [072 Number of rated players] Not used. Treated as comment in parsed files. Can be determined by analysing the array returned by _players_.
 [082 Number of teams]         Not used. Treated as comment in parsed files.
