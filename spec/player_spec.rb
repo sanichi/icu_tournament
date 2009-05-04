@@ -83,7 +83,7 @@ module ICU
 
       it "should consist of at least three letters" do
         Player.new('Gary', 'Kasparov', 1, :fed => 'RUS').fed.should == 'RUS'
-        Player.new('Mark', 'Orr', 3, :fed => ' Ireland ').fed.should == 'Ireland'
+        Player.new('Mark', 'Orr', 3, :fed => ' Ireland ').fed.should == 'IRL'
         lambda { Player.new('Danny', 'Kopec', 3, :fed => 'US') }.should raise_error(/invalid federation/)
       end
     end

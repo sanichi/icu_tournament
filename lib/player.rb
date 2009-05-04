@@ -132,10 +132,9 @@ All other attributes are unaffected.
     
     # Federation. Is either unknown (nil) or a string containing at least three letters.
     def fed=(fed)
-      @fed = fed.to_s.strip
-      @fed.upcase! if @fed.length == 3
-      @fed = nil if @fed == ''
-      raise "invalid federation (#{fed})" unless @fed.nil? || @fed.match(/[a-z]{3}/i)
+      obj = Federation.find(fed)
+      @fed = obj ? obj.code : nil
+      raise "invalid federation (#{fed})" if @fed.nil? && fed.to_s.strip.length > 0
     end
     
     # Chess title. Is either unknown (nil) or one of: _GM_, _IM_, _FM_, _CM_, _NM_,

@@ -63,16 +63,11 @@ raise an exception if the players it references through their tournament numbers
       end
     end
     
-    # Set the tournament federation. Can be _nil.
+    # Set the tournament federation. Can be _nil_.
     def fed=(fed)
-      fed = fed.to_s.strip
-      if fed == ''
-        @fed = nil
-      else
-        raise "invalid tournament federation (#{fed})" unless fed.match(/^[-a-z ]+/i) && fed.length >= 3
-        fed.upcase! if fed.length == 3
-        @fed = fed
-      end
+      obj = Federation.find(fed)
+      @fed = obj ? obj.code : nil
+      raise "invalid tournament federation (#{fed})" if @fed.nil? && fed.to_s.strip.length > 0
     end
     
     # Set a start date in yyyy-mm-dd format.
