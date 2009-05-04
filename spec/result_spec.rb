@@ -150,6 +150,7 @@ module ICU
       end
       
       it "should be equal if the round, player numbers, result and colour all match" do
+        (@r1 == @r1).should be_true
         (@r1 == @r2).should be_true
       end
       
@@ -159,6 +160,22 @@ module ICU
         (@r1 == @r5).should be_false
         (@r1 == @r6).should be_false
         (@r1 == @r7).should be_false
+      end
+    end
+    
+    context "strict equality" do
+      before(:each) do
+        @r1 = Result.new(1, 1, 0, :opponent => 2, :colour => 'W')
+        @r2 = Result.new(1, 1, 0, :opponent => 2, :colour => 'W')
+        @r3 = Result.new(1, 1, 0, :opponent => 2, :colour => 'W', :rateable => false)
+        @r4 = Result.new(2, 1, 0, :opponent => 2, :colour => 'W')
+      end
+      
+      it "should only be equal if everything is the same" do
+        @r1.eql?(@r1).should be_true
+        @r1.eql?(@r2).should be_true
+        @r1.eql?(@r3).should be_false
+        @r1.eql?(@r4).should be_false
       end
     end
   end

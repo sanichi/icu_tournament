@@ -97,9 +97,11 @@ module ICU
       it "should be one of national, candidate, FIDE, international or grand master" do
         Player.new('Gary', 'Kasparov', 1, :title => 'GM').title.should == 'GM'
         Player.new('Mark', 'Orr', 2, :title => ' im ').title.should == 'IM'
+        Player.new('Mark', 'Quinn', 2, :title => 'm').title.should == 'IM'
         Player.new('Pia', 'Cramling', 3, :title => ' wg ').title.should == 'WGM'
         Player.new('Philip', 'Short', 4, :title => 'F ').title.should == 'FM'
         Player.new('Gearoidin', 'Ui Laighleis', 5, :title => 'wc').title.should == 'WCM'
+        Player.new('Gearoidin', 'Ui Laighleis', 7, :title => 'wm').title.should == 'WIM'
         Player.new('Eamon', 'Keogh', 6, :title => 'nm').title.should == 'NM'
         lambda { Player.new('Mark', 'Orr', 3, :title => 'Dr') }.should raise_error(/invalid chess title/)
       end

@@ -143,6 +143,8 @@ All other attributes are unaffected.
     def title=(title)
       @title = title.to_s.strip.upcase
       @title << 'M' if @title.match(/[A-LN-Z]$/)
+      @title = 'IM' if @title == 'M'
+      @title = 'WIM' if @title == 'WM'
       @title = nil if @title == ''
       raise "invalid chess title (#{title})" unless @title.nil? || @title.match(/^W?[GIFCN]M$/)
     end
@@ -184,11 +186,13 @@ All other attributes are unaffected.
       raise "invalid gender (#{gender})" unless @gender.nil? || @gender.match(/^[MF]$/)
     end
     
-    # Add a result. Use the same name method in ICU::Tournament instead.
+    # Add a result. Don't use this method directly - use ICU::Tournament#add_result instead.
     def add_result(result)
       raise "invalid result" unless result.class == ICU::Result
       raise "player number (#{@num}) is not matched to result player number (#{result.player})" unless @num == result.player
-      raise "round number (#{result.round}) of new result should be unique" unless @results.map { |r| r.round }.grep(result.round).size == 0
+      already = @results.find_all { |r| r.round == result.round }
+      return if already.size == 1 && already[0].eql?(result)
+      raise "round number (#{result.round}) of new result is not unique and new result is not the same as existing one" unless already.size == 0
       @results << result
     end
     

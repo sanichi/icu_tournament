@@ -34,6 +34,12 @@ Spec::Rake::SpecTask.new(:fcsv) do |spec|
   spec.spec_opts = ['--colour --format nested']
 end
 
+Spec::Rake::SpecTask.new(:krs) do |spec|
+  spec.libs << 'lib' << 'spec'
+  spec.spec_files = FileList['spec/tournament_krause_spec.rb']
+  spec.spec_opts = ['--colour --format nested']
+end
+
 Rake::RDocTask.new(:rdoc) do |rdoc|
   if File.exist?('VERSION.yml')
     config = YAML.load(File.read('VERSION.yml'))

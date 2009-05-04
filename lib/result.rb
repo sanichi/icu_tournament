@@ -178,5 +178,12 @@ The _points_ read-only accessor always returns a floating point number: either 0
       end
       true
     end
+    
+    # Strict equality. True if the there's loose equality and also the rateablity is the same.
+    def eql?(other)
+      return true if equal?(other)
+      return false unless self == other
+      self.rateable == other.rateable
+    end
   end
 end

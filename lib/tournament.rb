@@ -21,7 +21,7 @@ firstly adding all the players and then adding all the results.
   t.add_result(ICU::Result.new(2, 20, 'W', :opponent => 30, :colour => 'B'))
   t.add_result(ICU::Result.new(3, 20, 'L', :opponent => 10, :colour => 'W'))
 
-  [10, 20, 30].each { |n| puts "#{t.player(n).points} #{t.player(n).name}" }
+  [10, 20, 30].each { |n| p = t.player(n); puts "#{p.points} #{p.name}" }
 
 Would result in the following output.
 
