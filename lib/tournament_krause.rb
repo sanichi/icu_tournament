@@ -27,35 +27,53 @@ This file can be parsed as follows.
 If the file is correctly specified, the return value from the <em>parse</em> method is an instance of
 ICU::Tournament (rather than <em>nil</em>, which indicates an error). In this example the file is valid, so:
   
-  tournament.name                                     # => "Fantasy Tournament"
-  tournament.start                                    # => "2009-09-09"
-  tournament.rounds                                   # => 3
-  tournament.fed                                      # => "IRL"
-  tournament.players.size                             # => 9
+  tournament.name                   # => "Fantasy Tournament"
+  tournament.start                  # => "2009-09-09"
+  tournament.rounds                 # => 3
+  tournament.fed                    # => "IRL"
+  tournament.players.size           # => 9
   
 A player can be retrieved from the tournament via the _players_ array or by sending a valid player number to the _player_ method.
 
   minnie = tournament.player(1)
-  minnie.name                                         # => "Mouse, Minerva"
-  minnie.points                                       # => 1.0
-  minnie.results.size                                 # => 2
+  minnie.name                       # => "Mouse, Minerva"
+  minnie.points                     # => 1.0
+  minnie.results.size               # => 2
   
   daffy = tournament.player(2)
-  daffy.title                                         # => "IM"
-  daffy.rating                                        # => 2200
-  daffy.fed                                           # => "IRL"
-  daffy.id                                            # => 7654321
-  daffy.dob                                           # => "1937-04-17"
+  daffy.title                       # => "IM"
+  daffy.rating                      # => 2200
+  daffy.fed                         # => "IRL"
+  daffy.id                          # => 7654321
+  daffy.dob                         # => "1937-04-17"
 
 Comments in the input file (lines that do not start with a valid data identification number) are available from the parser
 instance via its _comments_ method. Note that these comments are reset evry time the instance is used to parse another file.
 
-  parser.comments                                     # => "0123456789..."
+  parser.comments                   # => "0123456789..."
 
 A tournament can be serialized back to Krause format (the reverse of parsing) with the _serialize_ method.
 
   krause = parser.serialize(tournament)
-  
+
+The following lists Krause data identification numbers, their description and, where available, their corresponding attributes in an ICU::Tournament instance.
+
+[001 Player record]           Use _players_ to get all players or _player_ with a player number to get a single instance.
+[012 Name]                    Get or set with _name_. Free text. A tounament name is mandatory.
+[013 Teams]                   Not implemented yet.
+[022 City]                    Get or set with _city_. Free text.
+[032 Federation]              Get or set with _fed_. Getter returns either _nil_ or a three letter code. Setter can take various formats (see ICU::Federation).
+[042 Start date]              Get or set with _start_. Getter returns _yyyy-mm-dd_ format, but setter can use any reasonable date format. Start date is mandadory.
+[052 End date]                Get or set with _finish_. Returns either _yyyy-mm-dd_ format or _nil_ if not set. Like _start_, can be set with various date formats.
+[062 Number of players]       Not used. Treated as comment in parsed files. Can be determined from the size of the _players_ array.
+[072 Number of rated players] Not used. Treated as comment in parsed files. Can be determined by analysing the array returned by _players_.
+[082 Number of teams]         Not used. Treated as comment in parsed files.
+[092 Type of tournament]      Get or set with _type_. Free text.
+[102 Arbiter(s)]              Get or set with -arbiter_. Free text.
+[112 Deputy(ies)]             Get or set with _deputy_. Free text.
+[122 Time control]            Get or set with _time_control_. Free text.
+[132 Round dates]             Not implemented yet.
+
 =end
 
     class Krause
@@ -87,7 +105,7 @@ A tournament can be serialized back to Krause format (the reverse of parsing) wi
           next if line == ''   # skip blank lines
           @line = line         # remember this line for later
           
-          # Does it have  DIN or is it a comment.
+          # Does it havea DIN or is it just a comment?
           if @line.match(/^(\d{3}) (.*)$/)
             din = $1           # data identification number (DIN)
             @data = $2         # the data after the DIN
@@ -230,6 +248,9 @@ A tournament can be serialized back to Krause format (the reverse of parsing) wi
         # Every player must have at least one result.
         @tournament.players.each { |p| raise "player #{p.num} has no results" if p.results.size == 0 }
         
+        # Rerank the tournament if there are no ranking values or if there are but they're not consistent.
+        @tournament.rerank unless @tournament.ranking_consistent?
+
         # Set the number of rounds.
         @tournament.rounds = @tournament.players.inject(0) do |pa, p|
           pm = p.results.inject(0){ |ra, r| ra < r.round ? r.round : ra }

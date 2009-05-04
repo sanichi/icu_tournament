@@ -175,5 +175,53 @@ raise an exception if the players it references through their tournament numbers
         @player[result.opponent].add_result(reverse)
       end
     end
+    
+    # Return true if the players ranking is consistent, false otherwise.
+    # The players ranking is consistent if:
+    # * every player has a rank
+    # * no two players have the same rank
+    # * the highest rank is 1
+    # * the lowest rank is equal to the total of players
+    def ranking_consistent?
+      # No two players can have the same rank.
+      ranks = Hash.new
+      @player.values.each do |p|
+        if p.rank
+          return false if ranks[p.rank]
+          ranks[p.rank] = p
+        end
+      end
+      
+      # Every player has to have a rank.
+      return false unless ranks.size == @player.size
+
+      # The higest and lowest ranks respectively should be 1 and the number of players.
+      by_rank = @player.values.sort{ |a,b| a.rank <=> b.rank}
+      return false unless by_rank[0].rank == 1
+      return false unless by_rank[-1].rank == ranks.size
+      
+      # If scores are ordered by ranks, they should go from highest to lowest.
+      if by_rank.size > 1
+        (1..by_rank.size-1).each do |i|
+          p1 = by_rank[i-1]
+          p2 = by_rank[i]
+          return false if p1.points < p2.points
+        end
+      end
+      
+      true
+    end
+    
+    # Rerank the tournament.
+    def rerank
+      @player.values.map{ |p| [p, p.points] }.sort do |a,b|
+        d = b[1] <=> a[1]
+        d = a[0].last_name <=> b[0].last_name if d == 0
+        d = a[0].first_name <=> b[0].first_name if d == 0
+        d
+      end.each_with_index do |v,i|
+        v[0].rank = i + 1
+      end
+    end
   end
 end

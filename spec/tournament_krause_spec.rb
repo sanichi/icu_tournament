@@ -173,6 +173,115 @@ KRAUSE
           @p.serialize('Rubbish').should be_nil
         end
       end
+
+      context "auto-ranking" do
+        before(:all) do
+          @krause = <<KRAUSE
+012 Las Vegas National Open
+042 2008-06-07
+001    1 w    Ui Laighleis,Gearoidin            1985 IRL     2501171 1964-06-10  1.0          2 b 0     3 w 1
+001    2 m  m Orr,Mark                          2258 IRL     2500035 1955-11-09  2.0          1 w 1               3 b 1
+001    3 m  g Bologan,Viktor                    2663 MDA    13900048 1971-01-01  0.0                    1 b 0     2 w 0
+KRAUSE
+          @p = Krause.new
+          @t = @p.parse!(@krause)
+        end
+
+        it "should have rankings automatically set" do
+          @t.player(1).rank.should == 2
+          @t.player(2).rank.should == 1
+          @t.player(3).rank.should == 3
+        end
+      end
+
+      context "errors" do
+        before(:each) do
+          @k = <<KRAUSE
+012 Gonzaga Classic
+022 Dublin
+032 IRL
+042 2008-02-01
+052 2008-02-03
+062 12
+092 Swiss
+102 Michael Germaine, mlgermaine@eircom.net
+122 120 minutes per player per game
+001    1      Griffiths,Ryan Rhys                    IRL     2502054             4.0    1  0000 - =     3 b 1     8 w 1     5 b =     7 w 1
+001    2      Hotak,Marian                           SVK    14909677             3.5    2     3 w 0     6 b =    11 w 1     8 b 1     5 w 1
+001    3      Duffy,Seamus                           IRL                         3.0    3     2 b 1     1 w 0     4 w 1     6 b =     8 w =
+001    4      Cafolla,Peter                          IRL     2500884             3.0    4     7 b 1     5 w =     3 b 0    11 b +     6 w =
+001    5      Ferry,Edward                           SCO     2461587             3.0    5    10 b 1     4 b =     9 w 1     1 w =     2 b 0
+001    6      Boyle,Bernard                          IRL     2501830             3.0    6    12 b =     2 w =    10 b 1     3 w =     4 b =
+001    7      McCarthy,Tim                           IRL     2500710             2.5    7     4 w 0    10 w =    12 b +     9 b 1     1 b 0
+001    8      Benson,Oisin P.                        IRL     2501821             2.0    8  0000 - =    11 w 1     1 b 0     2 w 0     3 b =
+001    9      Murray,David B.                        IRL     2501511             2.0    9    11 b =    12 w +     5 b 0     7 w 0    10 w =
+001   10      Moser,Philippe                         SUI     1308041             1.5   10     5 w 0     7 b =     6 w 0  0000 - =     9 b =
+001   11      Barbosa,Paulo                          POR     1904612             1.5   11     9 w =     8 b 0     2 b 0     4 w -  0000 - +
+001   12      McCabe,Darren                          IRL     2500760             0.5   12     6 w =     9 b -     7 w -
+KRAUSE
+          @p = Krause.new
+        end
+
+        it "the unaltered example is valid Krause" do
+          t = @p.parse(@k).should be_instance_of(Tournament)
+        end
+
+        it "removing the line on which the tournament name is specified should cause an error" do
+          @k.sub!('012 Gonzaga Classic', '')
+          lambda { t = @p.parse!(@k) }.should raise_error(/name missing/)
+        end
+
+        it "blanking the tournament name should cause an error" do
+          @k.sub!('Gonzaga Classic', '')
+          lambda { t = @p.parse!(@k) }.should raise_error(/name missing/)
+        end
+
+        it "blanking the start date should cause an error" do
+          @k.sub!('2008-02-01', '')
+          lambda { t = @p.parse!(@k) }.should raise_error(/start date missing/)
+        end
+
+        it "creating a duplicate player number should cause an error" do
+          @k.sub!('  2  ', '  1  ')
+          lambda { t = @p.parse!(@k) }.should raise_error(/player number/)
+        end
+
+        it "creating a duplicate rank number should not cause an error becuse the tournament will be reranked" do
+          @k.sub!('4.0    1', '4.0    2')
+          t = @p.parse!(@k)
+          t.player(1).rank.should == 1
+        end
+
+        it "referring to a non-existant player number should cause an error" do
+           @k.sub!(' 3 b 1', '33 b 1')
+           lambda { t = @p.parse!(@k) }.should raise_error(/opponent number/)
+        end
+
+        it "inconsistent colours should cause an error" do
+           @k.sub!('3 b 1', '3 w 1')
+           lambda { t = @p.parse!(@k) }.should raise_error(/result/)
+        end
+
+        it "inconsistent scores should cause an error" do
+           @k.sub!('3 b 1', '3 b =')
+           lambda { t = @p.parse!(@k) }.should raise_error(/result/)
+        end
+
+        it "inconsistent totals should cause an error" do
+           @k.sub!('4.0', '4.5')
+           lambda { t = @p.parse!(@k) }.should raise_error(/total/)
+        end
+
+        it "invalid federations should cause an error" do
+           @k.sub!('SCO', 'XYZ')
+           lambda { t = @p.parse!(@k) }.should raise_error(/federation/)
+        end
+
+        it "removing any player that somebody else has played should cause an error" do
+           @k.sub!(/^001   12.*$/, '')
+           lambda { t = @p.parse!(@k) }.should raise_error(/opponent/)
+        end
+      end
     end
   end
 end
