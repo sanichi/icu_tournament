@@ -2,11 +2,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{chess_icu}
-  s.version = "0.2.10"
+  s.version = "0.3.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Mark Orr"]
-  s.date = %q{2009-04-26}
+  s.date = %q{2009-05-04}
   s.email = %q{mark.j.l.orr@googlemail.com}
   s.extra_rdoc_files = [
     "README.rdoc"
@@ -19,17 +19,21 @@ Gem::Specification.new do |s|
     "Rakefile",
     "VERSION.yml",
     "lib/chess_icu.rb",
+    "lib/federation.rb",
     "lib/name.rb",
     "lib/player.rb",
     "lib/result.rb",
     "lib/tournament.rb",
     "lib/tournament_fcsv.rb",
+    "lib/tournament_krause.rb",
     "lib/util.rb",
+    "spec/federation_spec.rb",
     "spec/name_spec.rb",
     "spec/player_spec.rb",
     "spec/result_spec.rb",
     "spec/spec_helper.rb",
     "spec/tournament_fcsv_spec.rb",
+    "spec/tournament_krause_spec.rb",
     "spec/tournament_spec.rb",
     "spec/util_spec.rb"
   ]
@@ -40,11 +44,13 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.1}
   s.summary = %q{For parsing files of chess tournament data into ruby classes.}
   s.test_files = [
+    "spec/federation_spec.rb",
     "spec/name_spec.rb",
     "spec/player_spec.rb",
     "spec/result_spec.rb",
     "spec/spec_helper.rb",
     "spec/tournament_fcsv_spec.rb",
+    "spec/tournament_krause_spec.rb",
     "spec/tournament_spec.rb",
     "spec/util_spec.rb"
   ]
