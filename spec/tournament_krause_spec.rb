@@ -237,6 +237,11 @@ KRAUSE
         end
 
         it "blanking the start date should cause an error" do
+          @k.sub!('2008-02-01', '2008-02-04')
+          lambda { t = @p.parse!(@k) }.should raise_error(/start.*after.*end/)
+        end
+
+        it "the start cannot be later than the end date" do
           @k.sub!('2008-02-01', '')
           lambda { t = @p.parse!(@k) }.should raise_error(/start date missing/)
         end

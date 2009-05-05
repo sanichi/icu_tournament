@@ -137,6 +137,8 @@ A tournament can be serialized back to CSV format (the reverse of parsing) with 
         end
         raise "line #{@line}: no players found in file" if @tournament.players.size == 0
         
+        @tournament.validate!
+
         @tournament
       end
       

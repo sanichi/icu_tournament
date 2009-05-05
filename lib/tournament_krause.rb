@@ -149,8 +149,11 @@ The following lists Krause data identification numbers, their description and, w
           end
         end
         
-        # Validate the data now that we have everything.
-        validate
+        # Now that we have everything, perform final checks and tidy ups.
+        finish_up
+        
+        # Finally, exercise the tournament object's own internal validation.
+        @tournament.validate!
         
         @tournament
       end
@@ -237,25 +240,19 @@ The following lists Krause data identification numbers, their description and, w
         @comments << "\n"
       end
       
-      def validate
-        # Certain attributes are mandatory.
+      def finish_up
+        # Certain attributes are mandatory and should have been specifically set.
         raise "tournament name missing"       unless @name_set
         raise "tournament start date missing" unless @start_set
-        
-        # There must be at least two players.
-        raise "minimum number of players is 2" if @tournament.players.length < 2
-        
-        # Every player must have at least one result.
-        @tournament.players.each { |p| raise "player #{p.num} has no results" if p.results.size == 0 }
-        
-        # Rerank the tournament if there are no ranking values or if there are but they're not consistent.
-        @tournament.rerank unless @tournament.ranking_consistent?
 
         # Set the number of rounds.
         @tournament.rounds = @tournament.players.inject(0) do |pa, p|
           pm = p.results.inject(0){ |ra, r| ra < r.round ? r.round : ra }
           pa < pm ? pm : pa
         end
+
+        # Rerank the tournament if there are no ranking values or if there are, but they're not consistent.
+        @tournament.rerank unless @tournament.ranking_consistent?
       end
     end
   end

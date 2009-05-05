@@ -182,7 +182,7 @@ raise an exception if the players it references through their tournament numbers
     # * no two players have the same rank
     # * the highest rank is 1
     # * the lowest rank is equal to the total of players
-    def ranking_consistent?
+    def ranking_consistent?(option={})
       # No two players can have the same rank.
       ranks = Hash.new
       @player.values.each do |p|
@@ -192,7 +192,10 @@ raise an exception if the players it references through their tournament numbers
         end
       end
       
-      # Every player has to have a rank.
+      # The special case of complete absence of ranking information is an option.
+      return true if ranks.size == 0 && option[:allow_none]
+
+      # Otherwie, every player has to have a rank.
       return false unless ranks.size == @player.size
 
       # The higest and lowest ranks respectively should be 1 and the number of players.
@@ -222,6 +225,28 @@ raise an exception if the players it references through their tournament numbers
       end.each_with_index do |v,i|
         v[0].rank = i + 1
       end
+    end
+
+    # Raise an exception if a tournament is not valid.
+    def validate!
+      error = invalid
+      raise error if error
+    end
+
+    # Is a tournament invalid? Either returns false (if it's valid) or an error message.
+    # Covers all the ways a tournament can be invalid not already enforced by the setters.
+    def invalid
+      # There must be at least two players.
+      return "number of players (#{@player.size}) must be at least 2" if @player.size < 2
+
+      # Every player must have at least one result.
+      @player.each { |num, p| return "player #{num} has no results" if p.results.size == 0 }
+
+      # The ranking should be consistent, with the proviso that no ranking at all is allowed.
+      return "ranking is not consistent" unless ranking_consistent?(:allow_none => true)
+
+      # If there is a start date and an end date, the start should not come after the end.
+      return "start date (#{start}) is after end date (#{finish})" if start && finish && start > finish
     end
   end
 end
