@@ -33,6 +33,27 @@ Note that the players should be added first because the _add_result_ method will
 raise an exception if the players it references through their tournament numbers
 (10, 20 and 30 in this example) have not already been added to the tournament.
 
+A tournament can be validated with either the _validate!_ or _invalid_ methods.
+On success, the first returns true while the second returns false.
+On error, the first throws an exception while the second returns a description of the message.
+
+Validations checks that:
+
+* there are at least two players
+* every player has a least one result
+* the round numbers are consistent
+* the tournament dates are consistent
+* the player ranks are consistent (only if the _rank_ or _rerank_ option is set)
+
+Both messages are capable of taking the following boolean valued hash options:
+
+* _rank_ - check the player ranks
+* _rerank_ - check the player ranks and automatically repair if absent or not consistent
+
+For example:
+
+  tournament.validate!(:rank => true)
+
 =end
 
   class Tournament
@@ -175,46 +196,7 @@ raise an exception if the players it references through their tournament numbers
         @player[result.opponent].add_result(reverse)
       end
     end
-    
-    # Return true if the players ranking is consistent, false otherwise.
-    # The players ranking is consistent if:
-    # * every player has a rank
-    # * no two players have the same rank
-    # * the highest rank is 1
-    # * the lowest rank is equal to the total of players
-    def ranking_consistent?(option={})
-      # No two players can have the same rank.
-      ranks = Hash.new
-      @player.values.each do |p|
-        if p.rank
-          return false if ranks[p.rank]
-          ranks[p.rank] = p
-        end
-      end
-      
-      # The special case of complete absence of ranking information is an option.
-      return true if ranks.size == 0 && option[:allow_none]
-
-      # Otherwie, every player has to have a rank.
-      return false unless ranks.size == @player.size
-
-      # The higest and lowest ranks respectively should be 1 and the number of players.
-      by_rank = @player.values.sort{ |a,b| a.rank <=> b.rank}
-      return false unless by_rank[0].rank == 1
-      return false unless by_rank[-1].rank == ranks.size
-      
-      # If scores are ordered by ranks, they should go from highest to lowest.
-      if by_rank.size > 1
-        (1..by_rank.size-1).each do |i|
-          p1 = by_rank[i-1]
-          p2 = by_rank[i]
-          return false if p1.points < p2.points
-        end
-      end
-      
-      true
-    end
-    
+        
     # Rerank the tournament.
     def rerank
       @player.values.map{ |p| [p, p.points] }.sort do |a,b|
@@ -227,26 +209,92 @@ raise an exception if the players it references through their tournament numbers
       end
     end
 
-    # Raise an exception if a tournament is not valid.
-    def validate!
-      error = invalid
-      raise error if error
+    # Is a tournament invalid? Either returns false (if it's valid) or an error message.
+    def invalid(options={})
+      begin
+        validate!(options)
+      rescue => err
+        return err.message
+      end
+      false
     end
 
-    # Is a tournament invalid? Either returns false (if it's valid) or an error message.
+    # Raise an exception if a tournament is not valid.
     # Covers all the ways a tournament can be invalid not already enforced by the setters.
-    def invalid
-      # There must be at least two players.
-      return "number of players (#{@player.size}) must be at least 2" if @player.size < 2
+    def validate!(options={})
+      begin check_ranks rescue rerank end if options[:rerank]
+      check_players
+      check_dates
+      check_rounds
+      check_ranks if options[:rank]
+      true
+    end
 
-      # Every player must have at least one result.
-      @player.each { |num, p| return "player #{num} has no results" if p.results.size == 0 }
-
-      # The ranking should be consistent, with the proviso that no ranking at all is allowed.
-      return "ranking is not consistent" unless ranking_consistent?(:allow_none => true)
-
+    private
+    
+    # Check players.
+    def check_players
+      raise "the number of players (#{@player.size}) must be at least 2" if @player.size < 2
+      @player.each { |num, p| raise "player #{num} has no results" if p.results.size == 0 }
+    end
+    
+    # Check dates are consistent.
+    def check_dates
       # If there is a start date and an end date, the start should not come after the end.
-      return "start date (#{start}) is after end date (#{finish})" if start && finish && start > finish
+      raise "start date (#{start}) is after end date (#{finish})" if start && finish && start > finish
+    end
+
+    # Round should go from 1 to a maximum, there should be at least one result in every round and,
+    # if the number of rounds has been set, it should agree with the largest round from the results.
+    def check_rounds
+      round = Hash.new
+      round_last = 0
+      @player.values.each do |p|
+        p.results.each do |r|
+          round[r.round] = true
+          round_last = r.round if r.round > round_last
+        end
+      end
+      (1..round_last).each { |r| raise "there are no results for round #{r}" unless round[r] }
+      if rounds
+        raise "declared number of rounds is #{rounds} but there are results in later rounds, such as #{round_last}" if rounds < round_last
+        raise "declared number of rounds is #{rounds} but there are no results with rounds greater than #{round_last}" if rounds > round_last
+      else
+        self.rounds = round_last
+      end
+    end
+
+    # Check if the players ranking is consistent, which will be true if:
+    # * every player has a rank
+    # * no two players have the same rank
+    # * the highest rank is 1
+    # * the lowest rank is equal to the total of players
+    def check_ranks
+      # No two players can have the same rank.
+      ranks = Hash.new
+      @player.values.each do |p|
+        if p.rank
+          raise "two players have the same rank #{p.rank}" if ranks[p.rank]
+          ranks[p.rank] = p
+        end
+      end
+
+      # Otherwise, every player has to have a rank.
+      raise "every player has to have a rank" unless ranks.size == @player.size
+
+      # The higest and lowest ranks respectively should be 1 and the number of players.
+      by_rank = @player.values.sort{ |a,b| a.rank <=> b.rank}
+      raise "the highest rank must be 1" unless by_rank[0].rank == 1
+      raise "the lowest rank must be #{ranks.size}" unless by_rank[-1].rank == ranks.size
+      
+      # If scores are ordered by ranks, they should go from highest to lowest.
+      if by_rank.size > 1
+        (1..by_rank.size-1).each do |i|
+          p1 = by_rank[i-1]
+          p2 = by_rank[i]
+          raise "player #{p1.num} with #{p1.points} points is ranked above player #{p2.num} with #{p2.points} points" if p1.points < p2.points
+        end
+      end
     end
   end
 end
