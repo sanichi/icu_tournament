@@ -2,11 +2,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{chess_icu}
-  s.version = "0.3.3"
+  s.version = "0.3.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Mark Orr"]
-  s.date = %q{2009-05-05}
+  s.date = %q{2009-05-09}
   s.email = %q{mark.j.l.orr@googlemail.com}
   s.extra_rdoc_files = [
     "README.rdoc"
