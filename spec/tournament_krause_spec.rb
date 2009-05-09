@@ -29,7 +29,7 @@ module ICU
 022 Las Vegas
 032 USA
 042 2008.06.07
-052 2008.06.10
+052 2008.06.09
 062 3
 072 3
 082 1
@@ -40,7 +40,7 @@ module ICU
 013 Coaching Team                      1    2
 0         1         2         3         4         5         6         7         8         9         0         1         2
 0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
-132                                                                                        08.02.01  08.02.02  08.02.03
+132                                                                                        08.06.07  08.06.08  08.06.09
 001    1 w    Ui Laighleis,Gearoidin            1985 IRL     2501171 1964.06.10  1.0    2     2 b 0     3 w 1          
 001    2 m  m Orr,Mark                          2258 IRL     2500035 1955.11.09  2.0    1     1 w 1               3 b 1
 001    3 m  g Bologan,Viktor                    2663 MDA    13900048 1971.01.01  0.0    3               1 b 0     2 w 0
@@ -57,7 +57,7 @@ KRAUSE
         
         it "should have start and end dates" do
           @t.start.should  == '2008-06-07'
-          @t.finish.should == '2008-06-10'
+          @t.finish.should == '2008-06-09'
         end
         
         it "should have a number of rounds, a type and a time control" do
@@ -84,6 +84,10 @@ KRAUSE
           check_results(3, 2, 0.0)
         end
         
+        it "should have correct round dates" do
+          @t.round_dates.join('|').should == '2008-06-07|2008-06-08|2008-06-09'
+        end
+        
         it "the parser should retain comment lines" do
           comments = <<COMMENTS
 062 3
@@ -92,7 +96,6 @@ KRAUSE
 013 Coaching Team                      1    2
 0         1         2         3         4         5         6         7         8         9         0         1         2
 0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
-132                                                                                        08.02.01  08.02.02  08.02.03
 COMMENTS
           @p.comments.should == comments
         end
@@ -105,6 +108,7 @@ COMMENTS
 032 IRL
 042 2009.09.09
 0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+132                                                                                        09.09.09  09.09.10  09.09.11
 001    1 w    Mouse,Minerva                     1900 USA     1234567 1928.05.15  1.0    2     2 b 0     3 w 1          
 001    2 m  m Duck,Daffy                        2200 IRL     7654321 1937.04.17  2.0    1     1 w 1               3 b 1
 001    3 m  g Mouse,Mickey                      2600 USA     1726354 1928.05.15  0.0    3               1 b 0     2 w 0
@@ -118,8 +122,10 @@ KRAUSE
           @t.fed.should  == 'IRL'
         end
 
-        it "should have a startdates" do
+        it "should have a various dates" do
           @t.start.should  == '2009-09-09'
+          @t.finish.should  == '2009-09-11'
+          @t.round_dates.join('|').should == '2009-09-09|2009-09-10|2009-09-11'
         end
 
         it "should have a number of rounds" do
@@ -156,6 +162,7 @@ KRAUSE
 102 Hans Scmidt
 112 Gerry Graham, Herbert Scarry
 122 60 in 2hr, 30 in 1hr, rest in 1hr
+132                                                                                        08-06-07  08-06-08  08-06-09
 001    1 w    Ui Laighleis,Gearoidin            1985 IRL     2501171 1964-06-10  2.0    2     2 b 0     3 w +     4 b 1
 001    2 m  m Orr,Mark                          2258 IRL     2500035 1955-11-09  2.5    1     1 w 1  0000 - =     3 b 1
 001    3 m  g Bologan,Viktor                    2663 MDA    13900048 1971-01-01  0.0    4               1 b -     2 w 0

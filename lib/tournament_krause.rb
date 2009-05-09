@@ -14,6 +14,7 @@ Suppose, for example, that the following data is the file <em>tournament.tab</em
   032 IRL
   042 2009.09.09
   0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+  132                                                                                        09.09.09  09.09.10  09.09.11
   001    1 w    Mouse,Minerva                     1900 USA     1234567 1928.05.15  1.0    2     2 b 0     3 w 1          
   001    2 m  m Duck,Daffy                        2200 IRL     7654321 1937.04.17  2.0    1     1 w 1               3 b 1
   001    3 m  g Mouse,Mickey                      2600 USA     1726354 1928.05.15  0.0    3               1 b 0     2 w 0
@@ -29,9 +30,13 @@ ICU::Tournament (rather than <em>nil</em>, which indicates an error). In this ex
   
   tournament.name                   # => "Fantasy Tournament"
   tournament.start                  # => "2009-09-09"
-  tournament.rounds                 # => 3
   tournament.fed                    # => "IRL"
   tournament.players.size           # => 9
+
+Some values, not explicitly set in the file, are deduced:
+  
+  tournament.rounds                 # => 3
+  tournament.finish                 # => "2009-09-11"
   
 A player can be retrieved from the tournament via the _players_ array or by sending a valid player number to the _player_ method.
 
@@ -72,7 +77,7 @@ The following lists Krause data identification numbers, their description and, w
 [102 Arbiter(s)]              Get or set with -arbiter_. Free text.
 [112 Deputy(ies)]             Get or set with _deputy_. Free text.
 [122 Time control]            Get or set with _time_control_. Free text.
-[132 Round dates]             Not implemented yet.
+[132 Round dates]             Get an array of dates using _round_dates_ or one specific round date by calling _round_date_ with a round number.
 
 =end
 
@@ -131,7 +136,7 @@ The following lists Krause data identification numbers, their description and, w
               when '102' then @tournament.arbiter = @data       # arbiter(s)
               when '112' then @tournament.deputy = @data        # deputy(ies)
               when '122' then @tournament.time_control = @data  # time control
-              when '132' then add_comment                       # round dates (not implemented yet)
+              when '132' then add_round_dates                   # round dates
               else raise "invalid DIN #{din}"
             end
           rescue => err
@@ -172,6 +177,11 @@ The following lists Krause data identification numbers, their description and, w
         krause << "102 #{t.arbiter}\n"      if t.arbiter
         krause << "112 #{t.deputy}\n"       if t.deputy
         krause << "122 #{t.time_control}\n" if t.time_control
+        if t.round_dates.size > 0
+          krause << "132 #{' ' * 85}"
+          t.round_dates.each{ |d| krause << d.sub(/^../, '  ') }
+          krause << "\n"
+        end
         t.players.each{ |p| krause << p.to_krause(@tournament.rounds) }
         krause
       end
@@ -234,6 +244,16 @@ The following lists Krause data identification numbers, their description and, w
         result   = Result.new(round, player, score, options)
         @results << [@lineno, player, data, result]
         result.points
+      end
+      
+      def add_round_dates
+        raise "round dates record less than minimum length" if @line.length < 99
+        index  = 87
+        while @data.length >= index + 8
+          date = @data[index, 8].strip
+          @tournament.add_round_date("20#{date}") unless date == ''
+          index+= 10
+        end
       end
 
       def add_comment

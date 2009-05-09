@@ -35,29 +35,36 @@ raise an exception if the players it references through their tournament numbers
 
 A tournament can be validated with either the _validate!_ or _invalid_ methods.
 On success, the first returns true while the second returns false.
-On error, the first throws an exception while the second returns a description of the message.
+On error, the first throws an exception while the second returns a description of the error.
 
 Validations checks that:
 
 * there are at least two players
 * every player has a least one result
-* the round numbers are consistent
-* the tournament dates are consistent
-* the player ranks are consistent (only if the _rank_ or _rerank_ option is set)
+* the round numbers of the players results are consistent
+* the tournament dates (start, finish, round dates) are consistent
+* the player ranks are consistent with their scores
 
-Both messages are capable of taking the following boolean valued hash options:
+Side effects of calling _validate!_ or _invalid_ include:
 
-* _rank_ - check the player ranks
-* _rerank_ - check the player ranks and automatically repair if absent or not consistent
+* the number of rounds will be set if not set already
+* the finish date will be set if not set already and if there are round dates
 
-For example:
+If the _rerank_ option is set, as in this example:
 
-  tournament.validate!(:rank => true)
+  tournament.validate!(:rerank => true)
+
+then there are additional side effects of validating a tournament:
+
+* the players will be ranked if no players have any rank
+* the players will be reranked if the existing ranking is inconsistent
+
+Ranking is consistent if either no players have any rank or if all players have a rank and no player is ranked higher than another player with more points.
 
 =end
 
   class Tournament
-    attr_reader :name, :start, :finish, :rounds, :site, :city, :fed, :type, :arbiter, :deputy, :time_control
+    attr_reader :name, :rounds, :start, :finish, :round_dates, :site, :city, :fed, :type, :arbiter, :deputy, :time_control
     
     # Constructor. Name and start date must be supplied. Other attributes are optional.
     def initialize(name, start, opt={})
@@ -65,6 +72,7 @@ For example:
       self.start = start
       [:finish, :rounds, :site, :city, :fed, :type, :arbiter, :deputy, :time_control].each { |a| self.send("#{a}=", opt[a]) unless opt[a].nil? }
       @player = {}
+      @round_dates = []
     end
     
     # Set the tournament name.
@@ -120,6 +128,20 @@ For example:
       raise "invalid number of rounds (#{rounds})" unless @rounds.nil? || @rounds > 0
     end
     
+    # Add a round date.
+    def add_round_date(round_date)
+      round_date = round_date.to_s.strip
+      parsed_date = Util.parsedate(round_date)
+      raise "invalid round date (#{round_date})" unless parsed_date
+      @round_dates << parsed_date
+      @round_dates.sort!
+    end
+    
+    # Return the date of a given round, or nil if unavailable.
+    def round_date(round)
+      @round_dates[round-1]
+    end
+    
     # Set the tournament web site. Should be either unknown (_nil_) or a reasonably valid looking URL.
     def site=(site)
       @site = site.to_s.strip
@@ -168,7 +190,7 @@ For example:
       @player[num]
     end
     
-    # Return an array of all players in order of their player numbers.
+    # Return an array of all players in order of their player number.
     def players
       @player.values.sort_by{ |p| p.num }
     end
@@ -224,9 +246,9 @@ For example:
     def validate!(options={})
       begin check_ranks rescue rerank end if options[:rerank]
       check_players
-      check_dates
       check_rounds
-      check_ranks if options[:rank]
+      check_dates
+      check_ranks(:allow_none => true)
       true
     end
 
@@ -238,12 +260,6 @@ For example:
       @player.each { |num, p| raise "player #{num} has no results" if p.results.size == 0 }
     end
     
-    # Check dates are consistent.
-    def check_dates
-      # If there is a start date and an end date, the start should not come after the end.
-      raise "start date (#{start}) is after end date (#{finish})" if start && finish && start > finish
-    end
-
     # Round should go from 1 to a maximum, there should be at least one result in every round and,
     # if the number of rounds has been set, it should agree with the largest round from the results.
     def check_rounds
@@ -264,13 +280,23 @@ For example:
       end
     end
 
+    # Check dates are consistent.
+    def check_dates
+      raise "start date (#{start}) is after end date (#{finish})" if @start && @finish && @start > @finish
+      if @round_dates.size > 0
+        raise "the number of round dates (#{@round_dates.size}) does not match the number of rounds (#{@rounds})" unless @round_dates.size == @rounds
+        raise "the date of the first round (#{@round_dates[0]}) comes before the start (#{@start}) of the tournament" if @start && @start > @round_dates[0]
+        raise "the date of the last round (#{@round_dates[-1]}) comes after the end (#{@finish}) of the tournament" if @finish && @finish < @round_dates[-1]
+        @finish = @round_dates[-1] unless @finish
+      end
+    end
+
     # Check if the players ranking is consistent, which will be true if:
     # * every player has a rank
     # * no two players have the same rank
     # * the highest rank is 1
     # * the lowest rank is equal to the total of players
-    def check_ranks
-      # No two players can have the same rank.
+    def check_ranks(options)
       ranks = Hash.new
       @player.values.each do |p|
         if p.rank
@@ -278,16 +304,11 @@ For example:
           ranks[p.rank] = p
         end
       end
-
-      # Otherwise, every player has to have a rank.
+      return if ranks.size == 0 && options[:allow_none]
       raise "every player has to have a rank" unless ranks.size == @player.size
-
-      # The higest and lowest ranks respectively should be 1 and the number of players.
       by_rank = @player.values.sort{ |a,b| a.rank <=> b.rank}
       raise "the highest rank must be 1" unless by_rank[0].rank == 1
       raise "the lowest rank must be #{ranks.size}" unless by_rank[-1].rank == ranks.size
-      
-      # If scores are ordered by ranks, they should go from highest to lowest.
       if by_rank.size > 1
         (1..by_rank.size-1).each do |i|
           p1 = by_rank[i-1]
