@@ -65,7 +65,7 @@ The following lists Krause data identification numbers, their description and, w
 
 [001 Player record]           Use _players_ to get all players or _player_ with a player number to get a single instance.
 [012 Name]                    Get or set with _name_. Free text. A tounament name is mandatory.
-[013 Teams]                   Not implemented yet.
+[013 Teams]                   Create an ICU::Team, add player numbers to it, use _add_team_ to add to tournament, _get_team_/_teams_ to retrive it/them.
 [022 City]                    Get or set with _city_. Free text.
 [032 Federation]              Get or set with _fed_. Getter returns either _nil_ or a three letter code. Setter can take various formats (see ICU::Federation).
 [042 Start date]              Get or set with _start_. Getter returns <em>yyyy-mm-dd</em> format, but setter can use any reasonable date format. Start date is mandadory.
@@ -124,7 +124,7 @@ The following lists Krause data identification numbers, their description and, w
             case din
               when '001' then add_player                        # player and results record
               when '012' then set_name                          # name (mandatory)
-              when '013' then add_comment                       # team name and members (not implemented yet)
+              when '013' then add_team                          # team name and members
               when '022' then @tournament.city = @data          # city
               when '032' then @tournament.fed = @data           # federation
               when '042' then set_start                         # start date (mandatory)
@@ -177,6 +177,11 @@ The following lists Krause data identification numbers, their description and, w
         krause << "102 #{t.arbiter}\n"      if t.arbiter
         krause << "112 #{t.deputy}\n"       if t.deputy
         krause << "122 #{t.time_control}\n" if t.time_control
+        t.teams.each do |team|
+          krause << sprintf('013 %-31s', team.name)
+          team.members.each{ |m| krause << sprintf(' %4d', m) }
+          krause << "\n"
+        end
         if t.round_dates.size > 0
           krause << "132 #{' ' * 85}"
           t.round_dates.each{ |d| krause << d.sub(/^../, '  ') }
@@ -244,6 +249,17 @@ The following lists Krause data identification numbers, their description and, w
         result   = Result.new(round, player, score, options)
         @results << [@lineno, player, data, result]
         result.points
+      end
+      
+      def add_team
+        raise error "team record less than minimum length" if @line.length < 40
+        team = Team.new(@data[0, 31])
+        index = 32
+        while @data.length >= index + 4
+          team.add_member(@data[index, 4])
+          index+= 5
+        end
+        @tournament.add_team(team)
       end
       
       def add_round_dates

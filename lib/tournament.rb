@@ -64,7 +64,7 @@ Ranking is consistent if either no players have any rank or if all players have 
 =end
 
   class Tournament
-    attr_reader :name, :rounds, :start, :finish, :round_dates, :site, :city, :fed, :type, :arbiter, :deputy, :time_control
+    attr_reader :name, :rounds, :start, :finish, :round_dates, :site, :city, :fed, :type, :arbiter, :deputy, :time_control, :teams
     
     # Constructor. Name and start date must be supplied. Other attributes are optional.
     def initialize(name, start, opt={})
@@ -72,6 +72,7 @@ Ranking is consistent if either no players have any rank or if all players have 
       self.start = start
       [:finish, :rounds, :site, :city, :fed, :type, :arbiter, :deputy, :time_control].each { |a| self.send("#{a}=", opt[a]) unless opt[a].nil? }
       @player = {}
+      @teams = []
       @round_dates = []
     end
     
@@ -178,6 +179,20 @@ Ranking is consistent if either no players have any rank or if all players have 
       raise "invalid tournament time control (#{time_control})" unless @time_control.nil? || @time_control.match(/[1-9]\d/)
     end
     
+    # Add a new team. The argument is either a team (possibly already with members) or the name of a new team.
+    # The team's name must be unique in the tournament. Returns the the team instance.
+    def add_team(team)
+      team = Team.new(team.to_s) unless team.is_a? Team
+      raise "a team with a name similar to '#{team.name}' already exists" if self.get_team(team.name)
+      @teams << team
+      team
+    end
+    
+    # Return the team object that matches a given name, or nil if not found.
+    def get_team(name)
+      @teams.find{ |t| t.matches(name) }
+    end
+    
     # Add a new player to the tournament. Must have a unique player number.
     def add_player(player)
       raise "invalid player" unless player.class == ICU::Player
@@ -248,6 +263,7 @@ Ranking is consistent if either no players have any rank or if all players have 
       check_players
       check_rounds
       check_dates
+      check_teams
       check_ranks(:allow_none => true)
       true
     end
@@ -288,6 +304,24 @@ Ranking is consistent if either no players have any rank or if all players have 
         raise "the date of the first round (#{@round_dates[0]}) comes before the start (#{@start}) of the tournament" if @start && @start > @round_dates[0]
         raise "the date of the last round (#{@round_dates[-1]}) comes after the end (#{@finish}) of the tournament" if @finish && @finish < @round_dates[-1]
         @finish = @round_dates[-1] unless @finish
+      end
+    end
+    
+    # Check teams. Either there are none or:
+    # * every team member is a valid player, and
+    # * every player is a member of exactly one team.
+    def check_teams
+      return if @teams.size == 0
+      member = Hash.new
+      @teams.each do |t|
+        t.members.each do |m|
+          raise "member #{m} of team '#{t.name}' is not a valid player number for this tournament" unless @player[m]
+          raise "member #{m} of team '#{t.name}' is already a member of team #{member[m]}" if member[m]
+          member[m] = t.name
+        end
+      end
+      @player.keys.each do |p|
+        raise "player #{p} is not a member of any team" unless member[p]
       end
     end
 

@@ -294,7 +294,32 @@ module ICU
         @t.find_player(Player.new('John', 'Orr', 4, :fed => 'IRL')).should be_nil
       end
     end
+    
+    context "teams" do
+      before(:each) do
+        @t = Tournament.new('Bangor Bash', '2009-11-09')
+      end
 
+      it "should be able to create a new team, add it and retrieve it" do
+        team = Team.new('Wandering Dragons')
+        @t.add_team(team).should be_an_instance_of Team
+        @t.get_team('  wandering  dragons  ').should be_an_instance_of Team
+        @t.get_team('Blundering Bishops').should be_nil
+      end
+      
+      it "should be able to create and add a new team and retrieve it" do
+        @t.add_team('Blundering Bishops').should be_an_instance_of Team
+        @t.get_team('  blundering  bishops  ').should be_an_instance_of Team
+        @t.get_team('Wandering Dragons').should be_nil
+      end
+      
+      it "should throw and exception if there is an attempt to add a team with a name that matches an existing team" do
+        lambda { @t.add_team('Blundering Bishops') }.should_not raise_error
+        lambda { @t.add_team('Wandering Dragons') }.should_not raise_error
+        lambda { @t.add_team('  wandering   dragons  ') }.should raise_error(/similar.*exists/)
+      end
+    end
+    
     context "validation" do
       before(:each) do
         @t = Tournament.new('Edinburgh Masters', '2009-11-09')
@@ -363,6 +388,33 @@ module ICU
         @t.player(2).rank = 1
         @t.player(3).rank = 3
         lambda { @t.validate! }.should raise_error(/player 2.*above.*player 1/)
+      end
+      
+      it "should be valid if there are teams, every player is in one of them, and no team has an invalid member" do
+        team1 = Team.new('International Masters')
+        team2 = Team.new('World Champions')
+        @t.add_team(team1)
+        @t.add_team(team2)
+        @t.invalid.should match(/not.*member/)
+        team1.add_member(1)
+        team2.add_member(2)
+        team2.add_member(3)
+        @t.invalid.should be_false
+        team1.add_member(4)
+        @t.invalid.should match(/not.*valid/)
+      end
+      
+      it "should not be valid if one player is in more than one team" do
+        team1 = Team.new('XInternational Masters')
+        team1.add_member(1)
+        team2 = Team.new('XWorld Champions')
+        team2.add_member(2)
+        team2.add_member(3)
+        @t.add_team(team1)
+        @t.add_team(team2)
+        @t.invalid.should be_false
+        team1.add_member(2)
+        @t.invalid.should match(/already.*member/)
       end
     end
   end
