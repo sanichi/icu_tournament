@@ -2,11 +2,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{chess_icu}
-  s.version = "0.3.5"
+  s.version = "0.4.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Mark Orr"]
-  s.date = %q{2009-05-09}
+  s.date = %q{2009-05-10}
   s.email = %q{mark.j.l.orr@googlemail.com}
   s.extra_rdoc_files = [
     "README.rdoc"
@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
     "lib/name.rb",
     "lib/player.rb",
     "lib/result.rb",
+    "lib/team.rb",
     "lib/tournament.rb",
     "lib/tournament_fcsv.rb",
     "lib/tournament_krause.rb",
@@ -32,6 +33,7 @@ Gem::Specification.new do |s|
     "spec/player_spec.rb",
     "spec/result_spec.rb",
     "spec/spec_helper.rb",
+    "spec/team_spec.rb",
     "spec/tournament_fcsv_spec.rb",
     "spec/tournament_krause_spec.rb",
     "spec/tournament_spec.rb",
@@ -49,6 +51,7 @@ Gem::Specification.new do |s|
     "spec/player_spec.rb",
     "spec/result_spec.rb",
     "spec/spec_helper.rb",
+    "spec/team_spec.rb",
     "spec/tournament_fcsv_spec.rb",
     "spec/tournament_krause_spec.rb",
     "spec/tournament_spec.rb",
