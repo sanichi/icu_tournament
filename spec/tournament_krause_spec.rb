@@ -171,14 +171,15 @@ KRAUSE
 KRAUSE
           @p = Krause.new
           @t = @p.parse!(@krause)
+          @s = Krause.new
         end
 
         it "should serialize back to the original if the input is fully canonicalised" do
-          @p.serialize(@t).should == @krause
+          @s.serialize(@t).should == @krause
         end
 
         it "should return nil on invalid input" do
-          @p.serialize('Rubbish').should be_nil
+          @s.serialize('Rubbish').should be_nil
         end
       end
 

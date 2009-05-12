@@ -187,7 +187,7 @@ The following lists Krause data identification numbers, their description and, w
           t.round_dates.each{ |d| krause << d.sub(/^../, '  ') }
           krause << "\n"
         end
-        t.players.each{ |p| krause << p.to_krause(@tournament.rounds) }
+        t.players.each{ |p| krause << p.to_krause(t.rounds) }
         krause
       end
 
