@@ -63,14 +63,16 @@ Some of the ways last names are canonicalised are illustrated below:
     end
     
     def name
-      name = @first
+      name = ''
+      name << @first
       name << ' ' if @first.length > 0 && @last.length > 0
       name << @last
       name
     end
     
     def rname
-      name = @last
+      name = ''
+      name << @last
       name << ', ' if @first.length > 0 && @last.length > 0
       name << @first
       name
