@@ -234,7 +234,7 @@ Ranking is consistent if either no players have any rank or if all players have 
       end
     end
         
-    # Rerank the tournament.
+    # Rerank the tournament by score, resolving ties using name.
     def rerank
       @player.values.map{ |p| [p, p.points] }.sort do |a,b|
         d = b[1] <=> a[1]
@@ -273,7 +273,13 @@ Ranking is consistent if either no players have any rank or if all players have 
     # Check players.
     def check_players
       raise "the number of players (#{@player.size}) must be at least 2" if @player.size < 2
-      @player.each { |num, p| raise "player #{num} has no results" if p.results.size == 0 }
+      @player.each do |num, p|
+        raise "player #{num} has no results" if p.results.size == 0
+        p.results.each do |r|
+          next unless r.opponent
+          raise "opponent #{r.opponent} of player #{num} is not in the tournament" unless @player[r.opponent]
+        end
+      end
     end
     
     # Round should go from 1 to a maximum, there should be at least one result in every round and,
