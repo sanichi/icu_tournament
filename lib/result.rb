@@ -159,7 +159,7 @@ The _points_ read-only accessor always returns a floating point number: either 0
       end
     end
     
-    # Reverse a result so it is seen from the opponent's perspective.
+    # Return a reversed version (from the opponent's perspective) of a result.
     def reverse(rateable=nil)
       return unless @opponent
       r = Result.new(@round, @opponent, @score == 'W' ? 'L' : (@score == 'L' ? 'W' : 'D'))
@@ -168,6 +168,17 @@ The _points_ read-only accessor always returns a floating point number: either 0
       r.colour = 'B' if @colour == 'W'
       r.rateable = rateable || @rateable
       r
+    end
+    
+    # Renumber the player and opponent (if there is one) according to the supplied hash. Return self.
+    def renumber!(map)
+      raise "result player number #{@player} not found in renumbering hash" unless map[@player]
+      self.player = map[@player]
+      if @opponent
+        raise "result opponent number #{@opponent} not found in renumbering hash" unless map[@opponent]
+        self.opponent = map[@opponent]
+      end
+      self
     end
     
     # Loose equality. True if the round, player and opponent numbers, colour and score all match.

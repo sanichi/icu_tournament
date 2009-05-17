@@ -68,6 +68,15 @@ Attempting to add non-numbers or duplicate numbers as new team members results i
       @members.push(pnum)
     end
     
+    # Renumber the players according to the supplied hash. Return self.
+    def renumber!(map)
+      @members.each_with_index do |pnum, index|
+        raise "player number #{pnum} not found in renumbering hash" unless map[pnum]
+        @members[index] = map[pnum]
+      end
+      self
+    end
+    
     # Detect if a member exists in a team.
     def include?(number)
       @members.include?(number)

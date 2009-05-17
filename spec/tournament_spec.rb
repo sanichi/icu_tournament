@@ -417,5 +417,39 @@ module ICU
         @t.invalid.should match(/already.*member/)
       end
     end
+    
+    context "renumbering" do
+      before(:each) do
+        @t = Tournament.new('Edinburgh Masters', '2009-11-09')
+        @t.add_player(@mark = Player.new('Mark', 'Orr', 10))
+        @t.add_player(@gary = Player.new('Gary', 'Kasparov', 20))
+        @t.add_player(@boby = Player.new('Bobby', 'Fischer', 30))
+        @t.add_result(Result.new(1, 10, 'W', :opponent => 20))
+        @t.add_result(Result.new(2, 20, 'W', :opponent => 30))
+        @t.add_result(Result.new(3, 30, 'L', :opponent => 10))
+      end
+      
+      it "sample tournament is valid but unranked" do
+        @t.invalid.should be_false
+        @t.player(10).rank.should be_nil
+      end
+
+      it "should be renumberable by rank" do
+        @t.renumber!.invalid.should be_false
+        @t.players.map{ |p| p.num }.join('|').should == '1|2|3'
+        @t.players.map{ |p| p.first_name }.join('|').should == 'Mark|Gary|Bobby'
+      end
+      
+      it "should be ranked after renumbering by rank" do
+        @t.renumber!.invalid.should be_false
+        @t.players.map{ |p| p.rank }.join('|').should == '1|2|3'
+      end
+      
+      it "should be renumberable by name" do
+        @t.renumber!(:name).invalid.should be_false
+        @t.players.map{ |p| p.num }.join('|').should == '1|2|3'
+        @t.players.map{ |p| p.last_name }.join('|').should == 'Fischer|Kasparov|Orr'
+      end
+    end
   end
 end

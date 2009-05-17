@@ -236,6 +236,25 @@ module ICU
       end
     end
     
+    context "renumber the player numbers" do
+      before(:each) do
+        @p = Player.new('Mark', 'Orr', 10)
+        @p.add_result(Result.new(1, 10, 'W', :opponent => 20))
+        @p.add_result(Result.new(2, 10, 'W', :opponent => 30))
+      end
+      
+      it "should renumber successfully if the map has the relevant player numbers" do
+        map = { 10 => 1, 20 => 2, 30 => 3 }
+        @p.renumber!(map).num.should == 1
+        @p.results.map{ |r| r.opponent }.sort.join('').should == '23'
+      end
+      
+      it "should raise exception if a player number is not in the map" do
+        lambda { @p.renumber!({ 100 => 1, 20 => 2, 30 => 3 }) }.should raise_error(/player.*10.*not found/)
+        lambda { @p.renumber!({ 10 => 1, 200 => 2, 30 => 3 }) }.should raise_error(/opponent.*20.*not found/)
+      end
+    end
+    
     context "loose equality" do
       before(:all) do
         @mark1 = Player.new('Mark', 'Orr', 1)

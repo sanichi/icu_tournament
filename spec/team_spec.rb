@@ -45,6 +45,15 @@ module ICU
       it "should blow up if an attempt is made to add a duplicate number" do
         lambda { @t.add_member(3) }.should raise_error(/duplicate/)
       end
+
+      it "should renumber successfully if the map has the relevant player numbers" do
+        map = { 0 => 1, 3 => 2, -7 => 3 }
+        @t.renumber!(map).members.sort.join('').should == '123'
+      end
+
+      it "should raise exception if a player is missing from the renumber map" do
+        lambda { @t.renumber!({ 5 => 1, 3 => 2 }) }.should raise_error(/player.*not found/)
+      end
     end
   end
 end

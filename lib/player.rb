@@ -205,6 +205,14 @@ All other attributes are unaffected.
       @results.inject(0.0) { |t, r| t += r.points }
     end
     
+    # Renumber the player according to the supplied hash. Return self.
+    def renumber!(map)
+      raise "player number #{@num} not found in renumbering hash" unless map[@num]
+      self.num = map[@num]
+      @results.each{ |r| r.renumber!(map) }
+      self
+    end
+    
     # Loose equality test. Passes if the names match and the federations are not different.
     def ==(other)
       return true if equal?(other)

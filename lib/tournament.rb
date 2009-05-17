@@ -52,7 +52,7 @@ Side effects of calling _validate!_ or _invalid_ include:
 
 If the _rerank_ option is set, as in this example:
 
-  tournament.validate!(:rerank => true)
+  t.validate!(:rerank => true)
 
 then there are additional side effects of validating a tournament:
 
@@ -60,6 +60,16 @@ then there are additional side effects of validating a tournament:
 * the players will be reranked if the existing ranking is inconsistent
 
 Ranking is consistent if either no players have any rank or if all players have a rank and no player is ranked higher than another player with more points.
+
+The players in a tournament can be renumbered by rank or name. After any renumbering the player numbers,
+which initially can be any collection of unique integers, will start at 1 and go up to the number of players.
+
+  t.renumber!(:name)       # renumber by name
+  t.renumber!(:rank)       # renumber by rank
+  t.renumber!              # same - rank is the default
+
+A side effect of renumbering by rank is that if the tournament started without any player ranking or
+with inconsitent ranking, it will be reranked (i.e. the method _rerank_ will be called on it).
 
 =end
 
@@ -245,6 +255,29 @@ Ranking is consistent if either no players have any rank or if all players have 
         v[0].rank = i + 1
       end
     end
+    
+    # Renumber the players according to a given criterion. Return self.
+    def renumber!(criterion = :rank)
+      map = Hash.new
+      
+      # Decide how to rank.
+      if criterion == :name
+        @player.values.sort_by{ |p| p.name }.each_with_index{ |p, i| map[p.num] = i + 1 }
+      else
+        begin check_ranks rescue rerank end
+        @player.values.each{ |p| map[p.num] = p.rank}
+      end
+      
+      # Apply ranking.
+      @teams.each{ |t| t.renumber!(map) }
+      @player = @player.values.inject({}) do |hash, player|
+        player.renumber!(map)
+        hash[player.num] = player
+        hash
+      end
+      
+      self
+    end
 
     # Is a tournament invalid? Either returns false (if it's valid) or an error message.
     def invalid(options={})
@@ -336,7 +369,7 @@ Ranking is consistent if either no players have any rank or if all players have 
     # * no two players have the same rank
     # * the highest rank is 1
     # * the lowest rank is equal to the total of players
-    def check_ranks(options)
+    def check_ranks(options={})
       ranks = Hash.new
       @player.values.each do |p|
         if p.rank

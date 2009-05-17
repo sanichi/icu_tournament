@@ -171,15 +171,15 @@ KRAUSE
 KRAUSE
           @p = Krause.new
           @t = @p.parse!(@krause)
-          @s = Krause.new
+          @q = Krause.new
         end
 
         it "should serialize back to the original if the input is fully canonicalised" do
-          @s.serialize(@t).should == @krause
+          @q.serialize(@t).should == @krause
         end
 
         it "should return nil on invalid input" do
-          @s.serialize('Rubbish').should be_nil
+          @q.serialize('Rubbish').should be_nil
         end
       end
 
@@ -200,6 +200,32 @@ KRAUSE
           @t.player(1).rank.should == 2
           @t.player(2).rank.should == 1
           @t.player(3).rank.should == 3
+        end
+      end
+      
+      context "renumbering" do
+        before(:all) do
+          @krause = <<KRAUSE
+012 Las Vegas National Open
+042 2008-06-07
+001   10 w    Ui Laighleis,Gearoidin            1985 IRL                         1.0         20 b 0    30 w 1
+001   20 m  m Orr,Mark                          2258 IRL                         2.0         10 w 1              30 b 1
+001   30 m  g Bologan,Viktor                    2663 MDA                         0.0                   10 b 0    20 w 0
+KRAUSE
+          @p = Krause.new
+          @t = @p.parse!(@krause)
+          @reordered = <<REORDERED
+012 Las Vegas National Open
+042 2008-06-07
+001    1 m  m Orr,Mark                          2258 IRL                         2.0    1     2 w 1               3 b 1
+001    2 w    Ui Laighleis,Gearoidin            1985 IRL                         1.0    2     1 b 0     3 w 1          
+001    3 m  g Bologan,Viktor                    2663 MDA                         0.0    3               2 b 0     1 w 0
+REORDERED
+        end
+      
+        it "should serialise correctly after renumbering by rank" do
+          @t.renumber!
+          @p.serialize(@t).should == @reordered
         end
       end
 
