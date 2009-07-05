@@ -236,7 +236,7 @@ A tournament can be serialized back to CSV format (the reverse of parsing) with 
         else
           result.colour = @r[2]
           opponent = Player.new(@r[4], @r[3], @tournament.players.size + 1, :rating => @r[5], :title => @r[6], :fed => @r[7])
-          raise "opponent must have a rating and federation" unless opponent.rating && opponent.fed
+          raise "opponent must have a federation" unless opponent.fed
           old_player = @tournament.find_player(opponent)
           if old_player
             raise "two players with the same name (#{opponent.name}) have conflicting details" unless old_player.eql?(opponent)
