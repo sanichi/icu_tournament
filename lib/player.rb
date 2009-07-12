@@ -31,8 +31,12 @@ letters long, will be upcased.
   peter.title                      # => 'GM'
   peter.fed                        # => 'RUS'
 
-Results (ICU::Result) should be added to players via the tournament (ICU::Tournament) object
-to which the player instance have been added. Their total score is available via the _points_ method.
+It is preferable to add results (ICU::Result) to a player via the tournament (ICU::Tournament) object's
+_add_result_ method rather than the method of the same name belonging to player instances. Doing so
+allows mirrored results to be added to both players with one method call (e.g. one player won, the
+other lost). A player's results can later be retieved via the _results_ accessor.
+
+Total scores is available via the _points_ method.
 
   peter.points                     # => 5.5
 
