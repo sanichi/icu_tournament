@@ -69,7 +69,8 @@ A tournament can be serialized back to Krause format (the reverse of parsing) wi
 
   krause = parser.serialize(tournament)
 
-The following lists Krause data identification numbers, their description and, where available, their corresponding attributes in an ICU::Tournament instance.
+The following lists Krause data identification numbers, their description and, where available, their corresponding
+attributes in an ICU::Tournament instance.
 
 [001 Player record]           Use _players_ to get all players or _player_ with a player number to get a single instance.
 [012 Name]                    Get or set with _name_. Free text. A tounament name is mandatory.

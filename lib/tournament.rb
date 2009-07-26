@@ -61,15 +61,16 @@ then there are additional side effects of validating a tournament:
 
 Ranking is consistent if either no players have any rank or if all players have a rank and no player is ranked higher than another player with more points.
 
-The players in a tournament can be renumbered by rank or name. After any renumbering the player numbers,
-which initially can be any collection of unique integers, will start at 1 and go up to the number of players.
+The players in a tournament, whose reference numbers can be any set of unique integers (including zero and negative numbers),
+can be renumbered in order of rank or name. After renumbering the new player numbers will start at 1 and go up to the number
+of players.
 
   t.renumber!(:name)       # renumber by name
   t.renumber!(:rank)       # renumber by rank
   t.renumber!              # same - rank is the default
 
-A side effect of renumbering by rank is that if the tournament started without any player ranking or
-with inconsitent ranking, it will be reranked (i.e. the method _rerank_ will be called on it).
+A side effect of renumbering by rank is that if the tournament started without any player rankings or
+with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will be called).
 
 =end
 
