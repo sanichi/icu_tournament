@@ -52,7 +52,7 @@ A player can be retrieved from the tournament via the _players_ array or by send
   daffy.id                          # => 7654321
   daffy.dob                         # => "1937-04-17"
 
-If the players ranking numbers are missing from the file or inconsistent (e.g. player A is ranked above player B
+If the ranking numbers are missing from the file or inconsistent (e.g. player A is ranked above player B
 but has less points than player B) they are recalculated as a side effect of the parse.
 
   daffy.rank                        # => 1
