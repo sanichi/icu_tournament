@@ -153,6 +153,17 @@ with inconsitent ranking, it will be reranked (i.e. the method _rerank_ will be 
       @round_dates[round-1]
     end
     
+    # Return the greatest round number according to the players results (which may not be the same as the set number of rounds).
+    def last_round
+      last_round = 0
+      @player.values.each do |p|
+        p.results.each do |r|
+          last_round = r.round if r.round > last_round
+        end
+      end
+      last_round
+    end
+
     # Set the tournament web site. Should be either unknown (_nil_) or a reasonably valid looking URL.
     def site=(site)
       @site = site.to_s.strip
@@ -319,11 +330,10 @@ with inconsitent ranking, it will be reranked (i.e. the method _rerank_ will be 
     # if the number of rounds has been set, it should agree with the largest round from the results.
     def check_rounds
       round = Hash.new
-      round_last = 0
+      round_last = last_round
       @player.values.each do |p|
         p.results.each do |r|
           round[r.round] = true
-          round_last = r.round if r.round > round_last
         end
       end
       (1..round_last).each { |r| raise "there are no results for round #{r}" unless round[r] }

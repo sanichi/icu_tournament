@@ -190,12 +190,13 @@ The following lists Krause data identification numbers, their description and, w
           team.members.each{ |m| krause << sprintf(' %4d', m) }
           krause << "\n"
         end
-        if t.round_dates.size > 0
+        rounds = t.last_round
+        if t.round_dates.size == rounds && rounds > 0
           krause << "132 #{' ' * 85}"
           t.round_dates.each{ |d| krause << d.sub(/^../, '  ') }
           krause << "\n"
         end
-        t.players.each{ |p| krause << p.to_krause(t.rounds) }
+        t.players.each{ |p| krause << p.to_krause(rounds) }
         krause
       end
 

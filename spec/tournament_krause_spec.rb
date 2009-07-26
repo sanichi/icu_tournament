@@ -62,6 +62,7 @@ KRAUSE
         
         it "should have a number of rounds, a type and a time control" do
           @t.rounds.should       == 3
+          @t.last_round.should   == 3
           @t.type.should         == 'All-Play-All'
           @t.time_control.should == '60 in 2hr, 30 in 1hr, rest in 1hr'
         end
@@ -226,6 +227,31 @@ REORDERED
         it "should serialise correctly after renumbering by rank" do
           @t.renumber!
           @p.serialize(@t).should == @reordered
+        end
+      end
+
+      context "serialisation of a manually build tournament" do
+        before(:all) do
+          @krause = <<KRAUSE
+012 Las Vegas National Open
+042 2008-06-07
+001    1 w    Ui Laighleis,Gearoidin            1985 IRL     2501171 1964-06-10  1.0          2 b 0     3 w 1          
+001    2    m Orr,Mark                          2258 IRL     2500035 1955-11-09  2.0          1 w 1               3 b 1
+001    3    g Bologan,Viktor                    2663 MDA    13900048 1971-01-01  0.0                    1 b 0     2 w 0
+KRAUSE
+          @p = Krause.new
+          @t = Tournament.new('Las Vegas National Open', '2008-06-07')
+          @t.add_player(Player.new('Gearoidin', 'Ui Laighleis', 1, :rating => 1985, :id => 2501171,  :dob => '1964-06-10', :fed => 'IRL', :gender => 'f'))
+          @t.add_player(Player.new('Mark',      'Orr',          2, :rating => 2258, :id => 2500035,  :dob => '1955-11-09', :fed => 'IRL', :title => 'm'))
+          @t.add_player(Player.new('Viktor',    'Bologan',      3, :rating => 2663, :id => 13900048, :dob => '1971-01-01', :fed => 'MDA', :title => 'g'))
+          @t.add_result(ICU::Result.new(1, 1, 'L', :opponent => 2, :colour => 'B'))
+          @t.add_result(ICU::Result.new(2, 1, 'W', :opponent => 3, :colour => 'W'))
+          @t.add_result(ICU::Result.new(3, 2, 'W', :opponent => 3, :colour => 'B'))
+          @output = @p.serialize(@t)
+        end
+
+        it "should serialise manually build tournaments" do
+          @output.should == @krause
         end
       end
 

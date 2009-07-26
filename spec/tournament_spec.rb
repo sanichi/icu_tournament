@@ -147,6 +147,25 @@ module ICU
       end
     end
 
+    context "last_round" do
+      before(:each) do
+        @t = Tournament.new('Edinburgh Masters', '2009-11-09')
+        @t.add_player(@mark = Player.new('Mark', 'Orr', 1))
+        @t.add_player(@gary = Player.new('Gary', 'Kasparov', 2))
+        @t.add_player(@boby = Player.new('Bobby', 'Fischer', 3))
+      end
+
+      it "depends on the players results" do
+        @t.last_round.should == 0
+        @t.add_result(Result.new(1, 1, 'W', :opponent => 2))
+        @t.last_round.should == 1
+        @t.add_result(Result.new(2, 2, 'D', :opponent => 3))
+        @t.last_round.should == 2
+        @t.add_result(Result.new(5, 3, 'L', :opponent => 1))
+        @t.last_round.should == 5
+      end
+    end
+
     context "round date" do
       before(:each) do
         @t = Tournament.new('Edinburgh Masters', '2009-11-09')
