@@ -52,8 +52,16 @@ A player can be retrieved from the tournament via the _players_ array or by send
   daffy.id                          # => 7654321
   daffy.dob                         # => "1937-04-17"
 
+If the players ranking numbers are missing from the file or inconsistent (e.g. a player A is ranked above player B but has less points)
+they are set as a side effect of the parse.
+
+  daffy.rank                        # => 1
+  minnie.rank                       # => 2
+  mickey.rank                       # => 3
+
 Comments in the input file (lines that do not start with a valid data identification number) are available from the parser
-instance via its _comments_ method. Note that these comments are reset evry time the instance is used to parse another file.
+instance via its _comments_ method (returning a string). Note that these comments are reset evry time the instance is used
+to parse another file.
 
   parser.comments                   # => "0123456789..."
 
