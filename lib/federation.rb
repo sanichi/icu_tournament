@@ -33,14 +33,35 @@ of exactly one federation name, then that federation is returned.
 
   ICU::Federation.find('ongoli').name                # => "Mongolia"
 
-In all other cases, nil is returned. In the following example, the string more than one federation.
+In all other cases, nil is returned. In the following example, the string matches more than one federation.
 
   ICU::Federation.find('land')                       # => nil
 
 The method is not fooled by irrelevant white space.
 
   ICU::Federation.find('  united   states   ').code  # => 'USA'
+
+The class method _menu_ will return an array of two-element arrays each of which contain a name
+and a code.
+
+  ICU::Federation.menu                               # => [['Afghanistan', 'AFG'], ['Albania', 'ALB], ...]
+
+Such an array could be used, for example, as the basis of a selection menu in a web application.
+Various options are available to alter the array returned. Use the _:order_ option to order by code
+instead of the default (by country name).
+
+  ICU::Federation.menu(:order => 'code')             # => [..., ['Ireland', 'IRL'], ['Iraq', 'IRQ], ...]
+
+To put one country at the top (followed by the rest, in order) supply the country's code with the _:top_ option:
   
+  ICU::Federation.menu(:top => 'IRL')                # => [['Ireland', 'IRL'], ['Afghanistan', 'AFG], ...]
+
+To supply an extra "None" item at the top, specify its label with the _:none_ option:
+  
+  ICU::Federation.menu(:none => 'None')              # => [['None', ''], ['Afghanistan', 'AFG], ...]
+
+The "None" option's code is the empty string and it come above the "top" option if both are specified.
+
 =end
 
   class Federation
@@ -64,6 +85,16 @@ The method is not fooled by irrelevant white space.
       matches.uniq!
       return nil unless matches.length == 1
       matches[0]
+    end
+    
+    def self.menu(opts = {})
+      compile unless @@objects;
+      top, menu = nil, []
+      @@objects.each {|o| opts[:top] == o.code ? top = [o.name, o.code] : menu.push([o.name, o.code]) }
+      opts[:order] == 'code' ? menu.sort!{|a,b| a.last <=> b.last} : menu.sort!{|a,b| a.first <=> b.first}
+      menu.unshift(top) if top
+      menu.unshift([opts[:none], '']) if opts[:none]
+      menu
     end
     
     def initialize(code, name) # :nodoc: because new is private

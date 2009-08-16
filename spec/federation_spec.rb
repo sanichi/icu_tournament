@@ -101,16 +101,75 @@ module ICU
     
     context "documentation examples" do
       it "should all be correct for valid input" do
-        ICU::Federation.find('IRL').name.should == 'Ireland'
-        ICU::Federation.find('IRL').code.should == 'IRL'
-        ICU::Federation.find('rUs').code.should == 'RUS'
-        ICU::Federation.find('ongoli').name.should == 'Mongolia'
-        ICU::Federation.find('  united   states   ').code.should == 'USA'
+        Federation.find('IRL').name.should == 'Ireland'
+        Federation.find('IRL').code.should == 'IRL'
+        Federation.find('rUs').code.should == 'RUS'
+        Federation.find('ongoli').name.should == 'Mongolia'
+        Federation.find('  united   states   ').code.should == 'USA'
       end
       
       it "should return nil for invalid input" do
-        ICU::Federation.find('ZYX').should be_nil
-        ICU::Federation.find('land').should be_nil
+        Federation.find('ZYX').should be_nil
+        Federation.find('land').should be_nil
+      end
+    end
+    
+    context "#menu" do
+      before(:all) do
+        @total = 173
+      end
+      
+      it "should return array of name-code pairs in order of name by default" do
+        menu = Federation.menu
+        menu.should have(@total).items
+        names = menu.map{|m| m.first}.join(',')
+        codes = menu.map{|m| m.last}.join(',')
+        names.index('Afghanistan').should == 0
+        names.index('Iraq,Ireland,Israel').should_not be_nil
+        codes.index('AFG').should == 0
+        codes.index('IRQ,IRL,ISR').should_not be_nil
+      end
+      
+      it "should be configuarble to order the list by codes" do
+        menu = Federation.menu(:order => "code")
+        menu.should have(@total).items
+        names = menu.map{|m| m.first}.join(',')
+        codes = menu.map{|m| m.last}.join(',')
+        names.index('Afghanistan').should == 0
+        names.index('Ireland,Iraq,Iceland').should_not be_nil
+        codes.index('AFG').should == 0
+        codes.index('IRL,IRQ,ISL').should_not be_nil
+      end
+      
+      it "should be configuarble to have a selected country at the top" do
+        menu = Federation.menu(:top => 'IRL')
+        menu.should have(@total).items
+        names = menu.map{|m| m.first}.join(',')
+        codes = menu.map{|m| m.last}.join(',')
+        names.index('Ireland,Afghanistan').should == 0
+        names.index('Iraq,Israel').should_not be_nil
+        codes.index('IRL,AFG').should == 0
+        codes.index('IRQ,ISR').should_not be_nil
+      end
+      
+      it "should be configuarble to have 'None' entry at the top" do
+        menu = Federation.menu(:none => 'None')
+        menu.should have(@total + 1).items
+        names = menu.map{|m| m.first}.join(',')
+        codes = menu.map{|m| m.last}.join(',')
+        names.index('None,Afghanistan').should == 0
+        codes.index(',AFG').should == 0
+      end
+      
+      it "should be able to handle multiple configuarations" do
+        menu = Federation.menu(:top => 'IRL', :order => 'code', :none => 'None')
+        menu.should have(@total + 1).items
+        names = menu.map{|m| m.first}.join(',')
+        codes = menu.map{|m| m.last}.join(',')
+        names.index('None,Ireland,Afghanistan').should == 0
+        names.index('Iraq,Iceland').should_not be_nil
+        codes.index(',IRL,AFG').should == 0
+        codes.index('IRQ,ISL').should_not be_nil
       end
     end
   end
