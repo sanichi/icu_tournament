@@ -198,7 +198,7 @@ with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will be
     def time_control=(time_control)
       @time_control = time_control.to_s.strip
       @time_control = nil if @time_control == ''
-      raise "invalid tournament time control (#{time_control})" unless @time_control.nil? || @time_control.match(/[1-9]\d/)
+      raise "invalid tournament time control (#{time_control})" unless @time_control.nil? || @time_control.match(/[1-9]/)
     end
     
     # Add a new team. The argument is either a team (possibly already with members) or the name of a new team.
