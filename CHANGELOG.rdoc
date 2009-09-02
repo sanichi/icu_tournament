@@ -1,3 +1,9 @@
+== 0.5.0 2009-09-02
+* Moved library files to conform with gem best practices (http://weblog.rubyonrails.org/2009/9/1/gem-packaging-best-practices).
+
+== 0.4.3 2009-05-17
+* Allowed players to be renumbered by rank or name.
+
 == 0.3.1 2009-05-04
 * Can now read and write Krause files and deals properly with federations.
 
