@@ -1,4 +1,5 @@
-* 0.2.0 2009-04-11
-* Early version that just reads and writes foreign CSV files and has some basic name and date utilities.
-* 0.3.1 2009-05-04
+== 0.3.1 2009-05-04
 * Can now read and write Krause files and deals properly with federations.
+
+== 0.2.0 2009-04-11
+* Early version that just reads and writes foreign CSV files and has some basic name and date utilities.
