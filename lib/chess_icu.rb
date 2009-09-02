@@ -6,4 +6,4 @@ chess_icu_files.concat %w{player result team tournament}
 chess_icu_files.concat %w{fcsv krause}.map{ |f| "tournament_#{f}"}
 
 dir = File.dirname(__FILE__)
-chess_icu_files.each { |file| require "#{dir}/#{file}" }
+chess_icu_files.each { |file| require "#{dir}/chess_icu/#{file}" }
