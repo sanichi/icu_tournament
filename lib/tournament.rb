@@ -61,6 +61,19 @@ then there are additional side effects of validating a tournament:
 
 Ranking is consistent if either no players have any rank or if all players have a rank and no player is ranked higher than another player with more points.
 
+The default tie break method used to rank players on the same score is alphabetical (by last name then first name).
+Other methods can be specified via the _rerank_ option and include:
+
+* _sum_of_scores_: sum of opponents' scores
+
+Note that _validate_ and _invalid_ only rerank a tournament with absent or inconsistent ranking. To force
+a reranking of a tournament which is already ranked, use the _rerank_ method. This method takes one
+argument, the tie break method. For example:
+
+  t.rerank(:sum_of_scores)   # rerank using sum of scores as tie break
+  t.rerank(:name)            # rerank using player names as tie break
+  t.rerank                   # rerank using player names (it's the default)
+
 The players in a tournament, whose reference numbers can be any set of unique integers (including zero and negative numbers),
 can be renumbered in order of rank or name. After renumbering the new player numbers will start at 1 and go up to the number
 of players.
@@ -256,37 +269,43 @@ with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will be
       end
     end
         
-    # Rerank the tournament by score, resolving ties using some tie break method.
+    # Rerank the tournament by score primarility and if necessary using a configurable tie breaker method.
     def rerank(tie_break_method = :name)
-      tie_break_order = tie_break_method == :name ? -1 : 1
-      points, tie_breakers = points_and_tie_breakers(tie_break_method)
-      sortable = @player.values.map { |p| [p, points[p.num], tie_breakers[p.num]] }
+      points, tie_breaker_scores, tie_break_order = rerank_data(tie_break_method)
+      sortable = @player.values.map { |p| [p, points[p.num], tie_breaker_scores[p.num]] }
       sortable.sort do |a,b|
-        d = b[1] <=> a[1]
-        d == 0 ? (b[2] <=> a[2]) * tie_break_order : d
-      end.each_with_index do |v,i|
-        v[0].rank = i + 1
+        diff = b[1] <=> a[1]
+        diff == 0 ? (b[2] <=> a[2]) * tie_break_order : diff
+      end.each_with_index do |s,i|
+        s[0].rank = i + 1
       end
     end
 
-    # Return hashes of total points and tie break scores of all players in the tournament.
-    def points_and_tie_breakers(tie_break_method)
+    # Return a hash of total points, a hash of tie break scores and a tie break
+    # order (+1 for ascending, -1 for descending) depending on the tie break method.
+    def rerank_data(tie_break_method)
       points = Hash.new
       @player.values.each do |p|
         points[p.num] = p.points
       end
-      tie_breakers = Hash.new
+      tie_break_scores = Hash.new
+      tie_break_method = tie_break_method.to_sym if tie_break_method.class == String
       @player.values.each do |p|
-        if tie_break_method == :name
-          tie_breakers[p.num] = p.name
+        if tie_break_method == :name || tie_break_method == true
+          tie_break_scores[p.num] = p.name
         else
-          tie_breakers[p.num] = 0.0
-          p.results.each do |r|
-            tie_breakers[p.num]+= points[r.opponent] if r.opponent
+          tie_break_scores[p.num] = 0.0
+          if (tie_break_method == :sum_of_scores)
+            p.results.each do |r|
+              tie_break_scores[p.num]+= points[r.opponent] if r.opponent
+            end
+          else
+            raise "invalid tie break method '#{tie_break_method}'"
           end
         end
       end
-      [points, tie_breakers]
+      tie_break_order = tie_break_method == :name ? -1 : 1
+      [points, tie_break_scores, tie_break_order]
     end
 
     # Renumber the players according to a given criterion. Return self.
@@ -325,7 +344,7 @@ with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will be
     # Raise an exception if a tournament is not valid.
     # Covers all the ways a tournament can be invalid not already enforced by the setters.
     def validate!(options={})
-      begin check_ranks rescue rerank end if options[:rerank]
+      begin check_ranks rescue rerank(options[:rerank]) end if options[:rerank]
       check_players
       check_rounds
       check_dates

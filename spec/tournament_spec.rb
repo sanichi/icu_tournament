@@ -470,51 +470,69 @@ module ICU
         @t.players.map{ |p| p.last_name }.join('|').should == 'Fischer|Kasparov|Orr'
       end
     end
-  end
 
-  context "reranking" do
-    before(:each) do
-      @t = Tournament.new('Edinburgh Masters', '2009-11-09')
-      @t.add_player(@boby = Player.new('Bobby', 'Fischer', 1))
-      @t.add_player(@gary = Player.new('Gary', 'Kasparov', 2))
-      @t.add_player(@boby = Player.new('Micky', 'Mouse', 3))
-      @t.add_player(@boby = Player.new('Minnie', 'Mouse', 4))
-      @t.add_player(@boby = Player.new('Gearoidn', 'Ui Laighleis', 5))
-      @t.add_player(@mark = Player.new('Mark', 'Orr', 6))
-      @t.add_result(Result.new(1, 1, 'W', :opponent => 6))
-      @t.add_result(Result.new(2, 1, 'W', :opponent => 3))
-      @t.add_result(Result.new(3, 1, 'W', :opponent => 5))
-      @t.add_result(Result.new(1, 2, 'W', :opponent => 5))
-      @t.add_result(Result.new(2, 2, 'W', :opponent => 4))
-      @t.add_result(Result.new(3, 2, 'W', :opponent => 3))
-      @t.add_result(Result.new(1, 3, 'W', :opponent => 4))
-      @t.add_result(Result.new(3, 4, 'W', :opponent => 6))
-      @t.add_result(Result.new(2, 5, 'W', :opponent => 6))
-    end
+    context "reranking" do
+      before(:each) do
+        @t = Tournament.new('Edinburgh Masters', '2009-11-09')
+        @t.add_player(@boby = Player.new('Bobby', 'Fischer', 1))
+        @t.add_player(@gary = Player.new('Gary', 'Kasparov', 2))
+        @t.add_player(@boby = Player.new('Micky', 'Mouse', 3))
+        @t.add_player(@boby = Player.new('Minnie', 'Mouse', 4))
+        @t.add_player(@boby = Player.new('Gearoidn', 'Ui Laighleis', 5))
+        @t.add_player(@mark = Player.new('Mark', 'Orr', 6))
+        @t.add_result(Result.new(1, 1, 'W', :opponent => 6))
+        @t.add_result(Result.new(2, 1, 'W', :opponent => 3))
+        @t.add_result(Result.new(3, 1, 'W', :opponent => 5))
+        @t.add_result(Result.new(1, 2, 'W', :opponent => 5))
+        @t.add_result(Result.new(2, 2, 'W', :opponent => 4))
+        @t.add_result(Result.new(3, 2, 'W', :opponent => 3))
+        @t.add_result(Result.new(1, 3, 'W', :opponent => 4))
+        @t.add_result(Result.new(3, 4, 'W', :opponent => 6))
+        @t.add_result(Result.new(2, 5, 'W', :opponent => 6))
+      end
 
-    it "should initially be valid but unranked" do
-      @t.invalid.should be_false
-      @t.player(2).rank.should be_nil
-    end
+      it "should initially be valid but unranked" do
+        @t.invalid.should be_false
+        @t.player(1).rank.should be_nil
+      end
 
-    it "should use names for tie breaking by default" do
-      @t.rerank
-      @t.player(1).rank.should == 1  # 3/"Fischer"
-      @t.player(2).rank.should == 2  # 3/"Kasparov"
-      @t.player(3).rank.should == 3  # 1/"Mouse,Mickey"
-      @t.player(4).rank.should == 4  # 1/"Mouse,Minnie"
-      @t.player(5).rank.should == 5  # 1/"Ui"
-      @t.player(6).rank.should == 6  # 0
-    end
-
-    it "should be rankable by sum-of-opponents score" do
-      @t.rerank(:sum_of_scores)
-      @t.player(2).rank.should == 1  # 3/3
-      @t.player(1).rank.should == 2  # 3/2
-      @t.player(3).rank.should == 3  # 1/7
-      @t.player(5).rank.should == 4  # 1/6
-      @t.player(4).rank.should == 5  # 1/4
-      @t.player(6).rank.should == 6  # 0/5
+      it "should use names for tie breaking by default" do
+        @t.rerank
+        @t.player(1).rank.should == 1  # 3/"Fischer"
+        @t.player(2).rank.should == 2  # 3/"Kasparov"
+        @t.player(3).rank.should == 3  # 1/"Mouse,Mickey"
+        @t.player(4).rank.should == 4  # 1/"Mouse,Minnie"
+        @t.player(5).rank.should == 5  # 1/"Ui"
+        @t.player(6).rank.should == 6  # 0
+      end
+    
+      it "should be configurable to use sum-of-opponents score" do
+        @t.rerank('sum_of_scores')
+        @t.player(2).rank.should == 1  # 3/3
+        @t.player(1).rank.should == 2  # 3/2
+        @t.player(3).rank.should == 3  # 1/7
+        @t.player(5).rank.should == 4  # 1/6
+        @t.player(4).rank.should == 5  # 1/4
+        @t.player(6).rank.should == 6  # 0/5
+      end
+      
+      it "should throw exception on invalid tie break method" do
+        lambda { @t.rerank(:no_such_tie_break_method) }.should raise_error(/invalid.*method/)
+      end
+    
+      it "should throw exception on invalid tie break method via validation" do
+        lambda { @t.validate!(:rerank => :stupid_tie_break_method) }.should raise_error(/invalid.*method/)
+      end
+    
+      it "should be possible as a side effect of validation" do
+        @t.invalid(:rerank => :sum_of_scores).should be_false
+        @t.player(2).rank.should == 1  # 3/3
+        @t.player(1).rank.should == 2  # 3/2
+        @t.player(3).rank.should == 3  # 1/7
+        @t.player(5).rank.should == 4  # 1/6
+        @t.player(4).rank.should == 5  # 1/4
+        @t.player(6).rank.should == 6  # 0/5
+      end
     end
   end
 end
