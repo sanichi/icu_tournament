@@ -454,18 +454,21 @@ module ICU
       end
 
       it "should be renumberable by rank" do
-        @t.renumber!.invalid.should be_false
+        @t.renumber
+        @t.invalid.should be_false
         @t.players.map{ |p| p.num }.join('|').should == '1|2|3'
         @t.players.map{ |p| p.first_name }.join('|').should == 'Mark|Gary|Bobby'
       end
       
       it "should be ranked after renumbering by rank" do
-        @t.renumber!.invalid.should be_false
+        @t.renumber
+        @t.invalid.should be_false
         @t.players.map{ |p| p.rank }.join('|').should == '1|2|3'
       end
       
       it "should be renumberable by name" do
-        @t.renumber!(:name).invalid.should be_false
+        @t.renumber(:name)
+        @t.invalid.should be_false
         @t.players.map{ |p| p.num }.join('|').should == '1|2|3'
         @t.players.map{ |p| p.last_name }.join('|').should == 'Fischer|Kasparov|Orr'
       end

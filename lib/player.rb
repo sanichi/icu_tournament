@@ -210,10 +210,10 @@ All other attributes are unaffected.
     end
     
     # Renumber the player according to the supplied hash. Return self.
-    def renumber!(map)
+    def renumber(map)
       raise "player number #{@num} not found in renumbering hash" unless map[@num]
       self.num = map[@num]
-      @results.each{ |r| r.renumber!(map) }
+      @results.each{ |r| r.renumber(map) }
       self
     end
     

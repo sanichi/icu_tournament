@@ -171,7 +171,7 @@ The _points_ read-only accessor always returns a floating point number: either 0
     end
     
     # Renumber the player and opponent (if there is one) according to the supplied hash. Return self.
-    def renumber!(map)
+    def renumber(map)
       raise "result player number #{@player} not found in renumbering hash" unless map[@player]
       self.player = map[@player]
       if @opponent
