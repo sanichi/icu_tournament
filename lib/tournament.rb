@@ -256,18 +256,39 @@ with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will be
       end
     end
         
-    # Rerank the tournament by score, resolving ties using name.
-    def rerank
-      @player.values.map{ |p| [p, p.points] }.sort do |a,b|
+    # Rerank the tournament by score, resolving ties using some tie break method.
+    def rerank(tie_break_method = :name)
+      tie_break_order = tie_break_method == :name ? -1 : 1
+      points, tie_breakers = points_and_tie_breakers(tie_break_method)
+      sortable = @player.values.map { |p| [p, points[p.num], tie_breakers[p.num]] }
+      sortable.sort do |a,b|
         d = b[1] <=> a[1]
-        d = a[0].last_name <=> b[0].last_name if d == 0
-        d = a[0].first_name <=> b[0].first_name if d == 0
-        d
+        d == 0 ? (b[2] <=> a[2]) * tie_break_order : d
       end.each_with_index do |v,i|
         v[0].rank = i + 1
       end
     end
-    
+
+    # Return hashes of total points and tie break scores of all players in the tournament.
+    def points_and_tie_breakers(tie_break_method)
+      points = Hash.new
+      @player.values.each do |p|
+        points[p.num] = p.points
+      end
+      tie_breakers = Hash.new
+      @player.values.each do |p|
+        if tie_break_method == :name
+          tie_breakers[p.num] = p.name
+        else
+          tie_breakers[p.num] = 0.0
+          p.results.each do |r|
+            tie_breakers[p.num]+= points[r.opponent] if r.opponent
+          end
+        end
+      end
+      [points, tie_breakers]
+    end
+
     # Renumber the players according to a given criterion. Return self.
     def renumber!(criterion = :rank)
       map = Hash.new
