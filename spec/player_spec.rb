@@ -245,13 +245,13 @@ module ICU
       
       it "should renumber successfully if the map has the relevant player numbers" do
         map = { 10 => 1, 20 => 2, 30 => 3 }
-        @p.renumber!(map).num.should == 1
+        @p.renumber(map).num.should == 1
         @p.results.map{ |r| r.opponent }.sort.join('').should == '23'
       end
       
       it "should raise exception if a player number is not in the map" do
-        lambda { @p.renumber!({ 100 => 1, 20 => 2, 30 => 3 }) }.should raise_error(/player.*10.*not found/)
-        lambda { @p.renumber!({ 10 => 1, 200 => 2, 30 => 3 }) }.should raise_error(/opponent.*20.*not found/)
+        lambda { @p.renumber({ 100 => 1, 20 => 2, 30 => 3 }) }.should raise_error(/player.*10.*not found/)
+        lambda { @p.renumber({ 10 => 1, 200 => 2, 30 => 3 }) }.should raise_error(/opponent.*20.*not found/)
       end
     end
     

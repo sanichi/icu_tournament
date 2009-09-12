@@ -56,18 +56,33 @@ If the _rerank_ option is set, as in this example:
 
 then there are additional side effects of validating a tournament:
 
-* the players will be ranked if no players have any rank
+* the players will be ranked if there is no existing ranking
 * the players will be reranked if the existing ranking is inconsistent
 
 Ranking is consistent if either no players have any rank or if all players have a rank and no player is ranked higher than another player with more points.
 
-The players in a tournament, whose reference numbers can be any set of unique integers (including zero and negative numbers),
-can be renumbered in order of rank or name. After renumbering the new player numbers will start at 1 and go up to the number
-of players.
+The default tie break method used to rank players on the same score is alphabetical (by last name then first name).
+Other methods can be specified via the _rerank_ option. Instead of setting the option to _true_, alternatives are
+the following (both symbols or strings will work):
 
-  t.renumber!(:name)       # renumber by name
-  t.renumber!(:rank)       # renumber by rank
-  t.renumber!              # same - rank is the default
+* _sum_of_scores_: sum of opponents' scores
+* _name_: this is the default and the same as setting the option to true
+
+Since _validate_ and _invalid_ only rerank a tournament with absent or inconsistent ranking, to force
+a particular kind of ranking of a tournament which is already ranked, use the _rerank_ method. This method
+takes one argument, the tie break method and it works the same as the _rerank_ option to _validate_. For example:
+
+  t.rerank(:sum_of_scores)   # rerank using sum of scores as tie break
+  t.rerank(:name)            # rerank using player names as tie break
+  t.rerank                   # same as _name_, which is the default
+
+The players in a tournament, whose reference numbers can be any set of unique integers (including zero and
+negative numbers), can be renumbered in order of rank or name. After renumbering the new player numbers will
+start at 1 and go up to the number of players.
+
+  t.renumber(:name)       # renumber by name
+  t.renumber(:rank)       # renumber by rank
+  t.renumber              # same - rank is the default
 
 A side effect of renumbering by rank is that if the tournament started without any player rankings or
 with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will be called).
@@ -256,20 +271,20 @@ with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will be
       end
     end
         
-    # Rerank the tournament by score, resolving ties using name.
-    def rerank
-      @player.values.map{ |p| [p, p.points] }.sort do |a,b|
-        d = b[1] <=> a[1]
-        d = a[0].last_name <=> b[0].last_name if d == 0
-        d = a[0].first_name <=> b[0].first_name if d == 0
-        d
-      end.each_with_index do |v,i|
-        v[0].rank = i + 1
+    # Rerank the tournament by score first and if necessary using a configurable tie breaker method.
+    def rerank(tie_break_method = :name)
+      points, tie_break_scores, tie_break_order = rerank_data(tie_break_method)
+      sortable = @player.values.map { |p| [p, points[p.num], tie_break_scores[p.num]] }
+      sortable.sort do |a,b|
+        diff = b[1] <=> a[1]
+        diff == 0 ? (b[2] <=> a[2]) * tie_break_order : diff
+      end.each_with_index do |s,i|
+        s[0].rank = i + 1
       end
     end
-    
-    # Renumber the players according to a given criterion. Return self.
-    def renumber!(criterion = :rank)
+
+    # Renumber the players according to a given criterion.
+    def renumber(criterion = :rank)
       map = Hash.new
       
       # Decide how to rank.
@@ -281,14 +296,12 @@ with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will be
       end
       
       # Apply ranking.
-      @teams.each{ |t| t.renumber!(map) }
+      @teams.each{ |t| t.renumber(map) }
       @player = @player.values.inject({}) do |hash, player|
-        player.renumber!(map)
+        player.renumber(map)
         hash[player.num] = player
         hash
       end
-      
-      self
     end
 
     # Is a tournament invalid? Either returns false (if it's valid) or an error message.
@@ -304,7 +317,7 @@ with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will be
     # Raise an exception if a tournament is not valid.
     # Covers all the ways a tournament can be invalid not already enforced by the setters.
     def validate!(options={})
-      begin check_ranks rescue rerank end if options[:rerank]
+      begin check_ranks rescue rerank(options[:rerank]) end if options[:rerank]
       check_players
       check_rounds
       check_dates
@@ -400,6 +413,33 @@ with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will be
           raise "player #{p1.num} with #{p1.points} points is ranked above player #{p2.num} with #{p2.points} points" if p1.points < p2.points
         end
       end
+    end
+    
+    # Return a hash of total points, a hash of tie break scores and a tie break
+    # order (+1 for ascending, -1 for descending) depending on the tie break method.
+    def rerank_data(tie_break_method)
+      points = Hash.new
+      @player.values.each do |p|
+        points[p.num] = p.points
+      end
+      tie_break_scores = Hash.new
+      tie_break_method = tie_break_method.to_sym if tie_break_method.class == String
+      @player.values.each do |p|
+        if tie_break_method == :name || tie_break_method == true
+          tie_break_scores[p.num] = p.name
+        else
+          tie_break_scores[p.num] = 0.0
+          if (tie_break_method == :sum_of_scores)
+            p.results.each do |r|
+              tie_break_scores[p.num]+= points[r.opponent] if r.opponent
+            end
+          else
+            raise "invalid tie break method '#{tie_break_method}'"
+          end
+        end
+      end
+      tie_break_order = tie_break_method == :name ? -1 : 1
+      [points, tie_break_scores, tie_break_order]
     end
   end
 end

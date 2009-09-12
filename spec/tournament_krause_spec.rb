@@ -225,7 +225,7 @@ REORDERED
         end
       
         it "should serialise correctly after renumbering by rank" do
-          @t.renumber!
+          @t.renumber
           @p.serialize(@t).should == @reordered
         end
       end
