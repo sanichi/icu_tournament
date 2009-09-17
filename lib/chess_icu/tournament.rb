@@ -65,14 +65,16 @@ The default tie break method used to rank players on the same score is alphabeti
 Other methods can be specified via the _rerank_ option. Instead of setting the option to _true_, alternatives are
 the following (both symbols or strings will work):
 
-* _sum_of_scores_: sum of opponents' scores
+* _neustadtl_ (or _sonneborn_berger_): sum of scores of players defeated plus half sum of scores of players drawn against
+* _buchholz_ (or _sum_of_opponents_scores_): sum of opponents' scores
 * _name_: this is the default and the same as setting the option to true
 
 Since _validate_ and _invalid_ only rerank a tournament with absent or inconsistent ranking, to force
 a particular kind of ranking of a tournament which is already ranked, use the _rerank_ method. This method
 takes one argument, the tie break method and it works the same as the _rerank_ option to _validate_. For example:
 
-  t.rerank(:sum_of_scores)   # rerank using sum of scores as tie break
+  t.rerank(:neustadtl)       # rerank using Sonneborn-Berger as tie break
+  t.rerank(:buchholz)        # rerank using sum of opponents scores as tie break
   t.rerank(:name)            # rerank using player names as tie break
   t.rerank                   # same as _name_, which is the default
 
@@ -273,13 +275,15 @@ with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will be
         
     # Rerank the tournament by score first and if necessary using a configurable tie breaker method.
     def rerank(tie_break_method = :name)
-      points, tie_break_scores, tie_break_order = rerank_data(tie_break_method)
-      sortable = @player.values.map { |p| [p, points[p.num], tie_break_scores[p.num]] }
-      sortable.sort do |a,b|
-        diff = b[1] <=> a[1]
-        diff == 0 ? (b[2] <=> a[2]) * tie_break_order : diff
-      end.each_with_index do |s,i|
-        s[0].rank = i + 1
+      tie_break_methods, tie_break_order, tie_break_hash = tie_break_data(tie_break_method)
+      @player.values.sort do |a,b|
+        cmp = 0
+        tie_break_methods.each do |m|
+          cmp = (tie_break_hash[m][a.num] <=> tie_break_hash[m][b.num]) * tie_break_order[m] if cmp == 0
+        end
+        cmp
+      end.each_with_index do |p,i|
+        p.rank = i + 1
       end
     end
 
@@ -415,31 +419,69 @@ with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will be
       end
     end
     
-    # Return a hash of total points, a hash of tie break scores and a tie break
-    # order (+1 for ascending, -1 for descending) depending on the tie break method.
-    def rerank_data(tie_break_method)
-      points = Hash.new
-      @player.values.each do |p|
-        points[p.num] = p.points
+    # Return an array of tie break methods and an array of tie break orders (+1 for asc, -1 for desc).
+    # The first and most important method is always "score", the last and least important is always "name".
+    def tie_break_data(tie_break_method)
+      # Canonicalise the tie break method name.
+      tie_break_method = tie_break_method.to_s if tie_break_method.class == Symbol
+      tie_break_method = tie_break_method.downcase.gsub('-', '_') if tie_break_method.class == String
+      tie_break_method = case tie_break_method
+        when true                      then "name"
+        when "sonneborn_berger"        then "neustadtl"
+        when "sum_of_opponents_scores" then "buchholz"
+        else tie_break_method
       end
-      tie_break_scores = Hash.new
-      tie_break_method = tie_break_method.to_sym if tie_break_method.class == String
-      @player.values.each do |p|
-        if tie_break_method == :name || tie_break_method == true
-          tie_break_scores[p.num] = p.name
-        else
-          tie_break_scores[p.num] = 0.0
-          if (tie_break_method == :sum_of_scores)
-            p.results.each do |r|
-              tie_break_scores[p.num]+= points[r.opponent] if r.opponent
-            end
-          else
-            raise "invalid tie break method '#{tie_break_method}'"
+      
+      # Check it's validity.
+      raise "invalid tie break method '#{tie_break_method}'" unless tie_break_method.match(/^(buchholz|name|neustadtl)$/)
+      
+      # Construct the arrays and hashes to be returned.
+      methods, order, data = Array.new, Hash.new, Hash.new
+      
+      # Score is always the most important.
+      methods << "score"
+      order["score"] = -1
+      
+      # Add the configured method.
+      unless tie_break_method == "name"
+        methods << tie_break_method
+        order[tie_break_method] = -1
+      end
+      
+      # Name is always the least.
+      methods << "name"
+      order["name"] = +1
+      
+      # Pre calculate the total scores.
+      data["score"] = Hash.new
+      @player.values.each { |p| data["score"][p.num] = tie_break_score(data, "score", p) }
+      
+      # Now calculate all the other scores.
+      methods.each do |m|
+        next if m == "score"
+        data[m] = Hash.new
+        @player.values.each { |p| data[m][p.num] = tie_break_score(data, m, p) }
+      end
+      
+      # Finally, return what we calculated.
+      [methods, order, data]
+    end
+    
+    # Return a tie break score for a given player and a given tie break method.
+    def tie_break_score(hash, method, player)
+      case method
+        when "score"     then player.points
+        when "buchholz"  then player.results.inject(0.0){ |t,r| t + hash["score"][r.opponent] }
+        when "neustadtl" then player.results.inject(0.0) do |t,r|
+          factor = case r.score
+            when 'W' then 1.0
+            when 'L' then 0.0
+            else 0.5
           end
+          t + hash["score"][r.opponent] * factor
         end
+        else player.name
       end
-      tie_break_order = tie_break_method == :name ? -1 : 1
-      [points, tie_break_scores, tie_break_order]
     end
   end
 end
