@@ -483,15 +483,15 @@ module ICU
         @t.add_player(@boby = Player.new('Minnie', 'Mouse', 4))
         @t.add_player(@boby = Player.new('Gearoidn', 'Ui Laighleis', 5))
         @t.add_player(@mark = Player.new('Mark', 'Orr', 6))
-        @t.add_result(Result.new(1, 1, 'W', :opponent => 6))
-        @t.add_result(Result.new(2, 1, 'W', :opponent => 3))
-        @t.add_result(Result.new(3, 1, 'W', :opponent => 5))
-        @t.add_result(Result.new(1, 2, 'W', :opponent => 5))
-        @t.add_result(Result.new(2, 2, 'W', :opponent => 4))
-        @t.add_result(Result.new(3, 2, 'W', :opponent => 3))
-        @t.add_result(Result.new(1, 3, 'W', :opponent => 4))
-        @t.add_result(Result.new(3, 4, 'W', :opponent => 6))
-        @t.add_result(Result.new(2, 5, 'D', :opponent => 6))
+        @t.add_result(Result.new(1, 1, 'W', :opponent => 6, :colour => 'W'))
+        @t.add_result(Result.new(2, 1, 'W', :opponent => 3, :colour => 'B'))
+        @t.add_result(Result.new(3, 1, 'W', :opponent => 5, :colour => 'W'))
+        @t.add_result(Result.new(1, 2, 'W', :opponent => 5, :colour => 'B'))
+        @t.add_result(Result.new(2, 2, 'W', :opponent => 4, :colour => 'W'))
+        @t.add_result(Result.new(3, 2, 'W', :opponent => 3, :colour => 'B'))
+        @t.add_result(Result.new(1, 3, 'W', :opponent => 4, :colour => 'W'))
+        @t.add_result(Result.new(3, 4, 'W', :opponent => 6, :colour => 'W'))
+        @t.add_result(Result.new(2, 5, 'D', :opponent => 6, :colour => 'W'))
       end
 
       it "should initially be valid but unranked" do
@@ -519,19 +519,34 @@ module ICU
         @t.player(6).rank.should == 6  # 0.5/4.5
       end
       
-      it "should exhibit equivalence between buchholz and sum of opponents scores" do
-        @t.rerank(:sum_of_opponents_scores)
-        (1..6).inject(''){ |t,r| t << @t.player(r).rank.to_s }.should == '213456'
-      end
-      
       it "should be configurable to use Neustadtl" do
         @t.rerank(:neustadtl)
         @t.player(2).rank.should == 1  # 3.0/2.5
         @t.player(1).rank.should == 2  # 3.0/2.0
         @t.player(3).rank.should == 3  # 1.0/1.0
-        @t.player(4).rank.should == 4  # 0.5/0.5
+        @t.player(4).rank.should == 4  # 1.0/0.5
         @t.player(6).rank.should == 5  # 0.5/0.25/"Orr"
-        @t.player(5).rank.should == 6  # 1.0/0.25/"Ui"
+        @t.player(5).rank.should == 6  # 0.5/0.25/"Ui"
+      end
+      
+      it "should be configurable to use number of blacks" do
+        @t.rerank(:blacks)
+        @t.player(2).rank.should == 1  # 3.0/2
+        @t.player(1).rank.should == 2  # 3.0/1
+        @t.player(4).rank.should == 3  # 1.0/2
+        @t.player(3).rank.should == 4  # 1.0/1
+        @t.player(6).rank.should == 5  # 0.5/2
+        @t.player(5).rank.should == 6  # 0.5/1
+      end
+      
+      it "should be configurable to use number of wins" do
+        @t.rerank(:wins)
+        @t.player(1).rank.should == 1  # 3.0/3/"Fi"
+        @t.player(2).rank.should == 2  # 3.0/3/"Ka"
+        @t.player(3).rank.should == 3  # 1.0/1/"Mic"
+        @t.player(4).rank.should == 4  # 1.0/1/"Min"
+        @t.player(6).rank.should == 5  # 0.5/0/"Orr"
+        @t.player(5).rank.should == 6  # 0.5/0/"Ui"
       end
       
       it "should exhibit equivalence between Neustadtl and Sonneborn-Berger" do

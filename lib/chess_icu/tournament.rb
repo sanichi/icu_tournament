@@ -5,8 +5,8 @@ module ICU
 == Generic Tournament
 
 Normally a tournament object is created by parsing a data file (e.g. with ICU::Tournament::ForeignCSV).
-However, it is also possible to build a tournament by first creating a bare tournament instance and then
-firstly adding all the players and then adding all the results.
+However, it is also possible to build a tournament by 1) creating a bare tournament instance,
+2) adding all the players and 3) adding all the results. For example:
 
   require 'rubygems'
   require 'chess_icu'
@@ -62,21 +62,22 @@ then there are additional side effects of validating a tournament:
 Ranking is consistent if either no players have any rank or if all players have a rank and no player is ranked higher than another player with more points.
 
 The default tie break method used to rank players on the same score is alphabetical (by last name then first name).
-Other methods can be specified via the _rerank_ option. Instead of setting the option to _true_, alternatives are
-the following (both symbols or strings will work):
+Other methods can be specified via the _rerank_ option for validation. Alternatives to setting the option to _true_,
+which ranks by name, are as follows (both symbols or strings work):
 
-* _neustadtl_ (or _sonneborn_berger_): sum of scores of players defeated plus half sum of scores of players drawn against
-* _buchholz_ (or _sum_of_opponents_scores_): sum of opponents' scores
+* _blacks_: number of blacks
+* _buchholz_: sum of opponents' scores
 * _name_: this is the default and the same as setting the option to true
+* _neustadtl_ (or _sonneborn_berger_): sum of scores of players defeated plus half sum of scores of players drawn against
+* _wins_: number of wins
 
 Since _validate_ and _invalid_ only rerank a tournament with absent or inconsistent ranking, to force
 a particular kind of ranking of a tournament which is already ranked, use the _rerank_ method. This method
 takes one argument, the tie break method and it works the same as the _rerank_ option to _validate_. For example:
 
-  t.rerank(:neustadtl)       # rerank using Sonneborn-Berger as tie break
-  t.rerank(:buchholz)        # rerank using sum of opponents scores as tie break
-  t.rerank(:name)            # rerank using player names as tie break
-  t.rerank                   # same as _name_, which is the default
+  t.rerank(:neustadtl)    # rerank using Sonneborn-Berger as tie break
+  t.rerank(:buchholz)     # rerank using sum of opponents scores as tie break
+  t.rerank                # rerank using the default method (name)
 
 The players in a tournament, whose reference numbers can be any set of unique integers (including zero and
 negative numbers), can be renumbered in order of rank or name. After renumbering the new player numbers will
@@ -86,8 +87,8 @@ start at 1 and go up to the number of players.
   t.renumber(:rank)       # renumber by rank
   t.renumber              # same - rank is the default
 
-A side effect of renumbering by rank is that if the tournament started without any player rankings or
-with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will be called).
+A side effect of renumbering by rank is that if the tournament started without any player rankings
+or with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will be called).
 
 =end
 
@@ -426,14 +427,13 @@ with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will be
       tie_break_method = tie_break_method.to_s if tie_break_method.class == Symbol
       tie_break_method = tie_break_method.downcase.gsub('-', '_') if tie_break_method.class == String
       tie_break_method = case tie_break_method
-        when true                      then "name"
-        when "sonneborn_berger"        then "neustadtl"
-        when "sum_of_opponents_scores" then "buchholz"
+        when true                then "name"
+        when "sonneborn_berger"  then "neustadtl"
         else tie_break_method
       end
       
       # Check it's validity.
-      raise "invalid tie break method '#{tie_break_method}'" unless tie_break_method.match(/^(buchholz|name|neustadtl)$/)
+      raise "invalid tie break method '#{tie_break_method}'" unless tie_break_method.match(/^(blacks|buchholz|name|neustadtl|wins)$/)
       
       # Construct the arrays and hashes to be returned.
       methods, order, data = Array.new, Hash.new, Hash.new
@@ -448,7 +448,7 @@ with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will be
         order[tie_break_method] = -1
       end
       
-      # Name is always the least.
+      # Name is always the least important.
       methods << "name"
       order["name"] = +1
       
@@ -471,6 +471,8 @@ with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will be
     def tie_break_score(hash, method, player)
       case method
         when "score"     then player.points
+        when "wins"      then player.results.inject(0){ |t,r| t + (r.score == 'W' ? 1 : 0) }
+        when "blacks"    then player.results.inject(0){ |t,r| t + (r.colour == 'B' ? 1 : 0) }
         when "buchholz"  then player.results.inject(0.0){ |t,r| t + hash["score"][r.opponent] }
         when "neustadtl" then player.results.inject(0.0) do |t,r|
           factor = case r.score
