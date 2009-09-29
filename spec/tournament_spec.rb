@@ -481,7 +481,7 @@ module ICU
         @t.add_player(@gary = Player.new('Gary', 'Kasparov', 2))
         @t.add_player(@boby = Player.new('Micky', 'Mouse', 3))
         @t.add_player(@boby = Player.new('Minnie', 'Mouse', 4))
-        @t.add_player(@boby = Player.new('Gearoidn', 'Ui Laighleis', 5))
+        @t.add_player(@boby = Player.new('Gearoidin', 'Ui Laighleis', 5))
         @t.add_player(@mark = Player.new('Mark', 'Orr', 6))
         @t.add_result(Result.new(1, 1, 'W', :opponent => 6, :colour => 'W'))
         @t.add_result(Result.new(2, 1, 'W', :opponent => 3, :colour => 'B'))
@@ -497,6 +497,44 @@ module ICU
       it "should initially be valid but unranked" do
         @t.invalid.should be_false
         @t.player(1).rank.should be_nil
+      end
+      
+      it "should have correct default tie break scores" do
+        scores = @t.tie_break_scores
+        scores[1].should == 'Fischer, Bobby'
+        scores[5].should == 'Ui Laighleis, Gearoidin'
+      end
+      
+      it "should have correct Buchholz tie break scores" do
+        scores = @t.tie_break_scores("Buchholz")
+        scores[1].should == 2.0
+        scores[2].should == 2.5
+        scores[3].should == 7.0
+        scores[4].should == 4.5
+        scores[5].should == 6.5
+        scores[6].should == 4.5
+      end
+      
+      it "should have correct Neustadtl tie break scores" do
+        scores = @t.tie_break_scores(:neustadtl)
+        scores[1].should == 2.0
+        scores[2].should == 2.5
+        scores[3].should == 1.0
+        scores[4].should == 0.5
+        scores[5].should == 0.25
+        scores[6].should == 0.25
+      end
+      
+      it "should have correct tie break scores for number of blacks" do
+        scores = @t.tie_break_scores('blacks')
+        scores[3].should == 0
+        scores[4].should == 2
+      end
+      
+      it "should have correct tie break scores for number of wins" do
+        scores = @t.tie_break_scores(:wins)
+        scores[2].should == 3
+        scores[6].should == 0
       end
 
       it "should use names for tie breaking by default" do

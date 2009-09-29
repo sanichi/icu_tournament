@@ -287,6 +287,15 @@ or with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will
         p.rank = i + 1
       end
     end
+    
+    # Return a hash of tie break scores (player number to value).
+    def tie_break_scores(tie_break_method = :name)
+      tie_break_methods, tie_break_order, tie_break_hash = tie_break_data(tie_break_method)
+      main_method = tie_break_methods[1]
+      scores = Hash.new
+      @player.values.each { |p| scores[p.num] = tie_break_hash[main_method][p.num] }
+      scores
+    end
 
     # Renumber the players according to a given criterion.
     def renumber(criterion = :rank)
@@ -452,15 +461,18 @@ or with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will
       methods << "name"
       order["name"] = +1
       
-      # Pre calculate the total scores.
+      # We'll need the number of rounds.
+      rounds = last_round
+      
+      # Pre-calculate the total scores.
       data["score"] = Hash.new
-      @player.values.each { |p| data["score"][p.num] = tie_break_score(data, "score", p) }
+      @player.values.each { |p| data["score"][p.num] = tie_break_score(data, "score", p, rounds) }
       
       # Now calculate all the other scores.
       methods.each do |m|
         next if m == "score"
         data[m] = Hash.new
-        @player.values.each { |p| data[m][p.num] = tie_break_score(data, m, p) }
+        @player.values.each { |p| data[m][p.num] = tie_break_score(data, m, p, rounds) }
       end
       
       # Finally, return what we calculated.
@@ -468,11 +480,11 @@ or with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will
     end
     
     # Return a tie break score for a given player and a given tie break method.
-    def tie_break_score(hash, method, player)
+    def tie_break_score(hash, method, player, rounds)
       case method
         when "score"     then player.points
-        when "wins"      then player.results.inject(0){ |t,r| t + (r.score == 'W' ? 1 : 0) }
-        when "blacks"    then player.results.inject(0){ |t,r| t + (r.colour == 'B' ? 1 : 0) }
+        when "wins"      then player.results.inject(0){ |t,r| t + (r.score == 'W' && r.rateable ? 1 : 0) }
+        when "blacks"    then player.results.inject(0){ |t,r| t + (r.colour == 'B' && r.rateable ? 1 : 0) }
         when "buchholz"  then player.results.inject(0.0){ |t,r| t + hash["score"][r.opponent] }
         when "neustadtl" then player.results.inject(0.0) do |t,r|
           factor = case r.score
