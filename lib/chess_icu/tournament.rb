@@ -436,8 +436,8 @@ or with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will
       tie_break_method = tie_break_method.to_s if tie_break_method.class == Symbol
       tie_break_method = tie_break_method.downcase.gsub('-', '_') if tie_break_method.class == String
       tie_break_method = case tie_break_method
-        when true                then "name"
-        when "sonneborn_berger"  then "neustadtl"
+        when true                then 'name'
+        when 'sonneborn_berger'  then 'neustadtl'
         else tie_break_method
       end
       
@@ -448,29 +448,36 @@ or with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will
       methods, order, data = Array.new, Hash.new, Hash.new
       
       # Score is always the most important.
-      methods << "score"
-      order["score"] = -1
+      methods << 'score'
+      order['score'] = -1
       
       # Add the configured method.
-      unless tie_break_method == "name"
+      unless tie_break_method == 'name'
         methods << tie_break_method
         order[tie_break_method] = -1
       end
       
       # Name is always the least important.
-      methods << "name"
-      order["name"] = +1
+      methods << 'name'
+      order['name'] = +1
       
       # We'll need the number of rounds.
       rounds = last_round
       
-      # Pre-calculate the total scores.
-      data["score"] = Hash.new
-      @player.values.each { |p| data["score"][p.num] = tie_break_score(data, "score", p, rounds) }
+      # Pre-calculate some scores that are not in themselves tie break score
+      # but are needed in the calculation of some of the actual tie-breakers.
+      pre_calculated = Array.new
+      pre_calculated << 'opp-score'  # sum scores where a non-played games counts 0.5
+      pre_calculated.each do |m|
+        data[m] = Hash.new
+        @player.values.each do |p|
+          data[m][p.num] = tie_break_score(data, m, p, rounds)
+        end
+      end
       
       # Now calculate all the other scores.
       methods.each do |m|
-        next if m == "score"
+        next if pre_calculated.include?(m)
         data[m] = Hash.new
         @player.values.each { |p| data[m][p.num] = tie_break_score(data, m, p, rounds) }
       end
@@ -482,18 +489,12 @@ or with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will
     # Return a tie break score for a given player and a given tie break method.
     def tie_break_score(hash, method, player, rounds)
       case method
-        when "score"     then player.points
-        when "wins"      then player.results.inject(0){ |t,r| t + (r.score == 'W' && r.rateable ? 1 : 0) }
-        when "blacks"    then player.results.inject(0){ |t,r| t + (r.colour == 'B' && r.rateable ? 1 : 0) }
-        when "buchholz"  then player.results.inject(0.0){ |t,r| t + hash["score"][r.opponent] }
-        when "neustadtl" then player.results.inject(0.0) do |t,r|
-          factor = case r.score
-            when 'W' then 1.0
-            when 'L' then 0.0
-            else 0.5
-          end
-          t + hash["score"][r.opponent] * factor
-        end
+        when 'score'     then player.points
+        when 'wins'      then player.results.inject(0)   { |t,r| t + (r.opponent && r.score  == 'W' ? 1 : 0) }
+        when 'blacks'    then player.results.inject(0)   { |t,r| t + (r.opponent && r.colour == 'B' ? 1 : 0) }
+        when 'buchholz'  then player.results.inject(0.0) { |t,r| t + (r.opponent ? hash['opp-score'][r.opponent] : 0.0) }
+        when 'neustadtl' then player.results.inject(0.0) { |t,r| t + (r.opponent ? hash['opp-score'][r.opponent] * r.points : 0.0) }
+        when 'opp-score' then player.results.inject(0.0) { |t,r| t + (r.opponent ? r.points : 0.5) } + (rounds - player.results.size) * 0.5
         else player.name
       end
     end

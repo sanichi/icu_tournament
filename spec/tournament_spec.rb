@@ -505,6 +505,15 @@ module ICU
         scores[5].should == 'Ui Laighleis, Gearoidin'
       end
       
+      it "should have correct actual scores" do
+        @t.player(1).points.should == 3.0
+        @t.player(2).points.should == 3.0
+        @t.player(3).points.should == 1.0
+        @t.player(4).points.should == 1.0
+        @t.player(5).points.should == 0.5
+        @t.player(6).points.should == 0.5
+      end
+      
       it "should have correct Buchholz tie break scores" do
         scores = @t.tie_break_scores("Buchholz")
         scores[1].should == 2.0
@@ -513,6 +522,18 @@ module ICU
         scores[4].should == 4.5
         scores[5].should == 6.5
         scores[6].should == 4.5
+      end
+      
+      it "Buchholz should be sensitive to unplayed games" do
+        @t.player(1).find_result(1).opponent = nil
+        @t.player(6).find_result(1).opponent = nil
+        scores = @t.tie_break_scores("Buchholz")
+        scores[1].should == 1.5  # 0.5 from Orr changed to 0
+        scores[2].should == 2.5  # didn't play Fischer or Orr so unaffected
+        scores[3].should == 6.5  # 3 from Fischer's changed to 2.5
+        scores[4].should == 5.0  # 0.5 from Orr changed to 1 (because Orr's unrated loss to Fischer now counts as a draw)
+        scores[5].should == 6.5  # 3 from Fischer changed to 2.5, 0.5 from Orr changed to 1 (cancels out)
+        scores[6].should == 1.5  # 3 from Fischer changed to 0
       end
       
       it "should have correct Neustadtl tie break scores" do
@@ -525,15 +546,43 @@ module ICU
         scores[6].should == 0.25
       end
       
+      it "Neustadtl should be sensitive to unplayed games" do
+        @t.player(1).find_result(1).opponent = nil
+        @t.player(6).find_result(1).opponent = nil
+        scores = @t.tie_break_scores("Neustadtl")
+        scores[1].should == 1.5  # 0.5 from Orr changed to 0
+        scores[2].should == 2.5  # didn't play Fischer or Orr so unaffected
+        scores[3].should == 1.0  # win against Minnie unaffected
+        scores[4].should == 1.0  # 0.5 from Orr changed to 1 (because Orr's unrated loss to Fischer now counts as a draw)
+        scores[5].should == 0.5  # 0.25 from Orr changed to 0.5
+        scores[6].should == 0.25 # loss against Fisher and unplayed against Fisher equivalent
+      end
+      
       it "should have correct tie break scores for number of blacks" do
         scores = @t.tie_break_scores('blacks')
         scores[3].should == 0
         scores[4].should == 2
       end
       
+      it "number of blacks should should be sensitive to unplayed games" do
+        @t.player(2).find_result(1).opponent = nil
+        @t.player(4).find_result(1).opponent = nil
+        scores = @t.tie_break_scores('blacks')
+        scores[3].should == 0
+        scores[4].should == 1
+      end
+      
       it "should have correct tie break scores for number of wins" do
         scores = @t.tie_break_scores(:wins)
-        scores[2].should == 3
+        scores[1].should == 3
+        scores[6].should == 0
+      end
+      
+      it "number of wins should should be sensitive to unplayed games" do
+        @t.player(1).find_result(1).opponent = nil
+        @t.player(6).find_result(1).opponent = nil
+        scores = @t.tie_break_scores('wins')
+        scores[1].should == 2
         scores[6].should == 0
       end
 
