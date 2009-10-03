@@ -1,3 +1,6 @@
+== 0.5.4 2009-10-03
+* Added configurable tie break methods for reranking players and simplified renumbering players.
+
 == 0.5.0 2009-09-02
 * Moved library files to conform with gem best practices (http://weblog.rubyonrails.org/2009/9/1/gem-packaging-best-practices).
 
