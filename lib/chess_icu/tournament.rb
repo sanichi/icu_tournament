@@ -98,7 +98,7 @@ The full list of supported methods is:
 * _modified_median_: same as Harkness except only lowest (or highest) score(s) are discarded for players with more (or less) than 50%
 * _blacks_: number of blacks
 * _wins_: number of wins
-* _name_: alphabetical by name is the default and is the same as setting the option to true
+* _name_: alphabetical by name is the default and is the same as calling _rerank_ with no options or setting the _rerank_ option to true
 
 The return value from _rerank_ is the tournament object itself.
 
