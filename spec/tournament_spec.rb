@@ -558,8 +558,28 @@ module ICU
         scores[6].should == 0.25 # loss against Fisher and unplayed against Fisher equivalent
       end
       
+      it "should have correct Harkness tie break scores" do
+        scores = @t.tie_break_scores('harkness')
+        scores[1].should == 0.5
+        scores[2].should == 1.0
+        scores[3].should == 3.0
+        scores[4].should == 1.0
+        scores[5].should == 3.0
+        scores[6].should == 1.0
+      end
+      
+      it "should have correct Modified Median tie break scores" do
+        scores = @t.tie_break_scores('Modified Median')
+        scores[1].should == 1.5
+        scores[2].should == 2.0
+        scores[3].should == 4.0
+        scores[4].should == 1.5
+        scores[5].should == 3.5
+        scores[6].should == 1.5
+      end
+      
       it "should have correct tie break scores for number of blacks" do
-        scores = @t.tie_break_scores('blacks')
+        scores = @t.tie_break_scores('Blacks')
         scores[3].should == 0
         scores[4].should == 2
       end
@@ -567,7 +587,7 @@ module ICU
       it "number of blacks should should be sensitive to unplayed games" do
         @t.player(2).find_result(1).opponent = nil
         @t.player(4).find_result(1).opponent = nil
-        scores = @t.tie_break_scores('blacks')
+        scores = @t.tie_break_scores(:blacks)
         scores[3].should == 0
         scores[4].should == 1
       end
@@ -581,7 +601,7 @@ module ICU
       it "number of wins should should be sensitive to unplayed games" do
         @t.player(1).find_result(1).opponent = nil
         @t.player(6).find_result(1).opponent = nil
-        scores = @t.tie_break_scores('wins')
+        scores = @t.tie_break_scores('WINS')
         scores[1].should == 2
         scores[6].should == 0
       end

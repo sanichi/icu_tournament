@@ -65,11 +65,13 @@ The default tie break method used to rank players on the same score is alphabeti
 Other methods can be specified via the _rerank_ option for validation. Alternatives to setting the option to _true_,
 which ranks by name, are as follows (both symbols or strings work):
 
+* _Buchholz_: sum of opponents' scores
+* _Harkness_ (or _median_): like Buchholz except the highest and lowest opponents' scores are discarded (or two highest and lowest if 9 rounds or more)
+* _Neustadtl_ (or _Sonneborn-Berger_): sum of scores of players defeated plus half sum of scores of players drawn against
+* _modified_median_: same as Harkness except only lowest (or highest) score(s) are discarded for players with more (or less) than 50% respectively
 * _blacks_: number of blacks
-* _buchholz_: sum of opponents' scores
-* _name_: this is the default and the same as setting the option to true
-* _neustadtl_ (or _sonneborn_berger_): sum of scores of players defeated plus half sum of scores of players drawn against
 * _wins_: number of wins
+* _name_: alphabetical by name is the default and is the same as setting the option to true
 
 Since _validate_ and _invalid_ only rerank a tournament with absent or inconsistent ranking, to force
 a particular kind of ranking of a tournament which is already ranked, use the _rerank_ method. This method
@@ -434,15 +436,17 @@ or with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will
     def tie_break_data(tie_break_method)
       # Canonicalise the tie break method name.
       tie_break_method = tie_break_method.to_s if tie_break_method.class == Symbol
-      tie_break_method = tie_break_method.downcase.gsub('-', '_') if tie_break_method.class == String
+      tie_break_method = tie_break_method.downcase.gsub(/[-\s]/, '_') if tie_break_method.class == String
       tie_break_method = case tie_break_method
         when true                then 'name'
         when 'sonneborn_berger'  then 'neustadtl'
+        when 'modified_median'   then 'modified'
+        when 'median'            then 'harkness'
         else tie_break_method
       end
       
       # Check it's validity.
-      raise "invalid tie break method '#{tie_break_method}'" unless tie_break_method.match(/^(blacks|buchholz|name|neustadtl|wins)$/)
+      raise "invalid tie break method '#{tie_break_method}'" unless tie_break_method.match(/^(blacks|buchholz|harkness|modified|name|neustadtl|wins)$/)
       
       # Construct the arrays and hashes to be returned.
       methods, order, data = Array.new, Hash.new, Hash.new
@@ -495,6 +499,17 @@ or with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will
         when 'buchholz'  then player.results.inject(0.0) { |t,r| t + (r.opponent ? hash['opp-score'][r.opponent] : 0.0) }
         when 'neustadtl' then player.results.inject(0.0) { |t,r| t + (r.opponent ? hash['opp-score'][r.opponent] * r.points : 0.0) }
         when 'opp-score' then player.results.inject(0.0) { |t,r| t + (r.opponent ? r.points : 0.5) } + (rounds - player.results.size) * 0.5
+        when 'harkness', 'modified'
+          scores = player.results.map{ |r| r.opponent ? hash['opp-score'][r.opponent] : 0.0 }.sort
+          1.upto(rounds - player.results.size) { scores << 0.0 }
+          half = rounds / 2.0
+          times = rounds >= 9 ? 2 : 1
+          if method == 'harkness' || player.points == half
+            1.upto(times) { scores.shift; scores.pop }
+          else
+            1.upto(times) { scores.send(player.points > half ? :shift : :pop) }
+          end
+          scores.inject(0.0) { |t,s| t + s }
         else player.name
       end
     end
