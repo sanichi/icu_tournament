@@ -16,6 +16,30 @@ module ICU
         end.should_not raise_error
       end
     end
+    
+    context "documentation example" do
+      before(:each) do
+        @t = t = ICU::Tournament.new('Bangor Masters', '2009-11-09')
+        t.add_player(ICU::Player.new('Bobby', 'Fischer', 10))
+        t.add_player(ICU::Player.new('Garry', 'Kasparov', 20))
+        t.add_player(ICU::Player.new('Mark', 'Orr', 30))
+        t.add_result(ICU::Result.new(1, 10, 'D', :opponent => 30, :colour => 'W'))
+        t.add_result(ICU::Result.new(2, 20, 'W', :opponent => 30, :colour => 'B'))
+        t.add_result(ICU::Result.new(3, 20, 'L', :opponent => 10, :colour => 'W'))
+        @s = <<EOS
+012 Bangor Masters
+042 2009-11-09
+001   10      Fischer,Bobby                                                      1.5         30 w =              20 b 1
+001   20      Kasparov,Garry                                                     1.0                   30 b 1    10 w 0
+001   30      Orr,Mark                                                           0.5         10 b =    20 w 0          
+EOS
+      end
+      
+      it "should serialize to Krause" do
+        parser = ICU::Tournament::Krause.new
+        parser.serialize(@t).should == @s
+      end
+    end 
 
     context "name" do
       before(:each) do
@@ -440,34 +464,38 @@ module ICU
     context "renumbering" do
       before(:each) do
         @t = Tournament.new('Edinburgh Masters', '2009-11-09')
-        @t.add_player(@mark = Player.new('Mark', 'Orr', 10))
-        @t.add_player(@gary = Player.new('Gary', 'Kasparov', 20))
-        @t.add_player(@boby = Player.new('Bobby', 'Fischer', 30))
-        @t.add_result(Result.new(1, 10, 'W', :opponent => 20))
-        @t.add_result(Result.new(2, 20, 'W', :opponent => 30))
-        @t.add_result(Result.new(3, 30, 'L', :opponent => 10))
+        @t.add_player(@mark = Player.new('Mark', 'Orr', 20))
+        @t.add_player(@boby = Player.new('Bobby', 'Fischer', 10))
+        @t.add_player(@gary = Player.new('Gary', 'Kasparov', 30))
+        @t.add_result(Result.new(1, 20, 'W', :opponent => 10))
+        @t.add_result(Result.new(2, 30, 'W', :opponent => 10))
+        @t.add_result(Result.new(3, 20, 'W', :opponent => 30))
       end
       
       it "sample tournament is valid but unranked" do
         @t.invalid.should be_false
         @t.player(10).rank.should be_nil
+        @t.players.map{ |p| p.num }.join('|').should == '10|20|30'
+        @t.players.map{ |p| p.last_name }.join('|').should == 'Fischer|Orr|Kasparov'
       end
 
-      it "should be renumberable by rank" do
+      it "should be renumberable by name in the absence of ranking" do
         @t.renumber
         @t.invalid.should be_false
         @t.players.map{ |p| p.num }.join('|').should == '1|2|3'
-        @t.players.map{ |p| p.first_name }.join('|').should == 'Mark|Gary|Bobby'
+        @t.players.map{ |p| p.last_name }.join('|').should == 'Fischer|Kasparov|Orr'
       end
       
-      it "should be ranked after renumbering by rank" do
-        @t.renumber
+      it "should be renumberable by rank if the tournament is ranked" do
+        @t.rerank.renumber
         @t.invalid.should be_false
+        @t.players.map{ |p| p.num }.join('|').should == '1|2|3'
         @t.players.map{ |p| p.rank }.join('|').should == '1|2|3'
+        @t.players.map{ |p| p.last_name }.join('|').should == 'Orr|Kasparov|Fischer'
       end
       
-      it "should be renumberable by name" do
-        @t.renumber(:name)
+      it "should be renumberable by name even if the tourament is ranked" do
+        @t.rerank.renumber(:name)
         @t.invalid.should be_false
         @t.players.map{ |p| p.num }.join('|').should == '1|2|3'
         @t.players.map{ |p| p.last_name }.join('|').should == 'Fischer|Kasparov|Orr'
@@ -661,6 +689,16 @@ module ICU
         (1..6).inject(''){ |t,r| t << @t.player(r).rank.to_s }.should == '213465'
       end
       
+      it "should be able to use more than one method" do
+        @t.rerank(:neustadtl, :buchholz)
+        @t.player(2).rank.should == 1  # 3.0/2.5
+        @t.player(1).rank.should == 2  # 3.0/2.0
+        @t.player(3).rank.should == 3  # 1.0/1.0
+        @t.player(4).rank.should == 4  # 1.0/0.5
+        @t.player(5).rank.should == 5  # 0.5/0.25/6.5
+        @t.player(6).rank.should == 6  # 0.5/0.25/4.5
+      end
+      
       it "should throw exception on invalid tie break method" do
         lambda { @t.rerank(:no_such_tie_break_method) }.should raise_error(/invalid.*method/)
       end
@@ -671,6 +709,16 @@ module ICU
     
       it "should be possible as a side effect of validation" do
         @t.invalid(:rerank => :buchholz).should be_false
+        @t.player(2).rank.should == 1  # 3/3
+        @t.player(1).rank.should == 2  # 3/2
+        @t.player(3).rank.should == 3  # 1/7
+        @t.player(4).rank.should == 4  # 1/4
+        @t.player(5).rank.should == 5  # 1/6
+        @t.player(6).rank.should == 6  # 0/5
+      end
+      
+      it "should be possible as a side effect of validation with multiple tie break methods" do
+        @t.invalid(:rerank => [:neustadtl, :buchholz]).should be_false
         @t.player(2).rank.should == 1  # 3/3
         @t.player(1).rank.should == 2  # 3/2
         @t.player(3).rank.should == 3  # 1/7

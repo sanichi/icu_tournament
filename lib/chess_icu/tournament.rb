@@ -2,11 +2,16 @@ module ICU
 
 =begin rdoc
 
-== Generic Tournament
+== Building a Tournament
 
-Normally a tournament object is created by parsing a data file (e.g. with ICU::Tournament::ForeignCSV).
-However, it is also possible to build a tournament by 1) creating a bare tournament instance,
-2) adding all the players and 3) adding all the results. For example:
+One way to create a tournament object is by parsing one of the supported file type (e.g. ICU::Tournament::Krause).
+It is also possible to build one programmatically by
+
+1. creating a bare tournament instance,
+2. adding all the players and
+3. adding all the results.
+
+For example:
 
   require 'rubygems'
   require 'chess_icu'
@@ -21,21 +26,30 @@ However, it is also possible to build a tournament by 1) creating a bare tournam
   t.add_result(ICU::Result.new(2, 20, 'W', :opponent => 30, :colour => 'B'))
   t.add_result(ICU::Result.new(3, 20, 'L', :opponent => 10, :colour => 'W'))
 
-  [10, 20, 30].each { |n| p = t.player(n); puts "#{p.points} #{p.name}" }
+  parser = ICU::Tournament::Krause.new
+  puts parser.serialize(@t)
 
-Would result in the following output.
+Would result in the following output:
 
-  1.5 Bobby Fischer
-  1.0 Gary Kasparov
-  0.5 Mark Orr
+  012 Bangor Masters
+  042 2009-11-09
+  001   10      Fischer,Bobby                                                      1.5         30 w =              20 b 1
+  001   20      Kasparov,Garry                                                     1.0                   30 b 1    10 w 0
+  001   30      Orr,Mark                                                           0.5         10 b =    20 w 0          
 
 Note that the players should be added first because the _add_result_ method will
 raise an exception if the players it references through their tournament numbers
 (10, 20 and 30 in this example) have not already been added to the tournament.
 
+See ICU::Player and ICU::Result for more details about players and results.
+
+
+== Validation
+
 A tournament can be validated with either the _validate!_ or _invalid_ methods.
 On success, the first returns true while the second returns false.
-On error, the first throws an exception while the second returns a description of the error.
+On error, the first throws an exception while the second returns a string
+describing the error.
 
 Validations checks that:
 
@@ -50,47 +64,57 @@ Side effects of calling _validate!_ or _invalid_ include:
 * the number of rounds will be set if not set already
 * the finish date will be set if not set already and if there are round dates
 
-If the _rerank_ option is set, as in this example:
 
-  t.validate!(:rerank => true)
+== Ranking
 
-then there are additional side effects of validating a tournament:
+They players in a tournament can be ranked by calling the _rerank_ method directly.
 
-* the players will be ranked if there is no existing ranking
-* the players will be reranked if the existing ranking is inconsistent
+  t.rerank
 
-Ranking is consistent if either no players have any rank or if all players have a rank and no player is ranked higher than another player with more points.
+Alternatively they can be ranked as a side effect of validation if the _rerank_ option is set,
+but this only applies if the tournament is not yet ranked or it's ranking is inconsistent.
 
-The default tie break method used to rank players on the same score is alphabetical (by last name then first name).
-Other methods can be specified via the _rerank_ option for validation. Alternatives to setting the option to _true_,
-which ranks by name, are as follows (both symbols or strings work):
+  t.validate(:rerank => true)
+
+Ranking is inconsistent if either some but not all players have any rank or if all players
+have a rank but some players are ranked higher than others on lower scores.
+
+To rank the players requires a tie break method to be specified to order players on the same score.
+The default is alphabetical (by last name then first name). Other methods can be specified by supplying
+a list of methods (strings or symbols) in order of precedence to the _rerank_ method or for the _rerank_
+option of the _validate_ method. Examples:
+
+  t.rerank('Sonneborn-Berger')
+  t.rerank(:buchholz, :neustadtl, :blacks, :wins)
+  
+  t.validate(:rerank => :sonneborn_berger)
+  t.validate(:rerank => ['Modified Median', 'Neustadtl', 'Buchholz', 'wins'])
+
+The full list of supported methods is:
 
 * _Buchholz_: sum of opponents' scores
-* _Harkness_ (or _median_): like Buchholz except the highest and lowest opponents' scores are discarded (or two highest and lowest if 9 rounds or more)
 * _Neustadtl_ (or _Sonneborn-Berger_): sum of scores of players defeated plus half sum of scores of players drawn against
-* _modified_median_: same as Harkness except only lowest (or highest) score(s) are discarded for players with more (or less) than 50% respectively
+* _Harkness_ (or _median_): like Buchholz except the highest and lowest opponents' scores are discarded (or two highest and lowest if 9 rounds or more)
+* _modified_median_: same as Harkness except only lowest (or highest) score(s) are discarded for players with more (or less) than 50%
 * _blacks_: number of blacks
 * _wins_: number of wins
 * _name_: alphabetical by name is the default and is the same as setting the option to true
 
-Since _validate_ and _invalid_ only rerank a tournament with absent or inconsistent ranking, to force
-a particular kind of ranking of a tournament which is already ranked, use the _rerank_ method. This method
-takes one argument, the tie break method and it works the same as the _rerank_ option to _validate_. For example:
+The return value from _rerank_ is the tournament object itself.
 
-  t.rerank(:neustadtl)    # rerank using Sonneborn-Berger as tie break
-  t.rerank(:buchholz)     # rerank using sum of opponents scores as tie break
-  t.rerank                # rerank using the default method (name)
 
-The players in a tournament, whose reference numbers can be any set of unique integers (including zero and
-negative numbers), can be renumbered in order of rank or name. After renumbering the new player numbers will
-start at 1 and go up to the number of players.
+== Renumbering
 
-  t.renumber(:name)       # renumber by name
-  t.renumber(:rank)       # renumber by rank
-  t.renumber              # same - rank is the default
+The numbers used to uniquely identify each player in a tournament can be any set of unique integers
+(including zero and negative numbers). To renumber the players so that these numbers start at 1 and
+go up to the total number of players use the _renumber_ method. This method takes one optional
+argument to specify how the renumbering is done.
 
-A side effect of renumbering by rank is that if the tournament started without any player rankings
-or with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will be called).
+  t.renumber(:rank)       # renumber by rank if possible, otherwise by name alphabetically
+  t.renumber              # the same as this is the default
+  t.renumber(:name)       # renumber by name alphabetically
+  
+The return value from _renumber_ is the tournament object itself.
 
 =end
 
@@ -277,8 +301,8 @@ or with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will
     end
         
     # Rerank the tournament by score first and if necessary using a configurable tie breaker method.
-    def rerank(tie_break_method = :name)
-      tie_break_methods, tie_break_order, tie_break_hash = tie_break_data(tie_break_method)
+    def rerank(*tie_break_methods)
+      tie_break_methods, tie_break_order, tie_break_hash = tie_break_data(tie_break_methods.flatten)
       @player.values.sort do |a,b|
         cmp = 0
         tie_break_methods.each do |m|
@@ -288,11 +312,12 @@ or with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will
       end.each_with_index do |p,i|
         p.rank = i + 1
       end
+      self
     end
     
     # Return a hash of tie break scores (player number to value).
-    def tie_break_scores(tie_break_method = :name)
-      tie_break_methods, tie_break_order, tie_break_hash = tie_break_data(tie_break_method)
+    def tie_break_scores(*tie_break_methods)
+      tie_break_methods, tie_break_order, tie_break_hash = tie_break_data(tie_break_methods)
       main_method = tie_break_methods[1]
       scores = Hash.new
       @player.values.each { |p| scores[p.num] = tie_break_hash[main_method][p.num] }
@@ -303,21 +328,27 @@ or with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will
     def renumber(criterion = :rank)
       map = Hash.new
       
-      # Decide how to rank.
-      if criterion == :name
-        @player.values.sort_by{ |p| p.name }.each_with_index{ |p, i| map[p.num] = i + 1 }
-      else
-        begin check_ranks rescue rerank end
-        @player.values.each{ |p| map[p.num] = p.rank}
+      # Decide how to renumber.
+      criterion = criterion.to_s.downcase
+      if criterion.match('rank')
+        # Renumber by rank if possible.
+        begin check_ranks rescue criterion = 'name' end
+        @player.values.each{ |p| map[p.num] = p.rank }
       end
-      
-      # Apply ranking.
+      if !criterion.match('rank')
+        # Renumber by name alphabetically.
+        @player.values.sort_by{ |p| p.name }.each_with_index{ |p, i| map[p.num] = i + 1 }
+      end
+
+      # Apply renumbering.
       @teams.each{ |t| t.renumber(map) }
       @player = @player.values.inject({}) do |hash, player|
         player.renumber(map)
         hash[player.num] = player
         hash
       end
+      
+      self
     end
 
     # Is a tournament invalid? Either returns false (if it's valid) or an error message.
@@ -433,20 +464,22 @@ or with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will
     
     # Return an array of tie break methods and an array of tie break orders (+1 for asc, -1 for desc).
     # The first and most important method is always "score", the last and least important is always "name".
-    def tie_break_data(tie_break_method)
-      # Canonicalise the tie break method name.
-      tie_break_method = tie_break_method.to_s if tie_break_method.class == Symbol
-      tie_break_method = tie_break_method.downcase.gsub(/[-\s]/, '_') if tie_break_method.class == String
-      tie_break_method = case tie_break_method
-        when true                then 'name'
-        when 'sonneborn_berger'  then 'neustadtl'
-        when 'modified_median'   then 'modified'
-        when 'median'            then 'harkness'
-        else tie_break_method
+    def tie_break_data(tie_break_methods)
+      # Canonicalise the tie break method names.
+      tie_break_methods.map! do |m|
+        m = m.to_s if m.class == Symbol
+        m = m.downcase.gsub(/[-\s]/, '_') if m.class == String
+        case m
+          when true                then 'name'
+          when 'sonneborn_berger'  then 'neustadtl'
+          when 'modified_median'   then 'modified'
+          when 'median'            then 'harkness'
+          else m
+        end
       end
       
-      # Check it's validity.
-      raise "invalid tie break method '#{tie_break_method}'" unless tie_break_method.match(/^(blacks|buchholz|harkness|modified|name|neustadtl|wins)$/)
+      # Check they're all valid.
+      tie_break_methods.each { |m| raise "invalid tie break method '#{m}'" unless m.match(/^(blacks|buchholz|harkness|modified|name|neustadtl|wins)$/) }     
       
       # Construct the arrays and hashes to be returned.
       methods, order, data = Array.new, Hash.new, Hash.new
@@ -455,21 +488,23 @@ or with inconsitent rankings, it will be reranked (i.e. the method _rerank_ will
       methods << 'score'
       order['score'] = -1
       
-      # Add the configured method.
-      unless tie_break_method == 'name'
-        methods << tie_break_method
-        order[tie_break_method] = -1
+      # Add the configured methods.
+      tie_break_methods.each do |m|
+        methods << m
+        order[m] = -1
       end
       
-      # Name is always the least important.
-      methods << 'name'
-      order['name'] = +1
+      # Name is included as the last and least important tie breaker unless it's already been added.
+      unless methods.include?('name')
+        methods << 'name'
+        order['name'] = +1
+      end
       
       # We'll need the number of rounds.
       rounds = last_round
       
       # Pre-calculate some scores that are not in themselves tie break score
-      # but are needed in the calculation of some of the actual tie-breakers.
+      # but are needed in the calculation of some of the actual tie-break scores.
       pre_calculated = Array.new
       pre_calculated << 'opp-score'  # sum scores where a non-played games counts 0.5
       pre_calculated.each do |m|
