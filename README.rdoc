@@ -6,6 +6,14 @@ For parsing files of chess tournament data into ruby classes.
 == Install
 
   sudo gem install sanichi-chess_icu --source http://gems.github.com
+
+There's also one dependancy:
+
+  sudo gem install fastercsv
+
+If you want to run the test suite (by just running <em>rake</em>) you'll need to install RSpec:
+
+  sudo gem install rspec
   
   
 == Usage
