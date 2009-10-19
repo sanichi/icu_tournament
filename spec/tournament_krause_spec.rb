@@ -45,7 +45,7 @@ module ICU
 001    2 m  m Orr,Mark                          2258 IRL     2500035 1955.11.09  2.0    1     1 w 1               3 b 1
 001    3 m  g Bologan,Viktor                    2663 MDA    13900048 1971.01.01  0.0    3               1 b 0     2 w 0
 KRAUSE
-          @p = Krause.new
+          @p = ICU::Tournament::Krause.new
           @t = @p.parse!(krause)
         end
         
@@ -113,7 +113,7 @@ COMMENTS
 001    2 m  m Duck,Daffy                        2200 IRL     7654321 1937.04.17  2.0    1     1 w 1               3 b 1
 001    3 m  g Mouse,Mickey                      2600 USA     1726354 1928.05.15  0.0    3               1 b 0     2 w 0
 KRAUSE
-          @p = Krause.new
+          @p = ICU::Tournament::Krause.new
           @t = @p.parse!(krause)
         end
 
@@ -170,9 +170,9 @@ KRAUSE
 001    3 m  g Bologan,Viktor                    2663 MDA    13900048 1971-01-01  0.0    4               1 b -     2 w 0
 001    4   wg Cramling,Pia                      2500 SWE     1700030 1963-04-23  0.5    3            0000 - =     1 w 0
 KRAUSE
-          @p = Krause.new
+          @p = ICU::Tournament::Krause.new
           @t = @p.parse!(@krause)
-          @q = Krause.new
+          @q = ICU::Tournament::Krause.new
         end
 
         it "should serialize back to the original if the input is fully canonicalised" do
@@ -193,7 +193,7 @@ KRAUSE
 001    2 m  m Orr,Mark                          2258 IRL     2500035 1955-11-09  2.0          1 w 1               3 b 1
 001    3 m  g Bologan,Viktor                    2663 MDA    13900048 1971-01-01  0.0                    1 b 0     2 w 0
 KRAUSE
-          @p = Krause.new
+          @p = ICU::Tournament::Krause.new
           @t = @p.parse!(@krause)
         end
 
@@ -213,7 +213,7 @@ KRAUSE
 001   20 m  m Orr,Mark                          2258 IRL                         2.0         10 w 1              30 b 1
 001   30 m  g Bologan,Viktor                    2663 MDA                         0.0                   10 b 0    20 w 0
 KRAUSE
-          @p = Krause.new
+          @p = ICU::Tournament::Krause.new
           @t = @p.parse!(@krause)
           @reordered = <<REORDERED
 012 Las Vegas National Open
@@ -239,11 +239,11 @@ REORDERED
 001    2    m Orr,Mark                          2258 IRL     2500035 1955-11-09  2.0          1 w 1               3 b 1
 001    3    g Bologan,Viktor                    2663 MDA    13900048 1971-01-01  0.0                    1 b 0     2 w 0
 KRAUSE
-          @p = Krause.new
-          @t = Tournament.new('Las Vegas National Open', '2008-06-07')
-          @t.add_player(Player.new('Gearoidin', 'Ui Laighleis', 1, :rating => 1985, :id => 2501171,  :dob => '1964-06-10', :fed => 'IRL', :gender => 'f'))
-          @t.add_player(Player.new('Mark',      'Orr',          2, :rating => 2258, :id => 2500035,  :dob => '1955-11-09', :fed => 'IRL', :title => 'm'))
-          @t.add_player(Player.new('Viktor',    'Bologan',      3, :rating => 2663, :id => 13900048, :dob => '1971-01-01', :fed => 'MDA', :title => 'g'))
+          @p = ICU::Tournament::Krause.new
+          @t = ICU::Tournament.new('Las Vegas National Open', '2008-06-07')
+          @t.add_player(ICU::Player.new('Gearoidin', 'Ui Laighleis', 1, :rating => 1985, :id => 2501171,  :dob => '1964-06-10', :fed => 'IRL', :gender => 'f'))
+          @t.add_player(ICU::Player.new('Mark',      'Orr',          2, :rating => 2258, :id => 2500035,  :dob => '1955-11-09', :fed => 'IRL', :title => 'm'))
+          @t.add_player(ICU::Player.new('Viktor',    'Bologan',      3, :rating => 2663, :id => 13900048, :dob => '1971-01-01', :fed => 'MDA', :title => 'g'))
           @t.add_result(ICU::Result.new(1, 1, 'L', :opponent => 2, :colour => 'B'))
           @t.add_result(ICU::Result.new(2, 1, 'W', :opponent => 3, :colour => 'W'))
           @t.add_result(ICU::Result.new(3, 2, 'W', :opponent => 3, :colour => 'B'))
@@ -280,11 +280,11 @@ KRAUSE
 001   11      Barbosa,Paulo                          POR     1904612             1.5   11     9 w =     8 b 0     2 b 0     4 w -  0000 - +
 001   12      McCabe,Darren                          IRL     2500760             0.5   12     6 w =     9 b -     7 w -
 KRAUSE
-          @p = Krause.new
+          @p = ICU::Tournament::Krause.new
         end
 
         it "the unaltered example is valid Krause" do
-          t = @p.parse(@k).should be_instance_of(Tournament)
+          t = @p.parse(@k).should be_instance_of(ICU::Tournament)
         end
 
         it "removing the line on which the tournament name is specified should cause an error" do

@@ -1,5 +1,3 @@
-require 'fastercsv'
-
 module ICU
   class Tournament
     
@@ -100,7 +98,7 @@ A tournament can be serialized back to CSV format (the reverse of parsing) with 
         @state, @line, @round, @sum, @error = 0, 0, nil, nil, nil
         @tournament = Tournament.new('Dummy', '2000-01-01')
         
-        FasterCSV.parse(csv, :row_sep => :auto) do |r|
+        Util::CSV.parse(csv, :row_sep => :auto) do |r|
           @line += 1                            # increment line number
           next if r.size == 0                   # skip empty lines
           r = r.map{|c| c.nil? ? '' : c.strip}  # trim all spaces, turn nils to blanks
@@ -145,7 +143,7 @@ A tournament can be serialized back to CSV format (the reverse of parsing) with 
       # Serialise a tournament back into CSV format.
       def serialize(t)
         return nil unless t.class == ICU::Tournament;
-        FasterCSV.generate do |csv|
+        Util::CSV.generate do |csv|
           csv << ["Event", t.name]
           csv << ["Start", t.start]
           csv << ["Rounds", t.rounds]

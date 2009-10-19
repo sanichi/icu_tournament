@@ -294,8 +294,8 @@ attributes in an ICU::Tournament instance.
     def to_krause(rounds)
       krause = '001'
       krause << sprintf(' %4d', @num)
-      krause << sprintf(' %1s', case @gender; when 'M': 'm'; when 'F': 'w'; else ''; end)
-      krause << sprintf(' %2s', case @title; when nil: ''; when 'IM': 'm'; when 'WIM': 'wm'; else @title[0, @title.length-1].downcase; end)
+      krause << sprintf(' %1s', case @gender; when 'M' then 'm'; when 'F' then 'w'; else ''; end)
+      krause << sprintf(' %2s', case @title; when nil then ''; when 'IM' then 'm'; when 'WIM' then 'wm'; else @title[0, @title.length-1].downcase; end)
       krause << sprintf(' %-33s', "#{@last_name},#{@first_name}")
       krause << sprintf(' %4s', @rating)
       krause << sprintf(' %3s', @fed)
@@ -317,8 +317,8 @@ attributes in an ICU::Tournament instance.
       return ' ' * 8 if !@opponent && !@colour && @score == 'L'
       krause = sprintf('%4s ', @opponent || '0000')
       krause << sprintf('%1s ', @colour ? @colour.downcase : '-')
-      krause << case @score; when 'W': '1'; when 'L': '0'; else '='; end if  @rateable
-      krause << case @score; when 'W': '+'; when 'L': '-'; else '='; end if !@rateable
+      krause << case @score; when 'W' then '1'; when 'L' then '0'; else '='; end if  @rateable
+      krause << case @score; when 'W' then '+'; when 'L' then '-'; else '='; end if !@rateable
       krause
     end
   end

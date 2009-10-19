@@ -31,7 +31,7 @@ Player,3364,Ui Laighleis,Gearoidin
 4,1,B,Powell,Linda,1850,,WLS
 Total,2
 CSV
-          @f = ForeignCSV.new
+          @f = ICU::Tournament::ForeignCSV.new
           @t = @f.parse!(@csv)
         end
         
@@ -83,7 +83,7 @@ Player,456,Fox,Anthony
 9,=,W,Phillips,Roy,2271,,MAU
 Total,4
 CSV
-          @f = ForeignCSV.new
+          @f = ICU::Tournament::ForeignCSV.new
           @t = @f.parse!(@csv)
           @p = @t.player(1)
           @o = @t.players.reject { |o| o.num == 1 }
@@ -135,7 +135,7 @@ Player,1350,Orr,Mark
 2,1,B,Fischer,Bobby,2700,GM,USA
 Total,1.5
 CSV
-          @f = ForeignCSV.new
+          @f = ICU::Tournament::ForeignCSV.new
           @t = @f.parse!(@csv)
         end
 
@@ -177,7 +177,7 @@ Player,1350,Orr,Mark
 2,=,W,Ui Laighleis,Gearoidin,1800,,IRL
 Total,1.0
 CSV
-          @f = ForeignCSV.new
+          @f = ICU::Tournament::ForeignCSV.new
           @t = @f.parse!(@csv)
         end
 
@@ -216,7 +216,7 @@ Player ,3364 , ui Laighleis, gearoidin
 Total,1.0
 
 CSV
-          @f = ForeignCSV.new
+          @f = ICU::Tournament::ForeignCSV.new
           @t = @f.parse!(@csv)
         end
 
@@ -240,7 +240,7 @@ CSV
       
       context "#parse" do
         before(:each) do
-          @f = ForeignCSV.new
+          @f = ICU::Tournament::ForeignCSV.new
         end
 
         it "should behave just like #parse! on success" do
@@ -267,7 +267,7 @@ CSV
 
       context "invalid files" do
         before(:each) do
-          @f = ForeignCSV.new
+          @f = ICU::Tournament::ForeignCSV.new
         end
         
         it "a blank file is invalid" do
@@ -405,7 +405,7 @@ Player,1350,Orr,Mark
 2,=,-
 Total,1.0
 CSV
-          @f = ForeignCSV.new
+          @f = ICU::Tournament::ForeignCSV.new
           @t = @f.parse!(@csv)
         end
 
