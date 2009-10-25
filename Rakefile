@@ -16,6 +16,7 @@ begin
     gem.rdoc_options = "--charset=UTF-8"
     gem.add_dependency('fastercsv', '>= 1.4.0')
   end
+  Jeweler::GemcutterTasks.new
 rescue LoadError
   puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
 end

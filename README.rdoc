@@ -5,7 +5,7 @@ For parsing files of chess tournament data into ruby classes.
 
 == Install
 
-  sudo gem install sanichi-chess_icu --source http://gems.github.com
+  sudo gem install sanichi-chess_icu --source http://gemcutter.org
 
 There's a dependancy for versions of Ruby prior to 1.9.
 
