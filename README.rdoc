@@ -5,7 +5,7 @@ For parsing files of chess tournament data into ruby classes.
 
 == Install
 
-  sudo gem install sanichi-chess_icu --source http://gemcutter.org
+  sudo gem install chess_icu --source http://gemcutter.org
 
 There's a dependancy for versions of Ruby prior to 1.9.
 
@@ -13,7 +13,7 @@ There's a dependancy for versions of Ruby prior to 1.9.
 
 For Ruby 1.9 and above the standard library's CSV is used instead so this gem is not required.
 
-If you want to run the test suite (by just running <em>rake</em>) you'll need to install RSpec:
+If you want to run the test suite (by just running <em>rake</em>) you'll need to have RSpec:
 
   sudo gem install rspec
   
