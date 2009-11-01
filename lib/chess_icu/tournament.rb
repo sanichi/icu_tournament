@@ -55,8 +55,8 @@ Validations checks that:
 
 * there are at least two players
 * every player has a least one result
-* the round numbers of the players results are consistent
-* the tournament dates (start, finish, round dates) are consistent
+* the result round numbers are consistent (no more than one game per player per round)
+* the tournament dates (start, finish, round dates), if there are any, are consistent
 * the player ranks are consistent with their scores
 
 Side effects of calling _validate!_ or _invalid_ include:
@@ -76,8 +76,8 @@ but this only applies if the tournament is not yet ranked or it's ranking is inc
 
   t.validate(:rerank => true)
 
-Ranking is inconsistent if either some but not all players have any rank or if all players
-have a rank but some players are ranked higher than others on lower scores.
+Ranking is inconsistent if some but not all players have a rank or if all players
+have a rank but some are ranked higher than others on lower scores.
 
 To rank the players requires a tie break method to be specified to order players on the same score.
 The default is alphabetical (by last name then first name). Other methods can be specified by supplying
@@ -93,9 +93,9 @@ option of the _validate_ method. Examples:
 The full list of supported methods is:
 
 * _Buchholz_: sum of opponents' scores
-* _Neustadtl_ (or _Sonneborn-Berger_): sum of scores of players defeated plus half sum of scores of players drawn against
 * _Harkness_ (or _median_): like Buchholz except the highest and lowest opponents' scores are discarded (or two highest and lowest if 9 rounds or more)
 * _modified_median_: same as Harkness except only lowest (or highest) score(s) are discarded for players with more (or less) than 50%
+* _Neustadtl_ (or _Sonneborn-Berger_): sum of scores of players defeated plus half sum of scores of players drawn against
 * _blacks_: number of blacks
 * _wins_: number of wins
 * _name_: alphabetical by name is the default and is the same as calling _rerank_ with no options or setting the _rerank_ option to true
@@ -110,8 +110,8 @@ The numbers used to uniquely identify each player in a tournament can be any set
 go up to the total number of players use the _renumber_ method. This method takes one optional
 argument to specify how the renumbering is done.
 
-  t.renumber(:rank)       # renumber by rank if possible, otherwise by name alphabetically
-  t.renumber              # the same as this is the default
+  t.renumber(:rank)       # renumber by rank (if there are consistent rankings), otherwise by name alphabetically
+  t.renumber              # the same, as renumbering by rank is the default
   t.renumber(:name)       # renumber by name alphabetically
   
 The return value from _renumber_ is the tournament object itself.
