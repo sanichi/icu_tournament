@@ -44,4 +44,16 @@ In 1.9.1 it assumes European dates and will raise ArgumentError on "03/30/2003".
       end
     end
   end
+  
+  module Accessor
+    def attr_accessor(name, accept = nil, &block)
+      attr_reader name
+      if block
+        define_method("#{name}=") do |val|
+          val = block.call(val)
+          instance_variable_set("@#{name}", val)
+        end
+      end
+    end
+  end
 end
