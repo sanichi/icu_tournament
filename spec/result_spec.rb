@@ -12,8 +12,8 @@ module ICU
     
     context "round number" do
       it "should be a positive integer" do
-        lambda { Result.new(-2, 2, 0) }.should raise_error(/invalid round number/)
-        lambda { Result.new(0, 2, 0) }.should raise_error(/invalid round number/)
+        lambda { Result.new(-2, 2, 0) }.should raise_error(/invalid positive integer/)
+        lambda { Result.new(0, 2, 0) }.should raise_error(/invalid positive integer/)
         Result.new(1, 2, 0).round.should == 1
         Result.new(' 3 ', 2, 0).round.should == 3
       end
@@ -21,7 +21,7 @@ module ICU
     
     context "player number" do
       it "should be an integer" do
-        lambda { Result.new(1, '  ', 0) }.should raise_error(/invalid player number/)
+        lambda { Result.new(1, '  ', 0) }.should raise_error(/invalid integer/)
         Result.new(1, 2, 0).player.should == 2
         Result.new(1, ' 0 ', 0).player.should == 0
         Result.new(1, -5, 0).player.should == -5

@@ -78,8 +78,12 @@ The _points_ read-only accessor always returns a floating point number: either 0
 =end
 
   class Result
-
-    attr_reader :round, :player, :score, :colour, :opponent, :rateable
+    
+    extend ICU::Accessor
+    attr_positive :round
+    attr_integer :player
+    
+    attr_reader :score, :colour, :opponent, :rateable
     
     # Constructor. Round number, player number and score must be supplied.
     # Optional hash attribute are _opponent_, _colour_ and _rateable_.
@@ -89,21 +93,6 @@ The _points_ read-only accessor always returns a floating point number: either 0
       self.score  = score
       [:colour, :opponent].each { |a| self.send("#{a}=", opt[a]) unless opt[a].nil? }
       self.rateable = opt[:rateable]  # always attempt to set this, and do it last, to get the right default
-    end
-    
-    # Round number. Must be a positive integer.
-    def round=(round)
-      @round = round.to_i
-      raise "invalid round number (#{round})" unless @round > 0
-    end
-    
-    # Player number. Can be any integer.
-    def player=(player)
-      @player = case player
-        when Fixnum then player
-        else player.to_i
-      end
-      raise "invalid player number (#{player})" if @player == 0 && !player.to_s.match(/\d/)
     end
     
     # Score for the game, even if a default. One of 'W', 'L' or 'D'. Reasonable inputs like 1, 0, =, ½, etc will be converted.

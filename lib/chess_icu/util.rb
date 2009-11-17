@@ -46,12 +46,109 @@ In 1.9.1 it assumes European dates and will raise ArgumentError on "03/30/2003".
   end
   
   module Accessor
-    def attr_accessor(name, accept = nil, &block)
+    def attr_accessor(name, &block)
       attr_reader name
       if block
         define_method("#{name}=") do |val|
           val = block.call(val)
           instance_variable_set("@#{name}", val)
+        end
+      end
+    end
+    
+    def attr_integer(*names)
+      names.each do |name|
+        attr_accessor(name) do |val|
+          tmp = val.to_i
+          raise "invalid integer (#{val}) for #{name}" unless val.is_a?(Fixnum) || (val.is_a?(String) && val.include?(tmp.to_s))
+          tmp
+        end
+      end
+    end
+    
+    def attr_integer_or_nil(*names)
+      names.each do |name|
+        attr_accessor(name) do |val|
+          tmp = case val
+            when nil      then nil
+            when Fixnum   then val
+            when /^\s*$/  then nil
+            else val.to_i
+          end
+          raise "invalid integer (#{val}) for #{name}" if tmp == 0 && val.is_a?(String) && !val.include?('0')
+          tmp
+        end
+      end
+    end
+    
+    def attr_positive(*names)
+      names.each do |name|
+        attr_accessor(name) do |val|
+          tmp = val.to_i
+          raise "invalid positive integer (#{val}) for #{name}" unless tmp > 0
+          tmp
+        end
+      end
+    end
+    
+    def attr_positive_or_nil(*names)
+      names.each do |name|
+        attr_accessor(name) do |val|
+          tmp = case val
+            when nil      then nil
+            when Fixnum   then val
+            when /^\s*$/  then nil
+            else val.to_i
+          end
+          raise "invalid positive integer or nil (#{val}) for #{name}" unless tmp.nil? || tmp > 0
+          tmp
+        end
+      end
+    end
+  
+    def attr_date(*names)
+      names.each do |name|
+        attr_accessor(name) do |val|
+          tmp = val.to_s.strip
+          tmp = ICU::Util::parsedate(tmp)
+          raise "invalid date (#{val}) for #{name}" unless tmp
+          tmp
+        end
+      end
+    end
+  
+    def attr_date_or_nil(*names)
+      names.each do |name|
+        attr_accessor(name) do |val|
+          tmp = val.to_s.strip
+          if tmp == ''
+            tmp = nil
+          else
+            tmp = ICU::Util::parsedate(tmp)
+            raise "invalid date or nil (#{val}) for #{name}" unless tmp
+          end
+          tmp
+        end
+      end
+    end
+    
+    def attr_string(regex, *names)
+      names.each do |name|
+        attr_accessor(name) do |val|
+          tmp = val.to_s.strip
+          raise "invalid #{name} (#{val})" unless tmp.match(regex)
+          tmp
+        end
+      end
+    end
+    
+    def attr_string_or_nil(regex, *names)
+      names.each do |name|
+        attr_accessor(name) do |val|
+          tmp = val.to_s.strip
+          tmp = nil if tmp == ''
+          raise "invalid #{name} (#{val})" unless tmp.nil? || tmp.match(regex)
+          tmp
         end
       end
     end

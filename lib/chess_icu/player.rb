@@ -81,8 +81,13 @@ All other attributes are unaffected.
 =end
 
   class Player
-    attr_accessor :first_name, :last_name, :num, :id, :fed, :title, :rating, :rank, :dob, :gender
-    attr_reader :results
+    
+    extend ICU::Accessor
+    attr_integer :num
+    attr_positive_or_nil :id, :rating, :rank
+    attr_date_or_nil :dob
+    
+    attr_reader :results, :first_name, :last_name, :fed, :title, :gender
     
     # Constructor. Must supply both names and a unique number for the tournament.
     def initialize(first_name, last_name, num, opt={})
@@ -114,26 +119,6 @@ All other attributes are unaffected.
       "#{last_name}, #{first_name}"
     end
     
-    # Player number. Any integer is valid including zero and negative numbers, as long as it's unique in the tournament.
-    def num=(num)
-      @num = case num
-        when Fixnum then num
-        else num.to_i
-      end
-      raise "invalid player number (#{num})" if @num == 0 && !num.to_s.match(/\d/)
-    end
-    
-    # National or FIDE ID. Is either unknown (nil) or a positive integer.
-    def id=(id)
-      @id = case id
-        when nil     then nil
-        when Fixnum  then id
-        when /^\s*$/ then nil
-        else id.to_i
-      end
-      raise "invalid ID (#{id})" unless @id.nil? || @id > 0
-    end
-    
     # Federation. Is either unknown (nil) or a string containing at least three letters.
     def fed=(fed)
       obj = Federation.find(fed)
@@ -150,35 +135,6 @@ All other attributes are unaffected.
       @title = 'WIM' if @title == 'WM'
       @title = nil if @title == ''
       raise "invalid chess title (#{title})" unless @title.nil? || @title.match(/^W?[GIFCN]M$/)
-    end
-    
-    # Rating. Is either unknown (nil) or a positive integer.
-    def rating=(rating)
-      @rating = case rating
-        when nil     then nil
-        when Fixnum  then rating
-        when /^\s*$/ then nil
-        else rating.to_i
-      end
-      raise "invalid rating (#{rating})" unless @rating.nil? || @rating > 0
-    end
-    
-    # Rank in the tournament. Is either unknown (nil) or a positive integer. Must be unique in the tournament.
-    def rank=(rank)
-      @rank = case rank
-        when nil     then nil
-        when Fixnum  then rank
-        when /^\s*$/ then nil
-        else rank.to_i
-      end
-      raise "invalid rank (#{rank})" unless @rank.nil? || @rank > 0
-    end
-    
-    # Date of birth. Is either unknown (nil) or a yyyy-mm-dd format date.
-    def dob=(dob)
-      dob = dob.to_s.strip
-      @dob = dob == '' ? nil : Util.parsedate(dob)
-      raise "invalid DOB (#{dob})" if @dob.nil? && dob.length > 0
     end
     
     # Gender. Is either unknown (nil) or one of _M_ or _F_.

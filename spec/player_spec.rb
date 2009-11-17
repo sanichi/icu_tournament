@@ -59,7 +59,7 @@ module ICU
         Player.new('Mark', 'Orr', -7).num.should == -7
         Player.new('Mark', 'Orr', '  -4  ').num.should == -4
         Player.new('Mark', 'Orr', '0').num.should == 0
-        lambda { Player.new('Mark', 'Orr', '  ') }.should raise_error(/invalid player number/)
+        lambda { Player.new('Mark', 'Orr', '  ') }.should raise_error(/invalid integer/)
       end
     end
     
@@ -71,7 +71,7 @@ module ICU
       it "should be a positive integer" do
         Player.new('Mark', 'Orr', 3, :id => 1350).id.should == 1350
         Player.new('Gary', 'Kasparov', 4, :id => '4100018').id.should == 4100018
-        lambda { Player.new('Mark', 'Orr', 3, :id => ' 0 ') }.should raise_error(/invalid ID/)
+        lambda { Player.new('Mark', 'Orr', 3, :id => ' 0 ') }.should raise_error(/invalid positive integer/)
       end
     end
     
@@ -116,8 +116,8 @@ module ICU
       it "should be a positive integer" do
         Player.new('Gary', 'Kasparov', 1, :rating => 2800).rating.should == 2800
         Player.new('Mark', 'Orr', 2, :rating => ' 2100 ').rating.should == 2100
-        lambda { Player.new('Mark', 'Orr', 3, :rating => -2100) }.should raise_error(/invalid rating/)
-        lambda { Player.new('Mark', 'Orr', 3, :rating => 'IM') }.should raise_error(/invalid rating/)
+        lambda { Player.new('Mark', 'Orr', 3, :rating => -2100) }.should raise_error(/invalid positive integer/)
+        lambda { Player.new('Mark', 'Orr', 3, :rating => 'IM') }.should raise_error(/invalid positive integer/)
       end
     end
     
@@ -129,8 +129,8 @@ module ICU
       it "should be a positive integer" do
         Player.new('Mark', 'Orr', 3, :rank => 1).rank.should == 1
         Player.new('Gary', 'Kasparov', 4, :rank => ' 29 ').rank.should == 29
-        lambda { Player.new('Mark', 'Orr', 3, :rank => 0) }.should raise_error(/invalid rank/)
-        lambda { Player.new('Mark', 'Orr', 3, :rank => ' -1 ') }.should raise_error(/invalid rank/)
+        lambda { Player.new('Mark', 'Orr', 3, :rank => 0) }.should raise_error(/invalid positive integer/)
+        lambda { Player.new('Mark', 'Orr', 3, :rank => ' -1 ') }.should raise_error(/invalid positive integer/)
       end
     end
     
@@ -142,7 +142,7 @@ module ICU
 
       it "should be a yyyy-mm-dd date" do
         Player.new('Mark', 'Orr', 3, :dob => '1955-11-09').dob.should == '1955-11-09'
-        lambda { Player.new('Mark', 'Orr', 3, :dob => 'X') }.should raise_error(/invalid DOB/)
+        lambda { Player.new('Mark', 'Orr', 3, :dob => 'X') }.should raise_error(/invalid.*dob/)
       end
     end
     

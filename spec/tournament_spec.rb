@@ -164,9 +164,10 @@ EOS
         Tournament.new('Edinburgh Masters', '2009-11-09').rounds.should be_nil
       end
 
-      it "should be a positive integer" do
+      it "should be a positive integer or nil" do
         Tournament.new('Edinburgh Masters', '2009-11-09', :rounds => 3).rounds.should == 3
         Tournament.new('Edinburgh Masters', '2009-11-09', :rounds => ' 10 ').rounds.should == 10
+        Tournament.new('Edinburgh Masters', '2009-11-09', :rounds => nil).rounds.should be_nil
         lambda { Tournament.new('Edinburgh Masters', '2009-11-09', :rounds => ' 0 ') }.should raise_error(/invalid.*rounds/)
       end
     end
@@ -257,7 +258,7 @@ EOS
         lambda { @t.type         = '123' }.should raise_error(/invalid.*type/)
         lambda { @t.arbiter      = '123' }.should raise_error(/invalid.*arbiter/)
         lambda { @t.deputy       = '123' }.should raise_error(/invalid.*deputy/)
-        lambda { @t.time_control = 'abc' }.should raise_error(/invalid.*time control/)
+        lambda { @t.time_control = 'abc' }.should raise_error(/invalid.*time.*control/)
       end
     end
 
