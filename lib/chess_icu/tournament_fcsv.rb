@@ -73,9 +73,40 @@ to which the main player belongs. For example:
   opponent.name                                       # => "Taylor, Peter P."
   opponent.results[0].rateable                        # => false
 
-A tournament can be serialized back to CSV format (the reverse of parsing) with the _serialize_ method.
+A tournament can be serialized back to CSV format (the reverse of parsing) with the _serialize_ method
+of the parser object.
 
   csv = parser.serialize(tournament)
+
+Or equivalently, the _serialize_ instance method of the tournament, if the appropriate parser name is supplied.
+
+  csv = tournament.serialize('ForeignCSV')
+
+You can also build the tournament object from scratch using your own data and then serialize it.
+For example, here are the commands to reproduce the example above.
+
+  t = ICU::Tournament.new("Isle of Man Masters, 2007", '2007-09-22', :rounds => 9)
+  t.site = 'http://www.bcmchess.co.uk/monarch2007/'
+  t.add_player(ICU::Player.new('Anthony',  'Fox',      1, :rating => 2100, :fed => 'IRL', :id => 456))
+  t.add_player(ICU::Player.new('Peter P.', 'Taylor',   2, :rating => 2209, :fed => 'ENG'))
+  t.add_player(ICU::Player.new('Egozi',    'Nadav',    3, :rating => 2205, :fed => 'ISR'))
+  t.add_player(ICU::Player.new('Peter',    'Cafolla',  4, :rating => 2048, :fed => 'IRL'))
+  t.add_player(ICU::Player.new('Tim R.',   'Spanton',  5, :rating => 1982, :fed => 'ENG'))
+  t.add_player(ICU::Player.new('Alan',     'Grant',    6, :rating => 2223, :fed => 'SCO'))
+  t.add_player(ICU::Player.new('Alan J.',  'Walton',   7, :rating => 2223, :fed => 'ENG'))
+  t.add_player(ICU::Player.new('Bernard',  'Bannink',  8, :rating => 2271, :fed => 'NED', :title => 'FM'))
+  t.add_player(ICU::Player.new('Roy',      'Phillips', 9, :rating => 2271, :fed => 'MAU'))
+  t.add_result(ICU::Result.new(1, 1, 'L', :opponent => 2, :colour => 'B'))
+  t.add_result(ICU::Result.new(2, 1, 'D', :opponent => 3, :colour => 'W'))
+  t.add_result(ICU::Result.new(3, 1, 'D', :opponent => 4, :colour => 'B'))
+  t.add_result(ICU::Result.new(4, 1, 'W', :opponent => 5, :colour => 'W'))
+  t.add_result(ICU::Result.new(5, 1, 'W', :opponent => 6, :colour => 'B'))
+  t.add_result(ICU::Result.new(6, 1, 'L'))                 
+  t.add_result(ICU::Result.new(7, 1, 'D', :opponent => 7, :colour => 'W'))
+  t.add_result(ICU::Result.new(8, 1, 'L', :opponent => 8, :colour => 'B'))
+  t.add_result(ICU::Result.new(9, 1, 'D', :opponent => 9, :colour => 'W'))
+  t.validate!
+  puts t.serialize('ForeignCSV')
   
 =end
 

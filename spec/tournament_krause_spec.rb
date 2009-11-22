@@ -150,6 +150,28 @@ KRAUSE
         end
       end
       
+      context "the README serialisation example" do
+        before(:all) do
+          @t = ICU::Tournament.new('World Championship', '1972-07-11')
+          @t.add_player(ICU::Player.new('Robert J.', 'Fischer', 1))
+          @t.add_player(ICU::Player.new('Boris V.', 'Spassky', 2))
+          @t.add_result(ICU::Result.new(1, 1, 'L', :opponent => 2, :colour => 'B'))
+          @t.add_result(ICU::Result.new(2, 1, 'L', :opponent => 2, :colour => 'W', :rateable => false))
+          @t.add_result(ICU::Result.new(3, 1, 'W', :opponent => 2, :colour => 'B'))
+          @t.add_result(ICU::Result.new(4, 1, 'W', :opponent => 2, :colour => 'B'))
+          serializer = ICU::Tournament::Krause.new
+          @k = serializer.serialize(@t)
+        end
+
+        it "should produce a valid tournament" do
+          @t.invalid.should be_false
+        end
+        
+        it "should produce output that looks reasonable" do
+          @k.should match(/Fischer,Robert J\./)
+        end
+      end
+      
       context "serialisation" do
         before(:all) do
           @krause = <<KRAUSE
@@ -177,6 +199,10 @@ KRAUSE
 
         it "should serialize back to the original if the input is fully canonicalised" do
           @q.serialize(@t).should == @krause
+        end
+        
+        it "should serialize using the convenience method of the tournament object" do
+          @t.serialize('Krause').should == @krause
         end
 
         it "should return nil on invalid input" do

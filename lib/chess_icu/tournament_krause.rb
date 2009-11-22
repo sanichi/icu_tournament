@@ -65,9 +65,13 @@ to parse another file.
 
   parser.comments                   # => "0123456789..."
 
-A tournament can be serialized back to Krause format (the reverse of parsing) with the _serialize_ method.
+A tournament can be serialized back to Krause format (the reverse of parsing) with the _serialize_ method of the parser.
 
   krause = parser.serialize(tournament)
+
+Or alternatively, by the _serialize_ method of the tournament object if the name of the serializer is supplied.
+
+  krause = tournament.serialize('Krause')
 
 The following lists Krause data identification numbers, their description and, where available, their corresponding
 attributes in an ICU::Tournament instance.

@@ -26,12 +26,13 @@ module ICU
         t.add_result(ICU::Result.new(1, 10, 'D', :opponent => 30, :colour => 'W'))
         t.add_result(ICU::Result.new(2, 20, 'W', :opponent => 30, :colour => 'B'))
         t.add_result(ICU::Result.new(3, 20, 'L', :opponent => 10, :colour => 'W'))
+        t.validate!(:rerank => true)
         @s = <<EOS
 012 Bangor Masters
 042 2009-11-09
-001   10      Fischer,Bobby                                                      1.5         30 w =              20 b 1
-001   20      Kasparov,Garry                                                     1.0                   30 b 1    10 w 0
-001   30      Orr,Mark                                                           0.5         10 b =    20 w 0          
+001   10      Fischer,Bobby                                                      1.5    1    30 w =              20 b 1
+001   20      Kasparov,Garry                                                     1.0    2              30 b 1    10 w 0
+001   30      Orr,Mark                                                           0.5    3    10 b =    20 w 0          
 EOS
       end
       

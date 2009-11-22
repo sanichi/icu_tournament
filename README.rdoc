@@ -1,56 +1,74 @@
 = ChessIcu
 
-For parsing files of chess tournament data into ruby classes.
+For reading or writing files of chess tournament data.
 
 
 == Install
 
   sudo gem install chess_icu --source http://gemcutter.org
 
-There's a dependancy for versions of Ruby prior to 1.9.
+For Ruby prior to version 1.9 you also need:
 
   sudo gem install fastercsv
-
-For Ruby 1.9 and above the standard library's CSV is used instead so this gem is not required.
-
-If you want to run the test suite (by just running <em>rake</em>) you'll need to have RSpec:
-
-  sudo gem install rspec
   
   
 == Usage
 
-A tournament (ICU::Tournament) has two or more players (ICU::Player), and each player has one or more results (ICU::Result).
+There are two main uses for this gem:
 
-Tournament objects are created by parsing files of various formats. An instance of a class that can handle the format
-(see below for the available classes) is first created, and then it's <em>parse</em> or <em>parse!</em> method is called
-with the file's contents as the only argument.
+* You have chess tournament data that needs to be written to a file in one of the supported formats.
+  For example, your data is in a spreadsheet but you need it in Krause format so you can upload it to the FIDE rating server.
 
-  require 'rubygems'
-  require 'chess_icu'
+* You have a file in a supported format and you need to extract the information it contains.
+  For example, you have a Krause formatted file and want to extract the data and insert it into a database.
+
+The currently supported formats (more are planned) are:
+
+* ICU::Tournament::Krause - the format used by FIDE.
+* ICU::Tournament::ForeignCSV - used by Irish players to report their individual results in foreign tournaments.
+
+
+== Writing Files
+
+Here's how the 1972 Fischer-Spassky match could be formatted to Krause. First a tournament object is created
+and the players (just two in this case) are added with unique ID numbers. To keep the example short, not all
+the information that a Krause file might contin is included here (see ICU::Tournament::Krause for more details).
+
+  t = ICU::Tournament.new('World Championship', '1972-07-11')
+  t.add_player(ICU::Player.new('Robert J.', 'Fischer', 1))
+  t.add_player(ICU::Player.new('Boris V.', 'Spassky', 2))
+
+Then the results for each round are added using the ID numbers to refer the players.
+
+  t.add_result(ICU::Result.new(1, 1, 'L', :opponent => 2, :colour => 'B'))
+
+Read this as: in round 1, player 1 lost against opponent 2 with the black pieces.
+
+  t.add_result(ICU::Result.new(2, 1, 'L', :opponent => 2, :colour => 'W', :rateable => false))
+
+In round 2 player 1 lost by default against player 2. Similarly for all the other rounds:
+
+  t.add_result(ICU::Result.new(3, 1, 'W', :opponent => 2, :colour => 'B'))
+  # ...
+  t.add_result(ICU::Result.new(21, 1, 'W', :opponent => 2, :colour => 'B'))
+
+Then finally, to create the file:
+
+  open('match.txt', 'w') { |f| f.puts @t.serialze('Krause') }
+
+
+== Reading Files
+
+Suppose you have a tournament file in Krause format. Parse it into a tournament object like this:
+
   data = open('tournament.txt') { |f| f.read }
-  parser = ICU::Tournament::Parser.new  # substitute the name of an available parser (see below) for "Parser"
+  parser = ICU::Tournament::Krause.new
   tournament = parser.parse(data)
-
-On success, the _parse_ method returns an object of type ICU::Tournament. On error, it returns _nil_ and an error message
-can be retrieved from the parser instance:
-
-  parser.error  # => error message or nil on success
   
-Alternatively, if an exception is preferred on error, the <em>parse!</em> method can be used:
-
-  tournament = parser.parse!(data)
-
-The currently available parsers are:
-
-* ICU::Tournament::Krause - the format used by FIDE
-* ICU::Tournament::ForeignCSV - used by Irish players to report their individual results in foreign tournaments
-
-
-== TODO
-  
-Future versions of this software will be able to parse additional file formats (such as SwissPerfect).
-
+On success, the _parse_ method returns an object of type ICU::Tournament. A tournament (ICU::Tournament)
+has two or more players (ICU::Player), and each player has one or more results (ICU::Result). See the
+rdoc for more details. On error, the _parse_ method returns _nil_ and an error message can be retrieved
+from the parser (_parser.error_).
 
 == Author
 

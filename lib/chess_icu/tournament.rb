@@ -25,17 +25,25 @@ For example:
   t.add_result(ICU::Result.new(1, 10, 'D', :opponent => 30, :colour => 'W'))
   t.add_result(ICU::Result.new(2, 20, 'W', :opponent => 30, :colour => 'B'))
   t.add_result(ICU::Result.new(3, 20, 'L', :opponent => 10, :colour => 'W'))
+  
+  t.validate!(:rerank => true)
 
-  parser = ICU::Tournament::Krause.new
-  puts parser.serialize(@t)
+and then:
+
+  serializer = ICU::Tournament::Krause.new
+  puts serializer.serialize(@t)
+
+or equivalntly, just:
+
+  puts @t.serialize('Krause')
 
 Would result in the following output:
 
   012 Bangor Masters
   042 2009-11-09
-  001   10      Fischer,Bobby                                                      1.5         30 w =              20 b 1
-  001   20      Kasparov,Garry                                                     1.0                   30 b 1    10 w 0
-  001   30      Orr,Mark                                                           0.5         10 b =    20 w 0          
+  001   10      Fischer,Bobby                                                      1.5    1    30 w =              20 b 1
+  001   20      Kasparov,Garry                                                     1.0    2              30 b 1    10 w 0
+  001   30      Orr,Mark                                                           0.5    3    10 b =    20 w 0          
 
 Note that the players should be added first because the _add_result_ method will
 raise an exception if the players it references through their tournament numbers
@@ -287,6 +295,7 @@ The return value from _renumber_ is the tournament object itself.
     end
 
     # Is a tournament invalid? Either returns false (if it's valid) or an error message.
+    # Has the same _rerank_ option as validate!.
     def invalid(options={})
       begin
         validate!(options)
@@ -297,7 +306,8 @@ The return value from _renumber_ is the tournament object itself.
     end
 
     # Raise an exception if a tournament is not valid.
-    # Covers all the ways a tournament can be invalid not already enforced by the setters.
+    # The _rerank_ option can be set to _true_ or one of the valid tie-break
+    # methods to rerank the tournament if ranking is missing or inconsistent.
     def validate!(options={})
       begin check_ranks rescue rerank(options[:rerank]) end if options[:rerank]
       check_players
@@ -306,6 +316,17 @@ The return value from _renumber_ is the tournament object itself.
       check_teams
       check_ranks(:allow_none => true)
       true
+    end
+    
+    # Convenience method to serialise the tournament into a supported format.
+    # Throws and exception unless the name of a supported format is supplied (e.g. _Krause_).
+    def serialize(format)
+      serializer = case format.to_s.downcase
+        when 'krause'     then ICU::Tournament::Krause.new
+        when 'foreigncsv' then ICU::Tournament::ForeignCSV.new
+        else raise "unsupported serialisation format: '#{format}'"
+      end
+      serializer.serialize(self)
     end
 
     private

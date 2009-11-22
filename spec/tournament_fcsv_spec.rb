@@ -387,7 +387,7 @@ CSV
         end
       end
       
-      context "serialisation" do
+      context "serialisation of simple tournament" do
         before(:each) do
           @csv = <<CSV
 Event,"Edinburgh Masters, 2007"
@@ -415,6 +415,132 @@ CSV
 
         it "should return nil on invalid input" do
           @f.serialize('Rubbish').should be_nil
+        end
+      end
+      
+      context "serialisation of ForeignCSV documentation example" do
+        before(:each) do
+          @csv = <<CSV
+Event,"Isle of Man Masters, 2007"
+Start,2007-09-22
+Rounds,9
+Website,http://www.bcmchess.co.uk/monarch2007/
+
+Player,456,Fox,Anthony
+1,0,B,Taylor,Peter P.,2209,,ENG
+2,=,W,Nadav,Egozi,2205,,ISR
+3,=,B,Cafolla,Peter,2048,,IRL
+4,1,W,Spanton,Tim R.,1982,,ENG
+5,1,B,Grant,Alan,2223,,SCO
+6,0,-
+7,=,W,Walton,Alan J.,2223,,ENG
+8,0,B,Bannink,Bernard,2271,FM,NED
+9,=,W,Phillips,Roy,2271,,MAU
+Total,4.0
+
+Player,159,Cafolla,Peter
+1,0,W,Jackson,Oliver A.,2198,,ENG
+2,0,B,Jeroen,Van Den Berssalaar,,,NED
+3,=,W,Fox,Anthony,2100,,IRL
+4,=,B,Collins,Sam E.,2394,IM,IRL
+5,1,W,Troyke,Doreen,2151,WFM,GER
+6,=,B,Nelson,Jonathan P.,2282,,ENG
+7,0,W,Egozi,Nadav,2205,,ISR
+8,=,B,Weeks,Manuel,2200,FM,AUS
+9,0,W,Grant,Alan,2223,,SCO
+Total,3.0
+CSV
+          @t = ICU::Tournament.new("Isle of Man Masters, 2007", '2007-09-22')
+          @t.site = 'http://www.bcmchess.co.uk/monarch2007/'
+          @t.rounds = 9
+          @t.add_player(ICU::Player.new('Anthony', 'Fox', 1, :id => 456, :rating => 2100, :fed => 'IRL'))
+          @t.add_player(ICU::Player.new('Peter', 'Cafolla', 2, :id => 159, :rating => 2048, :fed => 'IRL'))
+          @t.add_player(ICU::Player.new('Peter P.', 'Taylor', 3, :rating => 2209, :fed => 'ENG'))
+          @t.add_player(ICU::Player.new('Egozi', 'Nadav', 4, :rating => 2205, :fed => 'ISR'))
+          @t.add_player(ICU::Player.new('Tim R.', 'Spanton', 5, :rating => 1982, :fed => 'ENG'))
+          @t.add_player(ICU::Player.new('Alan', 'Grant', 6, :rating => 2223, :fed => 'SCO'))
+          @t.add_player(ICU::Player.new('Alan J.', 'Walton', 7, :rating => 2223, :fed => 'ENG'))
+          @t.add_player(ICU::Player.new('Bernard', 'Bannink', 8, :rating => 2271, :fed => 'NED', :title => 'FM'))
+          @t.add_player(ICU::Player.new('Roy', 'Phillips', 9, :rating => 2271, :fed => 'MAU'))
+          @t.add_player(ICU::Player.new('Oliver A.', 'Jackson', 10, :rating => 2198, :fed => 'ENG'))
+          @t.add_player(ICU::Player.new('Van Den Berssalaar', 'Jeroen', 11, :fed => 'NED'))
+          @t.add_player(ICU::Player.new('Sam E.', 'Collins', 12, :rating => 2394, :fed => 'IRL', :title => 'IM'))
+          @t.add_player(ICU::Player.new('Doreen', 'Troyke', 13, :rating => 2151, :fed => 'GER', :title => 'WFM'))
+          @t.add_player(ICU::Player.new('Jonathan P.', 'Nelson', 14, :rating => 2282, :fed => 'ENG'))
+          @t.add_player(ICU::Player.new('Nadav', 'Egozi', 15, :rating => 2205, :fed => 'ISR'))
+          @t.add_player(ICU::Player.new('Manuel', 'Weeks', 16, :rating => 2200, :fed => 'AUS', :title => 'FM'))
+          @t.add_player(ICU::Player.new('Alan', 'Grant', 17, :rating => 2223, :fed => 'SCO'))
+          @t.add_result(ICU::Result.new(1, 1, 'L', :opponent => 3,  :colour => 'B'))
+          @t.add_result(ICU::Result.new(2, 1, 'D', :opponent => 4,  :colour => 'W'))
+          @t.add_result(ICU::Result.new(3, 1, 'D', :opponent => 2,  :colour => 'B'))
+          @t.add_result(ICU::Result.new(4, 1, 'W', :opponent => 5,  :colour => 'W'))
+          @t.add_result(ICU::Result.new(5, 1, 'W', :opponent => 6,  :colour => 'B'))
+          @t.add_result(ICU::Result.new(6, 1, 'L'))
+          @t.add_result(ICU::Result.new(7, 1, 'D', :opponent => 7,  :colour => 'W'))
+          @t.add_result(ICU::Result.new(8, 1, 'L', :opponent => 8,  :colour => 'B'))
+          @t.add_result(ICU::Result.new(9, 1, 'D', :opponent => 9,  :colour => 'W'))
+          @t.add_result(ICU::Result.new(1, 2, 'L', :opponent => 10, :colour => 'W'))
+          @t.add_result(ICU::Result.new(2, 2, 'L', :opponent => 11, :colour => 'B'))
+          @t.add_result(ICU::Result.new(3, 2, 'D', :opponent => 1,  :colour => 'W'))
+          @t.add_result(ICU::Result.new(4, 2, 'D', :opponent => 12, :colour => 'B'))
+          @t.add_result(ICU::Result.new(5, 2, 'W', :opponent => 13, :colour => 'W'))
+          @t.add_result(ICU::Result.new(6, 2, 'D', :opponent => 14, :colour => 'B'))
+          @t.add_result(ICU::Result.new(7, 2, 'L', :opponent => 15, :colour => 'W'))
+          @t.add_result(ICU::Result.new(8, 2, 'D', :opponent => 16, :colour => 'B'))
+          @t.add_result(ICU::Result.new(9, 2, 'L', :opponent => 17, :colour => 'W'))
+        end
+
+        it "should serialize to the expected string" do
+          @t.serialize('ForeignCSV').should == @csv
+        end
+      end
+      
+      context "serialisation of shortened ForeignCSV documentation example" do
+        before(:each) do
+          @csv = <<CSV
+Event,"Isle of Man Masters, 2007"
+Start,2007-09-22
+Rounds,9
+Website,http://www.bcmchess.co.uk/monarch2007/
+
+Player,456,Fox,Anthony
+1,0,B,Taylor,Peter P.,2209,,ENG
+2,=,W,Nadav,Egozi,2205,,ISR
+3,=,B,Cafolla,Peter,2048,,IRL
+4,1,W,Spanton,Tim R.,1982,,ENG
+5,1,B,Grant,Alan,2223,,SCO
+6,0,-
+7,=,W,Walton,Alan J.,2223,,ENG
+8,0,B,Bannink,Bernard,2271,FM,NED
+9,=,W,Phillips,Roy,2271,,MAU
+Total,4.0
+CSV
+          @t = ICU::Tournament.new("Isle of Man Masters, 2007", '2007-09-22', :round => 9)
+          @t.site = 'http://www.bcmchess.co.uk/monarch2007/'
+          @t.rounds = 9
+          @t.add_player(ICU::Player.new('Anthony', 'Fox', 1, :id => 456, :rating => 2100, :fed => 'IRL'))
+          @t.add_player(ICU::Player.new('Peter P.', 'Taylor', 2, :rating => 2209, :fed => 'ENG'))
+          @t.add_player(ICU::Player.new('Egozi', 'Nadav', 3, :rating => 2205, :fed => 'ISR'))
+          @t.add_player(ICU::Player.new('Peter', 'Cafolla', 4, :rating => 2048, :fed => 'IRL'))
+          @t.add_player(ICU::Player.new('Tim R.', 'Spanton', 5, :rating => 1982, :fed => 'ENG'))
+          @t.add_player(ICU::Player.new('Alan', 'Grant', 6, :rating => 2223, :fed => 'SCO'))
+          @t.add_player(ICU::Player.new('Alan J.', 'Walton', 7, :rating => 2223, :fed => 'ENG'))
+          @t.add_player(ICU::Player.new('Bernard', 'Bannink', 8, :rating => 2271, :fed => 'NED', :title => 'FM'))
+          @t.add_player(ICU::Player.new('Roy', 'Phillips', 9, :rating => 2271, :fed => 'MAU'))
+          @t.add_result(ICU::Result.new(1, 1, 'L', :opponent => 2,  :colour => 'B'))
+          @t.add_result(ICU::Result.new(2, 1, 'D', :opponent => 3,  :colour => 'W'))
+          @t.add_result(ICU::Result.new(3, 1, 'D', :opponent => 4,  :colour => 'B'))
+          @t.add_result(ICU::Result.new(4, 1, 'W', :opponent => 5,  :colour => 'W'))
+          @t.add_result(ICU::Result.new(5, 1, 'W', :opponent => 6,  :colour => 'B'))
+          @t.add_result(ICU::Result.new(6, 1, 'L'))
+          @t.add_result(ICU::Result.new(7, 1, 'D', :opponent => 7,  :colour => 'W'))
+          @t.add_result(ICU::Result.new(8, 1, 'L', :opponent => 8,  :colour => 'B'))
+          @t.add_result(ICU::Result.new(9, 1, 'D', :opponent => 9,  :colour => 'W'))
+          @t.validate!
+        end
+
+        it "should serialize to the expected string" do
+          @t.serialize('ForeignCSV').should == @csv
         end
       end
     end
