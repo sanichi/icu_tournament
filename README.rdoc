@@ -32,7 +32,7 @@ The currently supported formats (more are planned) are:
 
 Here's how the 1972 Fischer-Spassky match could be formatted to Krause. First a tournament object is created
 and the players (just two in this case) are added with unique ID numbers. To keep the example short, not all
-the information that a Krause file might contin is included here (see ICU::Tournament::Krause for more details).
+the information that a Krause file might contain is included here (see ICU::Tournament::Krause for more details).
 
   t = ICU::Tournament.new('World Championship', '1972-07-11')
   t.add_player(ICU::Player.new('Robert J.', 'Fischer', 1))
@@ -68,7 +68,7 @@ Suppose you have a tournament file in Krause format. Parse it into a tournament 
 On success, the _parse_ method returns an object of type ICU::Tournament. A tournament (ICU::Tournament)
 has two or more players (ICU::Player), and each player has one or more results (ICU::Result). See the
 rdoc for more details. On error, the _parse_ method returns _nil_ and an error message can be retrieved
-from the parser (_parser.error_).
+from the parser (parser.error).
 
 == Author
 
