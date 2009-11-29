@@ -54,7 +54,7 @@ In round 2 player 1 lost by default against player 2. Similarly for all the othe
 
 Then finally, to create the file:
 
-  open('match.txt', 'w') { |f| f.puts @t.serialze('Krause') }
+  open('match.txt', 'w') { |f| f.puts @t.serialize('Krause') }
 
 
 == Reading Files
