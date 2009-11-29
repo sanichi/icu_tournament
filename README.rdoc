@@ -38,7 +38,7 @@ the information that a Krause file might contain is included here (see ICU::Tour
   t.add_player(ICU::Player.new('Robert J.', 'Fischer', 1))
   t.add_player(ICU::Player.new('Boris V.', 'Spassky', 2))
 
-Then the results for each round are added using the ID numbers to refer the players.
+Then the results for each round are added using the ID numbers to refer to the players.
 
   t.add_result(ICU::Result.new(1, 1, 'L', :opponent => 2, :colour => 'B'))
 
