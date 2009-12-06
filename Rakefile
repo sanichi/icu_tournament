@@ -7,7 +7,8 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name         = "chess_icu"
-    gem.summary      = "For parsing files of chess tournament data into ruby classes."
+    gem.summary      = "For reading and writing files of chess tournament."
+    gem.description  = "Convert files of chess tournament data in different formats to ruby classes and vice-versa."
     gem.homepage     = "http://github.com/sanichi/chess_icu"
     gem.authors      = ["Mark Orr"]
     gem.email        = "mark.j.l.orr@googlemail.com"
@@ -18,7 +19,7 @@ begin
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
-  puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
+  puts "Jeweler not available. Install it with: sudo gem install jeweler."
 end
 
 task :default => :spec
