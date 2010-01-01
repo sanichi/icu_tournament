@@ -4,7 +4,7 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{chess_icu}
+  s.name = %q{icu_tournament}
   s.version = "0.8.8"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
@@ -21,16 +21,16 @@ Gem::Specification.new do |s|
      "README.rdoc",
      "Rakefile",
      "VERSION.yml",
-     "lib/chess_icu.rb",
-     "lib/chess_icu/federation.rb",
-     "lib/chess_icu/name.rb",
-     "lib/chess_icu/player.rb",
-     "lib/chess_icu/result.rb",
-     "lib/chess_icu/team.rb",
-     "lib/chess_icu/tournament.rb",
-     "lib/chess_icu/tournament_fcsv.rb",
-     "lib/chess_icu/tournament_krause.rb",
-     "lib/chess_icu/util.rb",
+     "lib/icu_tournament.rb",
+     "lib/icu_tournament/federation.rb",
+     "lib/icu_tournament/name.rb",
+     "lib/icu_tournament/player.rb",
+     "lib/icu_tournament/result.rb",
+     "lib/icu_tournament/team.rb",
+     "lib/icu_tournament/tournament.rb",
+     "lib/icu_tournament/tournament_fcsv.rb",
+     "lib/icu_tournament/tournament_krause.rb",
+     "lib/icu_tournament/util.rb",
      "spec/federation_spec.rb",
      "spec/name_spec.rb",
      "spec/player_spec.rb",
@@ -42,7 +42,7 @@ Gem::Specification.new do |s|
      "spec/tournament_spec.rb",
      "spec/util_spec.rb"
   ]
-  s.homepage = %q{http://github.com/sanichi/chess_icu}
+  s.homepage = %q{http://github.com/sanichi/icu_tournament}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.5}

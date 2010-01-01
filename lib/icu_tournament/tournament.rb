@@ -14,7 +14,7 @@ It is also possible to build one programmatically by
 For example:
 
   require 'rubygems'
-  require 'chess_icu'
+  require 'icu_tournament'
 
   t = ICU::Tournament.new('Bangor Masters', '2009-11-09')
 

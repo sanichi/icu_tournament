@@ -6,10 +6,10 @@ require 'spec/rake/spectask'
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
-    gem.name         = "chess_icu"
+    gem.name         = "icu_tournament"
     gem.summary      = "For reading and writing files of chess tournament."
     gem.description  = "Convert files of chess tournament data in different formats to ruby classes and vice-versa."
-    gem.homepage     = "http://github.com/sanichi/chess_icu"
+    gem.homepage     = "http://github.com/sanichi/icu_tournament"
     gem.authors      = ["Mark Orr"]
     gem.email        = "mark.j.l.orr@googlemail.com"
     gem.files        = FileList['[A-Z]*', '{lib,spec}/**/*', '.gitignore']

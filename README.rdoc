@@ -5,7 +5,7 @@ For reading or writing files of chess tournament data.
 
 == Install
 
-  sudo gem install chess_icu --source http://gemcutter.org
+  sudo gem install icu_tournament --source http://gemcutter.org
 
 For Ruby prior to version 1.9 you also need:
 
