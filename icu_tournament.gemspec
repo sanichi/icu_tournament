@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{icu_tournament}
-  s.version = "0.8.8"
+  s.version = "0.8.9"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Mark Orr"]
-  s.date = %q{2009-12-06}
+  s.date = %q{2010-01-01}
   s.description = %q{Convert files of chess tournament data in different formats to ruby classes and vice-versa.}
   s.email = %q{mark.j.l.orr@googlemail.com}
   s.extra_rdoc_files = [
@@ -46,7 +46,7 @@ Gem::Specification.new do |s|
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.5}
-  s.summary = %q{For reading and writing files of chess tournament.}
+  s.summary = %q{For reading and writing files of chess tournament data.}
   s.test_files = [
     "spec/federation_spec.rb",
      "spec/name_spec.rb",
