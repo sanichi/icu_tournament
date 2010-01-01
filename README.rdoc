@@ -1,11 +1,13 @@
-= ChessIcu
+= ICU Tournament
 
-For reading or writing files of chess tournament data.
+For reading or writing files of chess tournament data. Original project name on github was _chess_icu_.
 
 
 == Install
 
-  sudo gem install icu_tournament --source http://gemcutter.org
+The gem is hosted on gemcutter only:
+
+  sudo gem install icu_tournament
 
 For Ruby prior to version 1.9 you also need:
 
