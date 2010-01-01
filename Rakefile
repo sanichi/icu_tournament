@@ -7,7 +7,7 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name         = "icu_tournament"
-    gem.summary      = "For reading and writing files of chess tournament."
+    gem.summary      = "For reading and writing files of chess tournament data."
     gem.description  = "Convert files of chess tournament data in different formats to ruby classes and vice-versa."
     gem.homepage     = "http://github.com/sanichi/icu_tournament"
     gem.authors      = ["Mark Orr"]
