@@ -72,6 +72,7 @@ clear what is meant. For eample, the following would all be converted to _D_:
   result.score = 'd'
   result.score = '='
   result.score = '0.5'
+  result.score = '½'
 
 The _points_ read-only accessor always returns a floating point number: either 0.0, 0.5 or 1.0.
 
