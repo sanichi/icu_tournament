@@ -4,18 +4,24 @@ require 'rake/rdoctask'
 require 'spec/rake/spectask'
 require 'lib/icu_tournament/version'
 
+version = ICU::Tournament::VERSION
+
 task :default => :spec
 
-desc "Build a new gem"
+desc "Build a new gem for version #{version}"
 task :build do
   system "gem build icu_tournament.gemspec"
+  system "mv {,pkg/}icu_tournament-#{version}.gem"
 end
 
-desc "Release the latest gem to rubygems.org then back it up"
-task :release do
-  name = "icu_tournament-#{ICU::Tournament::VERSION}.gem"
-  system "gem push #{name}"
-  system "mv {,pkg/}#{name}"
+desc "Release version #{version} of the gem to rubygems.org"
+task :release => :build do
+  system "gem push pkg/icu_tournament-#{version}.gem"
+end
+
+desc "Create a tag for version #{version}"
+task :tag do
+  system "git tag #{version} -m 'Tagging version #{version}'"
 end
 
 desc "Push the master branch to github"
@@ -42,7 +48,7 @@ Spec::Rake::SpecTask.new(:krs) do |spec|
 end
 
 Rake::RDocTask.new(:rdoc) do |rdoc|
-  rdoc.title    = "ICU Tournament #{ICU::Tournament::VERSION}"
+  rdoc.title    = "ICU Tournament #{version}"
   rdoc.rdoc_dir = 'rdoc'
   rdoc.options  = ["--charset=utf-8"]
   rdoc.rdoc_files.include('lib/**/*.rb', 'README.rdoc', 'LICENCE')
