@@ -6,13 +6,21 @@ require 'lib/icu_tournament/version'
 
 task :default => :spec
 
+desc "Build a new gem"
 task :build do
   system "gem build icu_tournament.gemspec"
-  system "mv icu_tournament-#{ICU::Tournament::VERSION}.gem pkg"
 end
- 
-task :release => :build do
-  system "ls -l pkg/icu_tournament-#{ICU::Tournament::VERSION}.gem"
+
+desc "Release the latest gem to rubygems.org then back it up"
+task :release do
+  name = "icu_tournament-#{ICU::Tournament::VERSION}.gem"
+  system "gem push #{name}"
+  system "mv {,pkg/}#{name}"
+end
+
+desc "Push the master branch to github"
+task :push do
+  system "git push origin master"
 end
 
 Spec::Rake::SpecTask.new(:spec) do |spec|
@@ -34,14 +42,7 @@ Spec::Rake::SpecTask.new(:krs) do |spec|
 end
 
 Rake::RDocTask.new(:rdoc) do |rdoc|
-  if File.exist?('VERSION.yml')
-    config  = YAML.load(File.read('VERSION.yml'))
-    version = "#{config[:major]}.#{config[:minor]}.#{config[:patch]}"
-  else
-    version = ""
-  end
-
-  rdoc.title    = "ChessIcu #{version}"
+  rdoc.title    = "ICU Tournament #{ICU::Tournament::VERSION}"
   rdoc.rdoc_dir = 'rdoc'
   rdoc.options  = ["--charset=utf-8"]
   rdoc.rdoc_files.include('lib/**/*.rb', 'README.rdoc', 'LICENCE')
