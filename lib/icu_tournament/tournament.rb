@@ -4,11 +4,11 @@ module ICU
 
 == Building a Tournament
 
-One way to create a tournament object is by parsing one of the supported file type (e.g. ICU::Tournament::Krause).
-It is also possible to build one programmatically by
+One way to create a tournament object is by parsing one of the supported file types (e.g. ICU::Tournament::Krause).
+It is also possible to build one programmatically by:
 
 1. creating a bare tournament instance,
-2. adding all the players and
+2. adding all the players,
 3. adding all the results.
 
 For example:
@@ -37,7 +37,7 @@ or equivalntly, just:
 
   puts @t.serialize('Krause')
 
-Would result in the following output:
+would result in the following output:
 
   012 Bangor Masters
   042 2009-11-09

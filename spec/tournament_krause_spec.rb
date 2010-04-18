@@ -374,6 +374,37 @@ KRAUSE
            lambda { t = @p.parse!(@k) }.should raise_error(/opponent/)
         end
       end
+      
+      context "parsing files" do
+        before(:each) do
+          @p = ICU::Tournament::Krause.new
+          @s = File.dirname(__FILE__) + '/samples/krause'
+        end
+        
+        it "should error on a non-existant valid file" do
+          file = "#{@s}/not_there.tab"
+          lambda { @p.parse_file!(file) }.should raise_error
+          t = @p.parse_file(file)
+          t.should be_nil
+          @p.error.should match(/no such file/i)
+        end
+        
+        it "should error on an invalid file" do
+          file = "#{@s}/invalid.tab"
+          lambda { @p.parse_file!(file) }.should raise_error
+          t = @p.parse_file(file)
+          t.should be_nil
+          @p.error.should match(/tournament name missing/i)
+        end
+        
+        it "should parse a valid file" do
+          file = "#{@s}/valid.tab"
+          lambda { @p.parse_file!(file) }.should_not raise_error
+          t = @p.parse_file(file)
+          t.should be_an_instance_of(ICU::Tournament)
+          t.players.size.should == 12
+        end
+      end
     end
   end
 end

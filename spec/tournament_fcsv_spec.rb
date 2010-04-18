@@ -543,6 +543,37 @@ CSV
           @t.serialize('ForeignCSV').should == @csv
         end
       end
+      
+      context "parsing files" do
+        before(:each) do
+          @p = ICU::Tournament::ForeignCSV.new
+          @s = File.dirname(__FILE__) + '/samples/fcsv'
+        end
+        
+        it "should error on a non-existant valid file" do
+          file = "#{@s}/not_there.csv"
+          lambda { @p.parse_file!(file) }.should raise_error
+          t = @p.parse_file(file)
+          t.should be_nil
+          @p.error.should match(/no such file/i)
+        end
+        
+        it "should error on an invalid file" do
+          file = "#{@s}/invalid.csv"
+          lambda { @p.parse_file!(file) }.should raise_error
+          t = @p.parse_file(file)
+          t.should be_nil
+          @p.error.should match(/expected.*event.*name/i)
+        end
+        
+        it "should parse a valid file" do
+          file = "#{@s}/valid.csv"
+          lambda { @p.parse_file!(file) }.should_not raise_error
+          t = @p.parse_file(file)
+          t.should be_an_instance_of(ICU::Tournament)
+          t.players.size.should == 16
+        end
+      end
     end
   end
 end

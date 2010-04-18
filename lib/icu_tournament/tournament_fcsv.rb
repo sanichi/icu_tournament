@@ -29,11 +29,10 @@ Suppose, for example, that the following data is the file <em>tournament.csv</em
 
 This file can be parsed as follows.
 
-  data = open('tournament.csv') { |f| f.read }
   parser = ICU::Tournament::ForeignCSV.new
-  tournament = parser.parse(data)
+  tournament = parser.parse_file('tournament.csv')
 
-If the file is correctly specified, the return value from the <em>parse</em> method is an instance of
+If the file is correctly specified, the return value from the <em>parse_file</em> method is an instance of
 ICU::Tournament (rather than <em>nil</em>, which indicates an error). In this example the file is valid, so:
   
   tournament.name                                     # => "Isle of Man Masters, 2007"
@@ -72,6 +71,11 @@ to which the main player belongs. For example:
   opponent = tournament.players(2)
   opponent.name                                       # => "Taylor, Peter P."
   opponent.results[0].rateable                        # => false
+
+If the file contains errors, then the return value from <em>parse_file</em> is <em>nil</em> and
+an error message is returned by the <em>error</em> method of the parser object. The method
+<em>parse_file!</em> is similar except that it raises errors, and the methods <em>parse</em>
+and <em>parse!</em> are similar except their inputs are strings rather than file names.
 
 A tournament can be serialized back to CSV format (the reverse of parsing) with the _serialize_ method
 of the parser object.
@@ -112,17 +116,6 @@ For example, here are the commands to reproduce the example above.
 
     class ForeignCSV
       attr_reader :error
-      
-      # Parse CSV data returning a Tournament on success or a nil on failure.
-      # In the case of failure, an error message can be retrived via the <em>error</em> method.
-      def parse(csv)
-        begin
-          parse!(csv)
-        rescue => ex
-          @error = ex.message
-          nil
-        end
-      end
       
       # Parse CSV data returning a Tournament on success or raising an exception on error.
       def parse!(csv)
@@ -169,6 +162,33 @@ For example, here are the commands to reproduce the example above.
         @tournament.validate!
 
         @tournament
+      end
+      
+      # Parse CSV data returning a Tournament on success or a nil on failure.
+      # In the case of failure, an error message can be retrived via the <em>error</em> method.
+      def parse(csv)
+        begin
+          parse!(csv)
+        rescue => ex
+          @error = ex.message
+          nil
+        end
+      end
+      
+      # Same as <em>parse!</em> except the input is a file name rather than file contents.
+      def parse_file!(file)
+        csv = open(file) { |f| f.read }
+        parse!(csv)
+      end
+      
+      # Same as <em>parse</em> except the input is a file name rather than file contents.
+      def parse_file(file)
+        begin
+          parse_file!(file)
+        rescue => ex
+          @error = ex.message
+          nil
+        end
       end
       
       # Serialise a tournament back into CSV format.
