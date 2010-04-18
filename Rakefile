@@ -21,12 +21,17 @@ end
 
 desc "Create a tag for version #{version}"
 task :tag do
-  system "git tag #{version} -m 'Tagging version #{version}'"
+  system "git tag v#{version} -m 'Tagging version #{version}'"
 end
 
 desc "Push the master branch to github"
 task :push do
   system "git push origin master"
+end
+
+desc "Push tags to github"
+task :pushtags do
+  system "git push --tags"
 end
 
 Spec::Rake::SpecTask.new(:spec) do |spec|
