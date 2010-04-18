@@ -29,11 +29,6 @@ task :push do
   system "git push origin master"
 end
 
-desc "Push tags to github"
-task :pushtags do
-  system "git push --tags"
-end
-
 Spec::Rake::SpecTask.new(:spec) do |spec|
   spec.libs << 'lib' << 'spec'
   spec.spec_files = FileList['spec/**/*_spec.rb']
