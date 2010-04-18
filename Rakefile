@@ -2,28 +2,18 @@ require 'rubygems'
 require 'rake'
 require 'rake/rdoctask'
 require 'spec/rake/spectask'
-
-begin
-  require 'jeweler'
-  Jeweler::Tasks.new do |gem|
-    gem.name             = "icu_tournament"
-    gem.summary          = "For reading and writing files of chess tournament data."
-    gem.description      = "Convert files of chess tournament data in different formats to ruby classes and vice-versa."
-    gem.homepage         = "http://github.com/sanichi/icu_tournament"
-    gem.authors          = ["Mark Orr"]
-    gem.email            = "mark.j.l.orr@googlemail.com"
-    gem.files            = FileList['{lib,spec}/**/*', 'README.rdoc', 'LICENCE', 'VERSION.yml']
-    gem.has_rdoc         = true
-    gem.extra_rdoc_files = ['README.rdoc', 'LICENCE'],
-    gem.rdoc_options     = "--charset=utf-8"
-    gem.add_dependency('fastercsv', '>= 1.4.0')
-  end
-  Jeweler::GemcutterTasks.new
-rescue LoadError
-  puts "Jeweler not available. Install it with: sudo gem install jeweler."
-end
+require 'lib/icu_tournament/version'
 
 task :default => :spec
+
+task :build do
+  system "gem build icu_tournament.gemspec"
+  system "mv icu_tournament-#{ICU::Tournament::VERSION}.gem pkg"
+end
+ 
+task :release => :build do
+  system "ls -l pkg/icu_tournament-#{ICU::Tournament::VERSION}.gem"
+end
 
 Spec::Rake::SpecTask.new(:spec) do |spec|
   spec.libs << 'lib' << 'spec'
