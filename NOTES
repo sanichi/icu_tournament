@@ -12,5 +12,10 @@ Github
 2. rake tag
 3. rake push
 
-Note - tags are not pushed to github by default. If you want
-this then use, for example, git push origin --tags v0.9.6.
+Note - tags are not pushed to github by default. If you want this then use (e.g.)
+
+  git push origin --tags v0.9.6
+  
+Tags can also be deleted from github with (e.g.)
+
+  git push origin :v0.9.6
