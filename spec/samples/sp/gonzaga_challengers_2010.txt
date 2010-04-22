@@ -1,0 +1,58 @@
+No	Name                    	Loc Id	Total	 1  	 2  	 3  	 4  	 5  	 6  
+
+1 	Power, Shane            	1794  	3    	27:W	39:W	29:L	44:W	 8:L	23:L
+2 	Mullooly, Neil M.       	6438  	6    	28:W	38:W	23:W	29:W	 6:W	 8:W
+3 	O'Donnell, Conor E.     	10792 	0    	 0:-	  : 	  : 	  : 	  : 	  : 
+4 	Gallagher, Mark         	12138 	4    	30:+	40:L	39:W	47:W	54:W	53:L
+5 	MacGowan, Sean          	6902  	3    	31:L	25:+	42:W	49:W	40:L	32:L
+6 	O'Brien, Pat            	12057 	5    	32:W	42:W	40:W	41:W	 2:L	31:W
+7 	O'Neill, Sam            	10747 	4    	10:W	41:L	43:W	46:L	39:W	35:W
+8 	Hurley, Thomas          	6292  	4.5  	34:W	44:W	54:D	31:W	 1:W	 2:L
+9 	Duffy, Sinead           	12185 	3    	35:W	46:W	31:L	48:W	53:L	41:L
+10	Mullooly, Michael George	6623  	4    	 7:L	15:W	44:L	34:W	47:W	38:W
+11	Connolly, John W.       	      	1.5  	37:L	27:L	18:L	25:L	17:D	36:W
+12	Ryan, Lorcan            	5803  	2    	38:L	32:L	17:W	35:L	21:W	45:L
+13	Lowry-O'Reilly, Johanna 	5535  	2.5  	 0:=	36:W	22:L	38:L	28:L	24:W
+14	Mullooly, Sean          	6721  	2.5  	39:L	35:L	20:L	55:W	25:+	42:D
+15	Mowlds, Dee             	6904  	3    	 0:=	10:L	28:W	51:L	26:D	39:W
+16	George Rajesh, Nikhil   	10411 	3    	40:L	34:L	21:L	17:W	24:W	43:W
+17	Thompson, James         	      	0.5  	41:L	43:L	12:L	16:L	11:D	51:L
+18	Shinkwin, Evan          	      	1    	42:L	47:L	11:W	37:L	34:L	21:L
+19	Papadopoulos, Sotirios  	      	0    	  : 	 0:-	  : 	  : 	  : 	  : 
+20	O'Rourke, Joseph        	      	2    	44:L	48:L	14:W	39:L	42:L	25:+
+21	O'Hagan, Oisin          	      	2    	46:L	51:L	16:W	43:L	12:L	18:W
+22	O'Dwyer, Eoin           	5931  	3    	47:W	45:D	13:W	54:L	38:D	49:L
+23	O'Driscoll, David       	12324 	4    	48:W	50:W	 2:L	53:L	43:W	 1:W
+24	O'Donnell, Cillian      	      	1.5  	49:L	52:W	47:L	 0:=	16:L	13:L
+25	Mokemane, Neo           	      	1    	45:-	 5:-	52:-	11:W	14:-	20:-
+26	McNeill, James          	      	3    	50:L	 0:=	36:W	45:L	15:D	44:W
+27	McKenna, Mark           	10797 	3    	 1:L	11:W	48:L	42:W	49:L	47:W
+28	McDonnell, Finn         	      	3.5  	 2:L	 0:=	15:L	36:W	13:W	50:W
+29	Maguire, Jake           	12146 	3.5  	52:W	49:W	 1:W	 2:L	46:D	40:L
+30	Kavanagh, Mark          	      	0    	 4:-	 0:-	  : 	  : 	  : 	  : 
+31	Kavenga, Patrick        	      	4    	 5:W	53:W	 9:W	 8:L	41:W	 6:L
+32	Howley, Kieran          	3509  	4    	 6:L	12:W	46:L	52:W	44:W	 5:W
+33	Hinchey, Tim            	12302 	0    	  : 	 0:-	  : 	  : 	  : 	  : 
+34	Hickey, Alan            	      	2    	 8:L	16:W	50:L	10:L	18:W	48:L
+35	Gardiner, Luke          	      	3    	 9:L	14:W	49:L	12:W	48:W	 7:L
+36	Fagan, James E.         	      	0.5  	 0:=	13:L	26:L	28:L	52:L	11:L
+37	Fagan, Ferdia           	12293 	2    	11:W	54:L	53:L	18:W	50:L	52:L
+38	Ellard, Rory            	12311 	3    	12:W	 2:L	51:D	13:W	22:D	10:L
+39	Donnelly, Michael       	10801 	2    	14:W	 1:L	 4:L	20:W	 7:L	15:L
+40	Davitt, Bekim           	12152 	5    	16:W	 4:W	 6:L	50:W	 5:W	29:W
+41	Dadela, Piotr           	      	4    	17:W	 7:W	45:W	 6:L	31:L	 9:W
+42	Cullen, Ben             	      	2.5  	18:W	 6:L	 5:L	27:L	20:W	14:D
+43	Cooke, Peter            	12169 	2    	53:L	17:W	 7:L	21:W	23:L	16:L
+44	Cooke, Frank            	10771 	2    	20:W	 8:L	10:W	 1:L	32:L	26:L
+45	Catre, Loredan          	      	3.5  	25:+	22:D	41:L	26:W	 0:-	12:W
+46	Briggs, Shane           	5530  	3.5  	21:W	 9:L	32:W	 7:W	29:D	54:L
+47	Bolger, Arran           	      	2    	22:L	18:W	24:W	 4:L	10:L	27:L
+48	Boland, Daniel          	      	3    	23:L	20:W	27:W	 9:L	35:L	34:W
+49	Murphy, Ronan           	12328 	4    	24:W	29:L	35:W	 5:L	27:W	22:W
+50	Kurevlov, Leo           	12047 	3    	26:W	23:L	34:W	40:L	37:W	28:L
+51	Abbey, John             	12277 	3.5  	54:L	21:W	38:D	15:W	 0:-	17:W
+52	O'Donnell, John         	      	3    	29:L	24:L	25:+	32:L	36:W	37:W
+53	Staunton, Andrew        	10609 	5    	43:W	31:L	37:W	23:W	 9:W	 4:W
+54	McPartlan, John         	4867  	4.5  	51:W	37:W	 8:D	22:W	 4:L	46:W
+55	McDonnell, Odhran       	      	0    	  : 	  : 	  : 	14:L	  : 	  : 
+56	McDonnell, Cathal       	      	0    	 0:-	  : 	  : 	  : 	  : 	  : 

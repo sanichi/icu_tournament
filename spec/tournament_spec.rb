@@ -262,6 +262,37 @@ EOS
         lambda { @t.time_control = 'abc' }.should raise_error(/invalid.*time.*control/)
       end
     end
+    
+    context "tie breaks" do
+      before(:each) do
+        @t = Tournament.new('Edinburgh Masters', '2009-11-09')
+      end
+      
+      it "should an empty tie breaks list by default" do
+        @t.tie_breaks.should be_an_instance_of(Array)
+        @t.tie_breaks.should be_empty
+      end
+      
+      it "should be settable to one or more valid tie break methods" do
+        @t.tie_breaks = [:neustadtl]
+        @t.tie_breaks.join('|').should == "neustadtl"
+        @t.tie_breaks = [:neustadtl, :blacks]
+        @t.tie_breaks.join('|').should == "neustadtl|blacks"
+        @t.tie_breaks = ['Wins', 'Sonneborn-Berger', :harkness]
+        @t.tie_breaks.join('|').should == "wins|neustadtl|harkness"
+        @t.tie_breaks = []
+        @t.tie_breaks.join('|').should == ""
+      end
+      
+      it "should rasie an error is not given an array" do
+        lambda { @t.tie_breaks = :neustadtl }.should raise_error(/array/i)
+      end
+      
+      it "should rasie an error is given any invalid tie-break methods" do
+        lambda { @t.tie_breaks = ["My Bum"] }.should raise_error(/invalid/i)
+        lambda { @t.tie_breaks = [:neustadtl, "Your arse"] }.should raise_error(/invalid/i)
+      end
+    end
 
     context "players" do
       before(:each) do
@@ -502,6 +533,13 @@ EOS
         @t.players.map{ |p| p.num }.join('|').should == '1|2|3'
         @t.players.map{ |p| p.last_name }.join('|').should == 'Fischer|Kasparov|Orr'
       end
+
+      it "should be renumberable by order" do
+        @t.rerank.renumber(:order)
+        @t.invalid.should be_false
+        @t.players.map{ |p| p.num }.join('|').should == '1|2|3'
+        @t.players.map{ |p| p.last_name }.join('|').should == 'Fischer|Orr|Kasparov'
+      end
     end
 
     context "reranking" do
@@ -545,7 +583,8 @@ EOS
       end
       
       it "should have correct Buchholz tie break scores" do
-        scores = @t.tie_break_scores("Buchholz")
+        @t.tie_breaks = ["Buchholz"]
+        scores = @t.tie_break_scores
         scores[1].should == 2.0
         scores[2].should == 2.5
         scores[3].should == 7.0
@@ -557,7 +596,8 @@ EOS
       it "Buchholz should be sensitive to unplayed games" do
         @t.player(1).find_result(1).opponent = nil
         @t.player(6).find_result(1).opponent = nil
-        scores = @t.tie_break_scores("Buchholz")
+        @t.tie_breaks = ["Buchholz"]
+        scores = @t.tie_break_scores
         scores[1].should == 1.5  # 0.5 from Orr changed to 0
         scores[2].should == 2.5  # didn't play Fischer or Orr so unaffected
         scores[3].should == 6.5  # 3 from Fischer's changed to 2.5
@@ -567,7 +607,8 @@ EOS
       end
       
       it "should have correct Neustadtl tie break scores" do
-        scores = @t.tie_break_scores(:neustadtl)
+        @t.tie_breaks = [:neustadtl]
+        scores = @t.tie_break_scores
         scores[1].should == 2.0
         scores[2].should == 2.5
         scores[3].should == 1.0
@@ -579,7 +620,8 @@ EOS
       it "Neustadtl should be sensitive to unplayed games" do
         @t.player(1).find_result(1).opponent = nil
         @t.player(6).find_result(1).opponent = nil
-        scores = @t.tie_break_scores("Neustadtl")
+        @t.tie_breaks = ["Neustadtl"]
+        scores = @t.tie_break_scores
         scores[1].should == 1.5  # 0.5 from Orr changed to 0
         scores[2].should == 2.5  # didn't play Fischer or Orr so unaffected
         scores[3].should == 1.0  # win against Minnie unaffected
@@ -589,7 +631,8 @@ EOS
       end
       
       it "should have correct Harkness tie break scores" do
-        scores = @t.tie_break_scores('harkness')
+        @t.tie_breaks = ['harkness']
+        scores = @t.tie_break_scores
         scores[1].should == 0.5
         scores[2].should == 1.0
         scores[3].should == 3.0
@@ -599,7 +642,8 @@ EOS
       end
       
       it "should have correct Modified Median tie break scores" do
-        scores = @t.tie_break_scores('Modified Median')
+        @t.tie_breaks = ['Modified Median']
+        scores = @t.tie_break_scores
         scores[1].should == 1.5
         scores[2].should == 2.0
         scores[3].should == 4.0
@@ -609,7 +653,8 @@ EOS
       end
       
       it "should have correct tie break scores for number of blacks" do
-        scores = @t.tie_break_scores('Blacks')
+        @t.tie_breaks = ['Blacks']
+        scores = @t.tie_break_scores
         scores[3].should == 0
         scores[4].should == 2
       end
@@ -617,13 +662,15 @@ EOS
       it "number of blacks should should be sensitive to unplayed games" do
         @t.player(2).find_result(1).opponent = nil
         @t.player(4).find_result(1).opponent = nil
-        scores = @t.tie_break_scores(:blacks)
+        @t.tie_breaks = [:blacks]
+        scores = @t.tie_break_scores
         scores[3].should == 0
         scores[4].should == 1
       end
       
       it "should have correct tie break scores for number of wins" do
-        scores = @t.tie_break_scores(:wins)
+        @t.tie_breaks = [:wins]
+        scores = @t.tie_break_scores
         scores[1].should == 3
         scores[6].should == 0
       end
@@ -631,7 +678,8 @@ EOS
       it "number of wins should should be sensitive to unplayed games" do
         @t.player(1).find_result(1).opponent = nil
         @t.player(6).find_result(1).opponent = nil
-        scores = @t.tie_break_scores('WINS')
+        @t.tie_breaks = ['WINS']
+        scores = @t.tie_break_scores
         scores[1].should == 2
         scores[6].should == 0
       end
@@ -647,7 +695,8 @@ EOS
       end
     
       it "should be configurable to use Buchholz" do
-        @t.rerank('Buchholz')
+        @t.tie_breaks = ['Buchholz']
+        @t.rerank
         @t.player(2).rank.should == 1  # 3.0/2.5
         @t.player(1).rank.should == 2  # 3.0/2.0
         @t.player(3).rank.should == 3  # 1.0/7.0
@@ -657,7 +706,8 @@ EOS
       end
       
       it "should be configurable to use Neustadtl" do
-        @t.rerank(:neustadtl)
+        @t.tie_breaks = [:neustadtl]
+        @t.rerank
         @t.player(2).rank.should == 1  # 3.0/2.5
         @t.player(1).rank.should == 2  # 3.0/2.0
         @t.player(3).rank.should == 3  # 1.0/1.0
@@ -667,7 +717,8 @@ EOS
       end
       
       it "should be configurable to use number of blacks" do
-        @t.rerank(:blacks)
+        @t.tie_breaks = [:blacks]
+        @t.rerank
         @t.player(2).rank.should == 1  # 3.0/2
         @t.player(1).rank.should == 2  # 3.0/1
         @t.player(4).rank.should == 3  # 1.0/2
@@ -677,7 +728,8 @@ EOS
       end
       
       it "should be configurable to use number of wins" do
-        @t.rerank(:wins)
+        @t.tie_breaks = [:wins]
+        @t.rerank
         @t.player(1).rank.should == 1  # 3.0/3/"Fi"
         @t.player(2).rank.should == 2  # 3.0/3/"Ka"
         @t.player(3).rank.should == 3  # 1.0/1/"Mic"
@@ -687,12 +739,14 @@ EOS
       end
       
       it "should exhibit equivalence between Neustadtl and Sonneborn-Berger" do
-        @t.rerank('Sonneborn-Berger')
+        @t.tie_breaks = ['Sonneborn-Berger']
+        @t.rerank
         (1..6).inject(''){ |t,r| t << @t.player(r).rank.to_s }.should == '213465'
       end
       
       it "should be able to use more than one method" do
-        @t.rerank(:neustadtl, :buchholz)
+        @t.tie_breaks = [:neustadtl, :buchholz]
+        @t.rerank
         @t.player(2).rank.should == 1  # 3.0/2.5
         @t.player(1).rank.should == 2  # 3.0/2.0
         @t.player(3).rank.should == 3  # 1.0/1.0
@@ -700,17 +754,10 @@ EOS
         @t.player(5).rank.should == 5  # 0.5/0.25/6.5
         @t.player(6).rank.should == 6  # 0.5/0.25/4.5
       end
-      
-      it "should throw exception on invalid tie break method" do
-        lambda { @t.rerank(:no_such_tie_break_method) }.should raise_error(/invalid.*method/)
-      end
-    
-      it "should throw exception on invalid tie break method via validation" do
-        lambda { @t.validate!(:rerank => :stupid_tie_break_method) }.should raise_error(/invalid.*method/)
-      end
     
       it "should be possible as a side effect of validation" do
-        @t.invalid(:rerank => :buchholz).should be_false
+        @t.tie_breaks = [:buchholz]
+        @t.invalid(:rerank => true).should be_false
         @t.player(2).rank.should == 1  # 3/3
         @t.player(1).rank.should == 2  # 3/2
         @t.player(3).rank.should == 3  # 1/7
@@ -720,7 +767,8 @@ EOS
       end
       
       it "should be possible as a side effect of validation with multiple tie break methods" do
-        @t.invalid(:rerank => [:neustadtl, :buchholz]).should be_false
+        @t.tie_breaks = [:neustadtl, :buchholz]
+        @t.invalid(:rerank => true).should be_false
         @t.player(2).rank.should == 1  # 3/3
         @t.player(1).rank.should == 2  # 3/2
         @t.player(3).rank.should == 3  # 1/7

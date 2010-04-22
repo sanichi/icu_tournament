@@ -168,7 +168,9 @@ The _points_ read-only accessor always returns a floating point number: either 0
       self.player = map[@player]
       if @opponent
         raise "result opponent number #{@opponent} not found in renumbering hash" unless map[@opponent]
+        old_rateable = @rateable
         self.opponent = map[@opponent]
+        self.rateable = old_rateable  # because setting the opponent has a side-effect which is undesirable in this context
       end
       self
     end

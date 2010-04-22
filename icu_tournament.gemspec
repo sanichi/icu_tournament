@@ -5,7 +5,7 @@ require 'icu_tournament/version'
 
 Gem::Specification.new do |s|
   s.name = %q{icu_tournament}
-  
+
   s.authors = ["Mark Orr"]
   s.email = %q{mark.j.l.orr@googlemail.com}
   s.description = %q{Convert files of chess tournament data in different formats to ruby classes and vice-versa.}
@@ -18,7 +18,10 @@ Gem::Specification.new do |s|
   s.rdoc_options = ["--charset=utf-8"]
   s.require_paths = ["lib"]
   s.test_files = Dir.glob("spec/*.rb")
-  
-  s.add_runtime_dependency("fastercsv", ">= 1.4.0")  # only for ruby < 1.9
+
+  s.add_runtime_dependency("fastercsv", ">= 1.4.0")  # for FCSV when ruby < 1.9
+  s.add_runtime_dependency("inifile", ">= 0.3.0")    # for SwissPerfect ini files
+  s.add_runtime_dependency("dbf", ">= 1.2.5")        # for SwissPerfect trn/sco files
+
   s.add_development_dependency("rspec")
 end

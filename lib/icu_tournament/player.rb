@@ -25,7 +25,7 @@ _fed_ (federation), _title_, _rating_, _rank_ and _dob_ (date of birth).
 Some of these values will also be canonicalised to some extent. For example,
 the date of birth conforms to a _yyyy-mm-dd_ format, the chess title will be two
 to three capital letters always ending in _M_ and the federation, if it's three
-letters long, will be upcased.
+letters long, will be upper-cased.
 
   peter.dob                        # => 1976-07-17
   peter.title                      # => 'GM'
@@ -39,6 +39,11 @@ other lost). A player's results can later be retieved via the _results_ accessor
 Total scores is available via the _points_ method.
 
   peter.points                     # => 5.5
+
+A player's _id_ is their ID number in some external database (typically either ICU or FIDE).
+
+  peter.id = 16790                 # ICU, or
+  peter.id = 4102142               # FIDE
 
 Players can be compared to see if they're roughly or exactly the same, which may be useful in detecting duplicates.
 If the names match and the federations don't disagree then two players are equal according to the _==_ operator.
@@ -152,7 +157,12 @@ All other attributes are unaffected.
       already = @results.find_all { |r| r.round == result.round }
       return if already.size == 1 && already[0].eql?(result)
       raise "round number (#{result.round}) of new result is not unique and new result is not the same as existing one" unless already.size == 0
-      @results << result
+      if @results.size == 0 || @results.last.round <= result.round
+        @results << result
+      else
+        i = (0..@results.size-1).find { |n| @results[n].round > result.round }
+        @results.insert(i, result)
+      end
     end
     
     # Lookup a result by round number.
