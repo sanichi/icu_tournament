@@ -28,6 +28,7 @@ The currently supported formats (more are planned) are:
 
 * ICU::Tournament::Krause - the format used by FIDE.
 * ICU::Tournament::ForeignCSV - used by Irish players to report their individual results in foreign tournaments.
+* ICU::Tournament::SwissPerfect - very often used by Irish tournament controllers to report results.
 
 
 == Writing Files
