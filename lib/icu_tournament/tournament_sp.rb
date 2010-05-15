@@ -39,16 +39,28 @@ implementation of the ICU ratings database.
 
   swiss_perfect = tournament.serialize('SwissPerfect')
 
-As a side effect of serialization, the player numbers will be reordered (to ensure they range from 1 to the total
-number of players) and their order in the serialized format will be by player number. If you would like to have
-rank order instead, then first rank the tournament (if it isn't already ranked) and then call the _renumber_ method
-without the option argument (which will renumber by rank) before serializing. For example:
+The order of players in the serialized output is always by player number and as a side effect of serialization,
+the player numbers will be adjusted to ensure they range from 1 to the total number of players (i.e. renumbered
+in order). If you would prefer rank-order instead, then you must first renumber the players by rank (the default
+renumbering method) before serializing. For example:
 
-  swiss_perfect = tournament.rerank(:neustadtl, :buchholz).renumber.serialize('SwissPerfect)
+  swiss_perfect = tournament.renumber.serialize('SwissPerfect')
+
+There should be no need to explicitly rank the tournament first, as that information is already present in
+SwissPerfect files (i.e. each player should already have a rank after the files have been parsed).
+Additionally, the tie break rules used for the tournament will be available from:
+
+  tournament.tie_breaks           # => [:buchholz, :harkness]
+
+Should you wish to rank the tournament using a different set of tie-break rules, you can do something like the following:
+
+  tournament.tie_breaks = [:wins, :blacks]
+  swiss_perfect = tournament.rerank.renumber.serialize('SwissPerfect')
 
 == Todo
 
 * Allow parsing from 1 zip file
+* Implement the extra tie-break rules that SP has
 
 =end
 
