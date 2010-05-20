@@ -172,6 +172,34 @@ module ICU
           @t.players.map{ |p| p.rank }.sort.join('').should == (1..@t.players.size).to_a.join('')
         end
       end
+
+      context "National Club Champiomships 2010" do
+
+        before(:all) do
+          @p = ICU::Tournament::SwissPerfect.new
+          @t = @p.parse_file(SAMPLES + 'ncc', "2010-05-08")
+        end
+
+        it "should parse and have the right basic details" do
+          @p.error.should be_nil
+          @t.signature.should == "National Club Championship 2010|Gerry Graham|4|2010-05-08|77"
+        end
+
+        it "should have correct details for selection of players, including ICU IDs" do
+          @t.player(2).signature.should  == "Szabo, Gergely|12379|2530|4.0|4|1234|WWWW|WBWB|TTTT"
+          @t.player(5).signature.should  == "Daly, Colm|295|2314|3.5|7|1234|WWWD|WBWB|TTTT"
+          @t.player(8).signature.should  == "Vega, Marcos Llaneza||2475|3.0|16|1234|DDWW|BWBW|TTTT"
+          @t.player(67).signature.should == "Lee, Shane|780|1633|1.0|52|134|DLD|WWW|TTT"
+        end
+        
+        it "should have correct details for selection of players, including international IDs and ratings when so configured" do
+          @t = @p.parse_file(SAMPLES + 'ncc', "2010-05-08", :id => :intl, :rating => :intl)
+          @t.player(2).signature.should  == "Szabo, Gergely|1205064||4.0|4|1234|WWWW|WBWB|TTTT"
+          @t.player(5).signature.should  == "Daly, Colm|2500434||3.5|7|1234|WWWD|WBWB|TTTT"
+          @t.player(8).signature.should  == "Vega, Marcos Llaneza|2253585||3.0|16|1234|DDWW|BWBW|TTTT"
+          @t.player(67).signature.should == "Lee, Shane|||1.0|52|134|DLD|WWW|TTT"
+        end
+      end
     end
   end
 end

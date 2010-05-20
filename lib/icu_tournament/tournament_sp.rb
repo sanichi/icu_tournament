@@ -23,6 +23,17 @@ information.
   tournament = parser.parse_file('champs', "2010-07-03")  # looks for "champs.ini", "champs.trn" and "champs.sco"
   puts parser.error unless tournament
 
+By default, the parser extracts local ratings and IDs from the SwissPerfect files. If instead international
+ratings or IDs are required, use the options _id_ and _rating_. For example:
+
+  tournament = parser.parse_file('ncc', "2010-05-08")
+  tournament.player(2).id         # =>  12379 (ICU ID)
+  tournament.player(2).rating     # =>  2556  (ICU rating)
+  
+  tournament = parser.parse_file('ncc', "2010-05-08", :id => :intl, :rating => :intl)
+  tournament.player(2).id         # =>  1205064 (FIDE ID)
+  tournament.player(2).rating     # =>  2530    (FIDE rating)
+
 Because the data is in three parts, some of which are in a legacy binary format, serialization to this format is
 not supported. Instead, a method is provided to serialize any tournament text in the format of <em>SwissPerfects</em>
 text export format, an example of which is shown below.
@@ -82,13 +93,13 @@ Should you wish to rank the tournament using a different set of tie-break rules,
       SCO = %w{ROUND WHITE BLACK W_SCORE B_SCORE W_TYPE B_TYPE}  # not used W_SUBSCO, B_SUBSCO
 
       # Parse SP data returning a Tournament or raising an exception on error.
-      def parse_file!(file, start)
+      def parse_file!(file, start, arg={})
         @t = Tournament.new('Dummy', start)
         @bonus = {}
         @start_no = {}
         ini, trn, sco = get_files(file)
         parse_ini(ini)
-        parse_trn(trn)
+        parse_trn(trn, arg)
         parse_sco(sco)
         fixup
         @t.validate!(:rerank => true)
@@ -97,9 +108,9 @@ Should you wish to rank the tournament using a different set of tie-break rules,
 
       # Parse SP data returning an ICU::Tournament or a nil on failure. In the latter
       # case, an error message will be available via the <em>error</em> method.
-      def parse_file(file, start)
+      def parse_file(file, start, arg={})
         begin
-          parse_file!(file, start)
+          parse_file!(file, start, arg)
         rescue => ex
           @error = ex.message
           nil
@@ -180,7 +191,7 @@ Should you wish to rank the tournament using a different set of tie-break rules,
         end.find_all { |tb| tb }
       end
 
-      def parse_trn(file)
+      def parse_trn(file, arg={})
         begin
           trn = DBF::Table.new(file)
         rescue
@@ -189,7 +200,7 @@ Should you wish to rank the tournament using a different set of tie-break rules,
         raise "invalid TRN file (no records)" if trn.record_count == 0
         trn.each do |r|
           next unless r
-          h = trn_record_to_hash(r)
+          h = trn_record_to_hash(r, arg)
           @t.add_player(ICU::Player.new(h.delete(:first_name), h.delete(:last_name), h.delete(:num), h))
         end
       end
@@ -208,18 +219,18 @@ Should you wish to rank the tournament using a different set of tie-break rules,
         end
       end
 
-      def trn_record_to_hash(r)
+      def trn_record_to_hash(r, arg={})
         @bonus[r.attributes["ID"]] = %w{BONUS MEMO}.inject(0.0){ |b,k| b > 0.0 ? b : r.attributes[k].to_f }
         @start_no[r.attributes["ID"]] = r.attributes["START_NO"]
         TRN.inject(Hash.new) do |hash, pair|
-          keys = pair[1]
-          keys = [keys] unless keys.class == Array
-          val, val2 = keys.map { |k| r.attributes[k] }
+          key = pair[1]
+          key = key[arg[pair[0]].to_s == 'intl' ? 1 : 0] if key.class == Array
+          val = r.attributes[key]
           case pair[0]
           when :fed    then val = val && val.match(/^[A-Z]{3}$/i) ? val.upcase : nil
           when :gender then val = val.to_i > 0 ? %w(M F)[val.to_i-1] : nil
-          when :id     then val = val.to_i > 0 ? val : (val2.to_i > 0 ? val2 : nil)
-          when :rating then val = val.to_i > 0 ? val : (val2.to_i > 0 ? val2 : nil)
+          when :id     then val = val.to_i > 0 ? val : nil
+          when :rating then val = val.to_i > 0 ? val : nil
           when :title  then val = val.to_i > 0 ? %w(GM WGM IM WIM FM WFM)[val.to_i-1] : nil
           end
           hash[pair[0]] = val unless val.nil? || val == ''
