@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency("fastercsv", ">= 1.4.0")  # for FCSV when ruby < 1.9
   s.add_runtime_dependency("inifile", ">= 0.3.0")    # for SwissPerfect ini files
   s.add_runtime_dependency("dbf", ">= 1.2.5")        # for SwissPerfect trn/sco files
+  s.add_runtime_dependency("rubyzip", ">= 0.9.4")    # for zipped-up SwissPerfect files
 
   s.add_development_dependency("rspec")
 end

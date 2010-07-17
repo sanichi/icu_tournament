@@ -1,5 +1,7 @@
 require 'inifile'
 require 'dbf'
+require 'zip/zipfilesystem'
+require 'tempfile'
 
 module ICU
   class Tournament
@@ -149,7 +151,7 @@ Should you wish to rank the tournament using a different set of tie-break rules,
       private
 
       def get_files(file)
-        file.match(/\.zip$/i) ? get_zipped_files(file) : get_bare_files(file)
+        file.match(/\.zip$/i) ? get_zip_files(file) : get_bare_files(file)
       end
 
       def get_bare_files(file)
@@ -161,8 +163,32 @@ Should you wish to rank the tournament using a different set of tie-break rules,
         end
       end
 
-      def get_zipped_files(file)
-        raise "get_zip_files not implemented"
+      def get_zip_files(file)
+        temp = Hash.new
+        begin
+          Zip::ZipFile.open(file) do |zf|
+            raise "ZIP file should contain exactly 3 files (.ini, .trn and .sco)" unless zf.size == 3
+            stem = Hash.new
+            zf.entries.each do |e|
+              if e.file? && e.name.match(/^(.+)\.(ini|trn|sco)$/i)
+                stm = $1
+                ext = $2.downcase
+                stem[ext] = stm
+                tmp = Tempfile.new(e.name)
+                tmp.close
+                e.extract(tmp.path) { true }
+                temp[ext] = tmp.path
+              end
+            end
+            %w(ini trn sco).each { |ext| raise "no #{ext.upcase} file found" unless stem[ext] }
+            raise "different stem names found" unless stem['ini'] == stem['trn'] && stem['trn'] == stem['sco']
+          end
+        rescue Zip::ZipError
+          raise "invalid ZIP file"
+        rescue => ex
+          raise ex
+        end
+        %w(ini trn sco).map { |ext| temp[ext] }
       end
 
       def parse_ini(file)

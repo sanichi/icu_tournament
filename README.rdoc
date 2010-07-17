@@ -9,11 +9,10 @@ The gem is hosted on gemcutter only:
 
   sudo gem install icu_tournament
 
-For Ruby prior to version 1.9 you also need:
+For handling SwissPerfect files the _dbf_, _inifile_ and _rubyzip_ gems are required.
+For Ruby prior to version 1.9 the _fastercsv_ gem is needed to handle CSV files.
 
-  sudo gem install fastercsv
-  
-  
+
 == Usage
 
 There are two main uses for this gem:
@@ -24,11 +23,11 @@ There are two main uses for this gem:
 * You have a file in a supported format and you need to extract the information it contains.
   For example, you have a Krause formatted file and want to extract the data and insert it into a database.
 
-The currently supported formats (more are planned) are:
+The currently supported formats are:
 
 * ICU::Tournament::Krause - the format used by FIDE.
 * ICU::Tournament::ForeignCSV - used by Irish players to report their individual results in foreign tournaments.
-* ICU::Tournament::SwissPerfect - very often used by Irish tournament controllers to report results.
+* ICU::Tournament::SwissPerfect - often used by Irish tournament controllers to report results.
 
 
 == Writing Files
@@ -41,7 +40,7 @@ the information that a Krause file might contain is included here (see ICU::Tour
   t.add_player(ICU::Player.new('Robert J.', 'Fischer', 1))
   t.add_player(ICU::Player.new('Boris V.', 'Spassky', 2))
 
-Then the results for each round are added using the ID numbers to refer to the players.
+Then the results for each round are added using the unique ID numbers to refer to the players.
 
   t.add_result(ICU::Result.new(1, 1, 'L', :opponent => 2, :colour => 'B'))
 
@@ -67,11 +66,13 @@ Suppose you have a tournament file in Krause format. Parse it into a tournament 
   data = open('tournament.txt') { |f| f.read }
   parser = ICU::Tournament::Krause.new
   tournament = parser.parse(data)
-  
+
 On success, the _parse_ method returns an object of type ICU::Tournament. A tournament (ICU::Tournament)
 has two or more players (ICU::Player), and each player has one or more results (ICU::Result). See the
-rdoc for more details. On error, the _parse_ method returns _nil_ and an error message can be retrieved
-from the parser (parser.error).
+rdoc for more details. You can traverse these objects and do what you want with them, such as storing the
+information in a database.
+
+On error, the _parse_ method returns _nil_ and an error message can be retrieved from the parser (parser.error).
 
 == Author
 
