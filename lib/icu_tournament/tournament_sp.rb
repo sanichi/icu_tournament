@@ -25,8 +25,16 @@ information.
   tournament = parser.parse_file('champs', "2010-07-03")  # looks for "champs.ini", "champs.trn" and "champs.sco"
   puts parser.error unless tournament
 
-By default, the parser extracts local ratings and IDs from the SwissPerfect files. If instead international
-ratings or IDs are required, use the options _id_ and _rating_. For example:
+Alternatively, if all three files are in a ZIP archive, the parser will extract them if the name of the
+archive file (including the .zip ending) is supplied to the _parse_file_ method:
+
+  tournament = parser.parse_file('champs.zip', "2010-07-03")
+
+Note there must be only three files in the archive, they must all have the same stem name and
+their endings should be ".ini", ".trn" and ".sco" (case insensitive).
+
+By default, the parser extracts local ratings and IDs from the SwissPerfect files. If international
+ratings or IDs are required instead, use the options _id_ and _rating_. For example:
 
   tournament = parser.parse_file('ncc', "2010-05-08")
   tournament.player(2).id         # =>  12379 (ICU ID)
@@ -72,7 +80,6 @@ Should you wish to rank the tournament using a different set of tie-break rules,
 
 == Todo
 
-* Allow parsing from 1 zip file
 * Implement the extra tie-break rules that SP has
 
 =end
