@@ -101,6 +101,8 @@ The full list of supported methods is:
 * _Harkness_ (or _median_): like Buchholz except the highest and lowest opponents' scores are discarded (or two highest and lowest if 9 rounds or more)
 * _modified_median_: same as Harkness except only lowest (or highest) score(s) are discarded for players with more (or less) than 50%
 * _Neustadtl_ (or _Sonneborn-Berger_): sum of scores of players defeated plus half sum of scores of players drawn against
+* _progressive_ (or _cumulative_): sum of running score for each round
+* _ratings_: sum of opponents ratings
 * _blacks_: number of blacks
 * _wins_: number of wins
 * _name_: alphabetical by name (if _tie_breaks_ is set to an empty array, as it is initially, then this will be used as the back-up tie breaker)
@@ -215,12 +217,13 @@ The return value from _renumber_ is the tournament object itself.
           when 'sonneborn_berger'  then 'neustadtl'
           when 'modified_median'   then 'modified'
           when 'median'            then 'harkness'
+          when 'cumulative'        then 'progressive'
           else m
         end
       end
 
       # Check they're all valid.
-      tie_breaks.each { |m| raise "invalid tie break method '#{m}'" unless m.to_s.match(/^(blacks|buchholz|harkness|modified|name|neustadtl|wins)$/) }
+      tie_breaks.each { |m| raise "invalid tie break method '#{m}'" unless m.to_s.match(/^(blacks|buchholz|harkness|modified|name|neustadtl|progressive|ratings|wins)$/) }
 
       # Finally set them.
       @tie_breaks = tie_breaks;
@@ -469,27 +472,25 @@ The return value from _renumber_ is the tournament object itself.
       # Add the configured methods.
       tie_breaks.each do |m|
         methods << m
-        order[m] = -1
+        order[m] = m == 'name' ? 1 : -1
       end
 
       # Name is included as the last and least important tie breaker unless it's already been added.
       unless methods.include?('name')
         methods << 'name'
-        order['name'] = +1
+        order['name'] = 1
       end
 
       # We'll need the number of rounds.
       rounds = last_round
 
-      # Pre-calculate some scores that are not in themselves tie break score
+      # Pre-calculate some scores that are not in themselves tie break scores
       # but are needed in the calculation of some of the actual tie-break scores.
       pre_calculated = Array.new
       pre_calculated << 'opp-score'  # sum scores where a non-played games counts 0.5
       pre_calculated.each do |m|
         data[m] = Hash.new
-        @player.values.each do |p|
-          data[m][p.num] = tie_break_score(data, m, p, rounds)
-        end
+        @player.values.each { |p| data[m][p.num] = tie_break_score(data, m, p, rounds) }
       end
 
       # Now calculate all the other scores.
@@ -506,12 +507,14 @@ The return value from _renumber_ is the tournament object itself.
     # Return a tie break score for a given player and a given tie break method.
     def tie_break_score(hash, method, player, rounds)
       case method
-        when 'score'     then player.points
-        when 'wins'      then player.results.inject(0)   { |t,r| t + (r.opponent && r.score  == 'W' ? 1 : 0) }
-        when 'blacks'    then player.results.inject(0)   { |t,r| t + (r.opponent && r.colour == 'B' ? 1 : 0) }
-        when 'buchholz'  then player.results.inject(0.0) { |t,r| t + (r.opponent ? hash['opp-score'][r.opponent] : 0.0) }
-        when 'neustadtl' then player.results.inject(0.0) { |t,r| t + (r.opponent ? hash['opp-score'][r.opponent] * r.points : 0.0) }
-        when 'opp-score' then player.results.inject(0.0) { |t,r| t + (r.opponent ? r.points : 0.5) } + (rounds - player.results.size) * 0.5
+        when 'score'       then player.points
+        when 'wins'        then player.results.inject(0)   { |t,r| t + (r.opponent && r.score  == 'W' ? 1 : 0) }
+        when 'blacks'      then player.results.inject(0)   { |t,r| t + (r.opponent && r.colour == 'B' ? 1 : 0) }
+        when 'buchholz'    then player.results.inject(0.0) { |t,r| t + (r.opponent ? hash['opp-score'][r.opponent] : 0.0) }
+        when 'neustadtl'   then player.results.inject(0.0) { |t,r| t + (r.opponent ? hash['opp-score'][r.opponent] * r.points : 0.0) }
+        when 'opp-score'   then player.results.inject(0.0) { |t,r| t + (r.opponent ? r.points : 0.5) } + (rounds - player.results.size) * 0.5
+        when 'progressive' then (1..rounds).inject(0.0)    { |t,n| r = player.find_result(n); s = r ? r.points : 0.0; t + s * (rounds + 1 - n) }
+        when 'ratings'     then player.results.inject(0)   { |t,r| t + (r.opponent && @player[r.opponent].rating ? @player[r.opponent].rating : 0) }
         when 'harkness', 'modified'
           scores = player.results.map{ |r| r.opponent ? hash['opp-score'][r.opponent] : 0.0 }.sort
           1.upto(rounds - player.results.size) { scores << 0.0 }

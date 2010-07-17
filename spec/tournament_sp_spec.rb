@@ -49,7 +49,7 @@ module ICU
         end
 
         it "should have the correct tie breaks" do
-          @t.tie_breaks.join('|').should == "buchholz|harkness"
+          @t.tie_breaks.join('|').should == "buchholz|harkness|progressive"
         end
 
         it "should serialize to the text export format" do
@@ -116,7 +116,7 @@ module ICU
         end
 
         it "should have the correct tie breaks" do
-          @t.tie_breaks.join('|').should == "harkness|buchholz"
+          @t.tie_breaks.join('|').should == "harkness|buchholz|progressive"
         end
       end
 
@@ -270,14 +270,6 @@ module ICU
           @t.player(5).signature.should  == "Daly, Colm|295|2314|3.5|7|1234|WWWD|WBWB|TTTT"
           @t.player(8).signature.should  == "Vega, Marcos Llaneza||2475|3.0|16|1234|DDWW|BWBW|TTTT"
           @t.player(67).signature.should == "Lee, Shane|780|1633|1.0|52|134|DLD|WWW|TTT"
-        end
-
-        it "should have correct details for selection of players, including international IDs and ratings when so configured" do
-          @t = @p.parse_file(SAMPLES + 'ncc', "2010-05-08", :id => :intl, :rating => :intl)
-          @t.player(2).signature.should  == "Szabo, Gergely|1205064||4.0|4|1234|WWWW|WBWB|TTTT"
-          @t.player(5).signature.should  == "Daly, Colm|2500434||3.5|7|1234|WWWD|WBWB|TTTT"
-          @t.player(8).signature.should  == "Vega, Marcos Llaneza|2253585||3.0|16|1234|DDWW|BWBW|TTTT"
-          @t.player(67).signature.should == "Lee, Shane|||1.0|52|134|DLD|WWW|TTT"
         end
       end
     end

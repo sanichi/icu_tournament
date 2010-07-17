@@ -39,7 +39,7 @@ ratings or IDs are required instead, use the options _id_ and _rating_. For exam
   tournament = parser.parse_file('ncc', "2010-05-08")
   tournament.player(2).id         # =>  12379 (ICU ID)
   tournament.player(2).rating     # =>  2556  (ICU rating)
-  
+
   tournament = parser.parse_file('ncc', "2010-05-08", :id => :intl, :rating => :intl)
   tournament.player(2).id         # =>  1205064 (FIDE ID)
   tournament.player(2).rating     # =>  2530    (FIDE rating)
@@ -77,10 +77,6 @@ Should you wish to rank the tournament using a different set of tie-break rules,
 
   tournament.tie_breaks = [:wins, :blacks]
   swiss_perfect = tournament.rerank.renumber.serialize('SwissPerfect')
-
-== Todo
-
-* Implement the extra tie-break rules that SP has
 
 =end
 
@@ -182,9 +178,10 @@ Should you wish to rank the tournament using a different set of tie-break rules,
                 ext = $2.downcase
                 stem[ext] = stm
                 tmp = Tempfile.new(e.name)
-                tmp.close
-                e.extract(tmp.path) { true }
-                temp[ext] = tmp.path
+                pth = tmp.path
+                tmp.close!
+                e.extract(pth) { true }
+                temp[ext] = pth
               end
             end
             %w(ini trn sco).each { |ext| raise "no #{ext.upcase} file found" unless stem[ext] }
@@ -210,17 +207,17 @@ Should you wish to rank the tournament using a different set of tie-break rules,
           @t.send("#{key}=", val) if val.size > 0
         end
         @t.tie_breaks = ini['Standings']['Tie Breaks'].to_s.split(/,/).map do |tbid|
-          case tbid.to_i             # tie break name in SwissPerfect
-          when 1217 then :buchholz   # Buchholz
-          when 1218 then :harkness   # Median Buchholz
-          when 1219 then nil         # Progress        - not implenented yet
-          when 1220 then :neustadtl  # Berger          
-          when 1221 then nil         # Rating Sum      - not implemented yet
-          when 1222 then :wins       # Number of Wins  
-          when 1223 then nil         # Minor Scores    - not applicable
-          when 1226 then nil         # Brightwell      - not applicable
+          case tbid.to_i              # tie break name in SwissPerfect
+          when 1217 then :buchholz    # Buchholz
+          when 1218 then :harkness    # Median Buchholz
+          when 1219 then :progressive # cumulative
+          when 1220 then :neustadtl   # Berger
+          when 1221 then :ratings     # rating sum
+          when 1222 then :wins        # number of wins
+          when 1223 then nil          # minor scores - not applicable
+          when 1226 then nil          # Brightwell   - not applicable
           else nil
-          end 
+          end
         end.find_all { |tb| tb }
       end
 
