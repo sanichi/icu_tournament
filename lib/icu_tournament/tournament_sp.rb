@@ -15,15 +15,15 @@ files with the same name but different endings: <em>.ini</em> for meta data such
 rules, <em>.trn</em> for the player details such as name and rating, and <em>.sco</em> for the results. The first
 file is text and the other two are in an old binary format known as <em>DBase 3</em>.
 
-To parse such a set of files, use either the _parse_file!_ or _parse_file_ method supplying the name of any one
+To parse such a set of files, use either the <em>parse_file!</em> or _parse_file_ method supplying the name of any one
 of the three files or just the stem name without any ending. In case of error, such as any of the files not being
-found, _parse_file!_ will throw an exception while _parse_file_ will return _nil_ and record an error message.
+found, <em>parse_file!</em> will throw an exception while _parse_file_ will return _nil_ and record an error message.
 As well as a file name or stem name, you should also supply a start date in the options as SwissPerfect does not
 record this information.
 
   parser = ICU::Tournament::SwissPerfect.new
   tournament = parser.parse_file('champs', :start => '2010-07-03')  # looks for "champs.ini", "champs.trn" and "champs.sco"
-  puts parser.error unless tournament
+  puts tournament ? 'ok' : "problem: #{parser.error}"
 
 Alternatively, if all three files are in a ZIP archive, the parser will extract them if the name of the
 archive file is supplied to the _parse_file_ method and it ends in ".zip" (case insensitive):

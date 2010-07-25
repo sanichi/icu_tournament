@@ -54,7 +54,7 @@ See ICU::Player and ICU::Result for more details about players and results.
 
 == Validation
 
-A tournament can be validated with either the _validate!_ or _invalid_ methods.
+A tournament can be validated with either the <em>validate!</em> or _invalid_ methods.
 On success, the first returns true while the second returns false.
 On error, the first throws an exception while the second returns a string
 describing the error.
@@ -67,7 +67,7 @@ Validations checks that:
 * the tournament dates (start, finish, round dates), if there are any, are consistent
 * the player ranks are consistent with their scores
 
-Side effects of calling _validate!_ or _invalid_ include:
+Side effects of calling <em>validate!</em> or _invalid_ include:
 
 * the number of rounds will be set if not set already
 * the finish date will be set if not set already and if there are round dates
@@ -345,8 +345,8 @@ The return value from _renumber_ is the tournament object itself.
       false
     end
 
-    # Raise an exception if a tournament is not valid.
-    # The _rerank_ option can be set to _true_ rerank the tournament if ranking is missing or inconsistent.
+    # Raise an exception if a tournament is not valid. The _rerank_ option can be set to _true_
+    # to rank the tournament just prior to the test if ranking data is missing or inconsistent.
     def validate!(options={})
       begin check_ranks rescue rerank end if options[:rerank]
       check_players
