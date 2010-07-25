@@ -28,7 +28,7 @@ module ICU
 
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
-          @t = @p.parse_file(SAMPLES + 'gonzaga_challengers_2010.trn', "2010-01-29")
+          @t = @p.parse_file(SAMPLES + 'gonzaga_challengers_2010.trn', :start => "2010-01-29")
           @s = open(SAMPLES + 'gonzaga_challengers_2010.txt') { |f| f.read }
         end
 
@@ -40,8 +40,8 @@ module ICU
         it "should have correct details for selected players" do
           @t.player(2).signature.should  == "Mullooly, Neil M.|6438|1083|6.0|1|123456|WWWWWW|WBWBWB|TTTTTT" # winner
           @t.player(4).signature.should  == "Gallagher, Mark|12138|1036|4.0|9|123456|WLWWWL|WBWBWB|FTTTTT"  # had one bye
-          @t.player(45).signature.should == "Catre, Loredan||507|3.5|18|123456|WDLWLW|BWBWBW|FTTTFT"         # had two byes
-          @t.player(56).signature.should == "McDonnell, Cathal||498|0.0|54|1|L|-|F"                          # last
+          @t.player(45).signature.should == "Catre, Loredan||507|3.5|18|123456|WDLWLW|BWBWBW|FTTTFT"        # had two byes
+          @t.player(56).signature.should == "McDonnell, Cathal||498|0.0|54|1|L|-|F"                         # last
         end
 
         it "should have consistent ranks" do
@@ -61,7 +61,7 @@ module ICU
 
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
-          @t = @p.parse_file(SAMPLES + 'junior_championships_u19_2010.sco', "2010-04-11")
+          @t = @p.parse_file(SAMPLES + 'junior_championships_u19_2010.sco', :start => "2010-04-11")
           @s = open(SAMPLES + 'junior_championships_u19_2010.txt') { |f| f.read }
         end
 
@@ -94,7 +94,7 @@ module ICU
 
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
-          @t = @p.parse_file(SAMPLES + 'LimerickClubChampionship09.ini', "2009-09-15")
+          @t = @p.parse_file(SAMPLES + 'LimerickClubChampionship09.ini', :start => "2009-09-15")
         end
 
         it "should parse and have the right basic details" do
@@ -124,7 +124,7 @@ module ICU
 
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
-          @t = @p.parse_file(SAMPLES + 'junior_provincials_u16_2010', "2010-02-02")
+          @t = @p.parse_file(SAMPLES + 'junior_provincials_u16_2010', :start => "2010-02-02")
         end
 
         it "should parse and have the right basic details" do
@@ -152,7 +152,7 @@ module ICU
 
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
-          @t = @p.parse_file(SAMPLES + 'mulcahy_2010', "2010-01-15")
+          @t = @p.parse_file(SAMPLES + 'mulcahy_2010', :start => "2010-01-15")
         end
 
         it "should parse and have the right basic details" do
@@ -177,7 +177,7 @@ module ICU
 
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
-          @t = @p.parse_file(SAMPLES + 'ncc', "2010-05-08")
+          @t = @p.parse_file(SAMPLES + 'ncc', :start => "2010-05-08")
         end
 
         it "should parse and have the right basic details" do
@@ -193,7 +193,7 @@ module ICU
         end
 
         it "should have correct details for selection of players, including international IDs and ratings when so configured" do
-          @t = @p.parse_file(SAMPLES + 'ncc', "2010-05-08", :id => :intl, :rating => :intl)
+          @t = @p.parse_file(SAMPLES + 'ncc', :start => "2010-05-08", :id => :intl, :rating => :intl)
           @t.player(2).signature.should  == "Szabo, Gergely|1205064||4.0|4|1234|WWWW|WBWB|TTTT"
           @t.player(5).signature.should  == "Daly, Colm|2500434||3.5|7|1234|WWWD|WBWB|TTTT"
           @t.player(8).signature.should  == "Vega, Marcos Llaneza|2253585||3.0|16|1234|DDWW|BWBW|TTTT"
@@ -205,7 +205,7 @@ module ICU
 
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
-          @t = @p.parse_file(SAMPLES + 'nosuchzipfile.zip', "2010-05-08")
+          @t = @p.parse_file(SAMPLES + 'nosuchzipfile.zip', :start => "2010-05-08")
         end
 
         it "should not parse and should have a relevant error" do
@@ -218,7 +218,7 @@ module ICU
 
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
-          @t = @p.parse_file(SAMPLES + 'notazipfile.zip', "2010-05-08")
+          @t = @p.parse_file(SAMPLES + 'notazipfile.zip', :start => "2010-05-08")
         end
 
         it "should not parse and have a should have relevant error" do
@@ -231,7 +231,7 @@ module ICU
 
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
-          @t = @p.parse_file(SAMPLES + 'notenoughfiles.zip', "2010-05-08")
+          @t = @p.parse_file(SAMPLES + 'notenoughfiles.zip', :start => "2010-05-08")
         end
 
         it "should not parse and should have a relevant error" do
@@ -244,7 +244,7 @@ module ICU
 
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
-          @t = @p.parse_file(SAMPLES + 'mixedstems.zip', "2010-05-08")
+          @t = @p.parse_file(SAMPLES + 'mixedstems.zip', :start => "2010-05-08")
         end
 
         it "should not parse and should have a relevant error" do
@@ -253,11 +253,11 @@ module ICU
         end
       end
 
-      context "National Club Champiomships 2010 ZIP file" do
+      context "ZIP file" do
 
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
-          @t = @p.parse_file(SAMPLES + 'nccz.zip', "2010-05-08")
+          @t = @p.parse_file(SAMPLES + 'nccz.zip', :start => "2010-05-08")
         end
 
         it "should parse and have the right basic details" do
@@ -270,6 +270,33 @@ module ICU
           @t.player(5).signature.should  == "Daly, Colm|295|2314|3.5|7|1234|WWWD|WBWB|TTTT"
           @t.player(8).signature.should  == "Vega, Marcos Llaneza||2475|3.0|16|1234|DDWW|BWBW|TTTT"
           @t.player(67).signature.should == "Lee, Shane|780|1633|1.0|52|134|DLD|WWW|TTT"
+        end
+      end
+      
+      context "ZIP file without a ZIP ending" do
+
+        before(:all) do
+          @p = ICU::Tournament::SwissPerfect.new
+        end
+
+        it "should not parse unless ZIP format is signalled with an option" do
+          lambda { @p.parse_file!(SAMPLES + 'nccz.piz', :start => "2010-05-08") }.should raise_error(/cannot find/i)
+        end
+
+        it "should parse if ZIP format is signalled with an option" do
+          lambda { @p.parse_file!(SAMPLES + 'nccz.piz', :zip => true, :start => "2010-05-08") }.should_not raise_error
+        end
+      end
+      
+      context "Defaulting the start date" do
+
+        before(:all) do
+          @p = ICU::Tournament::SwissPerfect.new
+          @t = @p.parse_file(SAMPLES + 'nccz.zip')
+        end
+
+        it "should default the start date if not supplied" do
+          @t.start.should == "2000-01-01"
         end
       end
     end

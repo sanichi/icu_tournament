@@ -12,35 +12,45 @@ module ICU
 
 This is the format produced by the Windows program, SwissPerfect[http://www.swissperfect.com/]. It consists of three
 files with the same name but different endings: <em>.ini</em> for meta data such as tournament name and tie-break
-rules, <em>.trn</em> for the player details such as name and ID, and <em>.sco</em> for the results. The first
+rules, <em>.trn</em> for the player details such as name and rating, and <em>.sco</em> for the results. The first
 file is text and the other two are in an old binary format known as <em>DBase 3</em>.
 
 To parse such a set of files, use either the _parse_file!_ or _parse_file_ method supplying the name of any one
 of the three files or just the stem name without any ending. In case of error, such as any of the files not being
 found, _parse_file!_ will throw an exception while _parse_file_ will return _nil_ and record an error message.
-As well as a file name or stem name, you must also supply a start date because SwissPerfect does not record this
-information.
+As well as a file name or stem name, you should also supply a start date in the options as SwissPerfect does not
+record this information.
 
   parser = ICU::Tournament::SwissPerfect.new
-  tournament = parser.parse_file('champs', "2010-07-03")  # looks for "champs.ini", "champs.trn" and "champs.sco"
+  tournament = parser.parse_file('champs', :start => '2010-07-03')  # looks for "champs.ini", "champs.trn" and "champs.sco"
   puts parser.error unless tournament
 
 Alternatively, if all three files are in a ZIP archive, the parser will extract them if the name of the
-archive file (including the .zip ending) is supplied to the _parse_file_ method:
+archive file is supplied to the _parse_file_ method and it ends in ".zip" (case insensitive):
 
-  tournament = parser.parse_file('champs.zip', "2010-07-03")
+  tournament = parser.parse_file('champs.zip', :start => '2010-07-03')
+
+Or, if the file is a ZIP archive but it's name doesn't end in ".zip", that can be signalled with an option:
+
+  tournament = parser.parse_file('/tmp/a84f21ge', :zip => true, :start => '2010-07-03')
 
 Note there must be only three files in the archive, they must all have the same stem name and
 their endings should be ".ini", ".trn" and ".sco" (case insensitive).
 
+If no start date is supplied it will default to 2000-01-01, and can be reset later.
+
+  tournament = parser.parse_file('champs.zip')
+  tournament.start                # => '2000-01-01'
+  tournament.start = '2010-07-03'
+
 By default, the parser extracts local ratings and IDs from the SwissPerfect files. If international
 ratings or IDs are required instead, use the options _id_ and _rating_. For example:
 
-  tournament = parser.parse_file('ncc', "2010-05-08")
+  tournament = parser.parse_file('ncc', :start => '2010-05-08')
   tournament.player(2).id         # =>  12379 (ICU ID)
   tournament.player(2).rating     # =>  2556  (ICU rating)
 
-  tournament = parser.parse_file('ncc', "2010-05-08", :id => :intl, :rating => :intl)
+  tournament = parser.parse_file('ncc', :start => '2010-05-08', :id => :intl, :rating => :intl)
   tournament.player(2).id         # =>  1205064 (FIDE ID)
   tournament.player(2).rating     # =>  2530    (FIDE rating)
 
@@ -69,7 +79,8 @@ renumbering method) before serializing. For example:
 
 There should be no need to explicitly rank the tournament first, as that information is already present in
 SwissPerfect files (i.e. each player should already have a rank after the files have been parsed).
-Additionally, the tie break rules used for the tournament will be available from:
+Additionally, the tie break rules used for the tournament will be available from the _tie_break_ method,
+dir example:
 
   tournament.tie_breaks           # => [:buchholz, :harkness]
 
@@ -77,6 +88,8 @@ Should you wish to rank the tournament using a different set of tie-break rules,
 
   tournament.tie_breaks = [:wins, :blacks]
   swiss_perfect = tournament.rerank.renumber.serialize('SwissPerfect')
+
+See ICU::Tournament for more about tie-breaks.
 
 =end
 
@@ -98,11 +111,12 @@ Should you wish to rank the tournament using a different set of tie-break rules,
       SCO = %w{ROUND WHITE BLACK W_SCORE B_SCORE W_TYPE B_TYPE}  # not used W_SUBSCO, B_SUBSCO
 
       # Parse SP data returning a Tournament or raising an exception on error.
-      def parse_file!(file, start, arg={})
-        @t = Tournament.new('Dummy', start)
+      def parse_file!(file, arg={})
+        @t = Tournament.new('Dummy', '2000-01-01')
+        @t.start = arg[:start] if arg[:start]
         @bonus = {}
         @start_no = {}
-        ini, trn, sco = get_files(file)
+        ini, trn, sco = get_files(file, arg)
         parse_ini(ini)
         parse_trn(trn, arg)
         parse_sco(sco)
@@ -113,9 +127,9 @@ Should you wish to rank the tournament using a different set of tie-break rules,
 
       # Parse SP data returning an ICU::Tournament or a nil on failure. In the latter
       # case, an error message will be available via the <em>error</em> method.
-      def parse_file(file, start, arg={})
+      def parse_file(file, arg={})
         begin
-          parse_file!(file, start, arg)
+          parse_file!(file, arg)
         rescue => ex
           @error = ex.message
           nil
@@ -153,8 +167,8 @@ Should you wish to rank the tournament using a different set of tie-break rules,
 
       private
 
-      def get_files(file)
-        file.match(/\.zip$/i) ? get_zip_files(file) : get_bare_files(file)
+      def get_files(file, arg)
+        file.match(/\.zip$/i) || arg[:zip] ? get_zip_files(file) : get_bare_files(file)
       end
 
       def get_bare_files(file)
