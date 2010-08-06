@@ -55,8 +55,8 @@ ratings or IDs are required instead, use the options _id_ and _rating_. For exam
   tournament.player(2).rating     # =>  2530    (FIDE rating)
 
 Because the data is in three parts, some of which are in a legacy binary format, serialization to this format is
-not supported. Instead, a method is provided to serialize any tournament text in the format of <em>SwissPerfects</em>
-text export format, an example of which is shown below.
+not supported. Instead, a method is provided to serialize any tournament type into the test export format of
+<em>SwissPerfects</em>, an example of which is shown below.
 
   No  Name                 Loc Id  Total   1     2     3
 
