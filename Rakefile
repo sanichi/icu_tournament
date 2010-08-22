@@ -2,7 +2,7 @@ require 'rubygems'
 require 'rake'
 require 'rake/rdoctask'
 require 'spec/rake/spectask'
-require 'lib/icu_tournament/version'
+require File.expand_path(File.dirname(__FILE__) + '/lib/icu_tournament/version')
 
 version = ICU::Tournament::VERSION
 
