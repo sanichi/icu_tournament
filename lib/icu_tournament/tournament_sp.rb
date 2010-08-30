@@ -55,8 +55,8 @@ ratings or IDs are required instead, use the options _id_ and _rating_. For exam
   tournament.player(2).rating     # =>  2530    (FIDE rating)
 
 Because the data is in three parts, some of which are in a legacy binary format, serialization to this format is
-not supported. Instead, a method is provided to serialize any tournament type into the test export format of
-<em>SwissPerfects</em>, an example of which is shown below.
+not supported. Instead, a method is provided to serialize any tournament type into the text export format of
+<em>SwissPerfect</em>, an example of which is shown below.
 
   No  Name                 Loc Id  Total   1     2     3
 
@@ -79,8 +79,8 @@ renumbering method) before serializing. For example:
 
 There should be no need to explicitly rank the tournament first, as that information is already present in
 SwissPerfect files (i.e. each player should already have a rank after the files have been parsed).
-Additionally, the tie break rules used for the tournament will be available from the _tie_break_ method,
-dir example:
+Additionally, the tie break rules used for the tournament are available from the _tie_break_ method,
+for example:
 
   tournament.tie_breaks           # => [:buchholz, :harkness]
 
