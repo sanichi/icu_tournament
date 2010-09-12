@@ -64,7 +64,7 @@ Note that federations that don't match 3 letters are always silently skipped.
 
 Because the data is in three parts, some of which are in a legacy binary format, serialization to this format is
 not supported. Instead, a method is provided to serialize any tournament type into the text export format of
-<em>SwissPerfect</em>, an example of which is shown below.
+erfect, an example of which is shown below.
 
   No  Name                 Loc Id  Total   1     2     3
 
