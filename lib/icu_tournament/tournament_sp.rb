@@ -50,9 +50,17 @@ ratings or IDs are required instead, use the options _id_ and _rating_. For exam
   tournament.player(2).id         # =>  12379 (ICU ID)
   tournament.player(2).rating     # =>  2556  (ICU rating)
 
-  tournament = parser.parse_file('ncc', :start => '2010-05-08', :id => :intl, :rating => :intl)
+  tournament = parser.parse_file('ncc', :start => '2010-05-08', :id => 'intl', :rating => 'intl')
   tournament.player(2).id         # =>  1205064 (FIDE ID)
   tournament.player(2).rating     # =>  2530    (FIDE rating)
+
+By default, the parse will fail completely if the ".trn" file contains any invalid federations (see ICU::Federation).
+There are two alternative behaviours controlled by setting the _fed_ option:
+
+  tournament = parser.parse_file('ncc', :start => '2010-05-08', :fed == 'skip')    # => silently skips invalid federations
+  tournament = parser.parse_file('ncc', :start => '2010-05-08', :fed == 'ignore')  # => ignores all federations
+
+Note that federations that don't match 3 letters are always silently skipped.
 
 Because the data is in three parts, some of which are in a legacy binary format, serialization to this format is
 not supported. Instead, a method is provided to serialize any tournament type into the text export format of
@@ -276,6 +284,10 @@ See ICU::Tournament for more about tie-breaks.
           when :id     then val = val.to_i > 0 ? val : nil
           when :rating then val = val.to_i > 0 ? val : nil
           when :title  then val = val.to_i > 0 ? %w(GM WGM IM WIM FM WFM)[val.to_i-1] : nil
+          end
+          if pair[0] == :fed && val && arg[:fed]
+            val = nil if arg[:fed].to_s == 'ignore'
+            val = nil if arg[:fed].to_s == 'skip' && !ICU::Federation.find(val)
           end
           hash[pair[0]] = val unless val.nil? || val == ''
           hash

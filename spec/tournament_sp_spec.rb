@@ -193,11 +193,38 @@ module ICU
         end
 
         it "should have correct details for selection of players, including international IDs and ratings when so configured" do
-          @t = @p.parse_file(SAMPLES + 'ncc', :start => "2010-05-08", :id => :intl, :rating => :intl)
+          @t = @p.parse_file(SAMPLES + 'ncc', :start => "2010-05-08", :id => 'intl', :rating => :intl)
           @t.player(2).signature.should  == "Szabo, Gergely|1205064||4.0|4|1234|WWWW|WBWB|TTTT"
           @t.player(5).signature.should  == "Daly, Colm|2500434||3.5|7|1234|WWWD|WBWB|TTTT"
           @t.player(8).signature.should  == "Vega, Marcos Llaneza|2253585||3.0|16|1234|DDWW|BWBW|TTTT"
           @t.player(67).signature.should == "Lee, Shane|||1.0|52|134|DLD|WWW|TTT"
+        end
+      end
+
+      context "Drogheda Section A, 2010, with an invalid federation" do
+
+        before(:each) do
+          @p = ICU::Tournament::SwissPerfect.new
+        end
+
+        it "should not parse because of the invalid federation" do
+          t = @p.parse_file(SAMPLES + 'drog_a.zip', :start => "2010-06-04")
+          t.should be_nil
+          @p.error.should match(/invalid federation/i)
+        end
+        
+        it "should parse if instructed to skip bad feds" do
+          t = @p.parse_file(SAMPLES + 'drog_a.zip', :start => "2010-06-04", :fed => :skip)
+          @p.error.should be_nil
+          t.player(5).fed.should be_nil
+          t.player(6).fed.should == "ESP"
+        end
+        
+        it "should parse if instructed to skip all feds" do
+          t = @p.parse_file(SAMPLES + 'drog_a.zip', :start => "2010-06-04", :fed => 'ignore')
+          @p.error.should be_nil
+          t.player(5).fed.should be_nil
+          t.player(6).fed.should be_nil
         end
       end
 
@@ -272,7 +299,7 @@ module ICU
           @t.player(67).signature.should == "Lee, Shane|780|1633|1.0|52|134|DLD|WWW|TTT"
         end
       end
-      
+
       context "ZIP file without a ZIP ending" do
 
         before(:all) do
@@ -287,7 +314,7 @@ module ICU
           lambda { @p.parse_file!(SAMPLES + 'nccz.piz', :zip => true, :start => "2010-05-08") }.should_not raise_error
         end
       end
-      
+
       context "Defaulting the start date" do
 
         before(:all) do
