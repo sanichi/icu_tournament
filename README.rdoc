@@ -12,7 +12,7 @@ The gem is hosted on gemcutter only:
 For handling SwissPerfect files the _dbf_, _inifile_ and _rubyzip_ gems are required.
 For Ruby prior to version 1.9 the _fastercsv_ gem is needed to handle CSV files.
 
-Tested with ruby 1.8.7, 1.9.1, 1.9.2.
+Tested with ruby 1.8.7, 1.9.2.
 
 
 == Usage
