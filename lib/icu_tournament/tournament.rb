@@ -386,12 +386,14 @@ in which case any options supplied to this method will be silently ignored.
     end
 
     # Convenience method to serialise the tournament into a supported format.
-    # Throws and exception unless the name of a supported format is supplied (e.g. _Krause_).
+    # Throws an exception unless the name of a supported format is supplied
+    # or if the tournament is unsuitable for serialisation in that format.
     def serialize(format)
       serializer = case format.to_s.downcase
         when 'krause'       then ICU::Tournament::Krause.new
         when 'foreigncsv'   then ICU::Tournament::ForeignCSV.new
         when 'swissperfect' then ICU::Tournament::SwissPerfect.new
+        when ''             then raise "no format supplied"
         else raise "unsupported serialisation format: '#{format}'"
       end
       serializer.serialize(self)

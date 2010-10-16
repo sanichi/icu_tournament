@@ -227,7 +227,7 @@ For example, here are the commands to reproduce the example above.
       end
 
       private
-      
+
       def event
         abort "the 'Event' keyword", 0 unless @r[0].match(/^(Event|Tournament)$/i)
         abort "the event name",      1 unless @r.size > 1 && @r[1] != ''
