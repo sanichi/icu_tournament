@@ -126,6 +126,22 @@ argument to specify how the renumbering is done.
 
 The return value from _renumber_ is the tournament object itself.
 
+
+== Parsing Files
+
+As an alternative to processing files by first instantiating a parser of the appropropriate class
+(such as ICU::Tournament::SwissPerfect, ICU::Tournament::Krause and ICU::Tournament::ForeignCSV)
+and then calling the parser's <em>parse_file</em> or <em>parse_file!</em> instance method,
+a convenience class method, <em>parse_file!</em>, is available when a parser instance is not required.
+For example:
+
+  t = ICU::Tournament.parse_file!('champs.zip', 'SwissPerfect', :start => '2010-07-03')
+
+The method takes a filename, format and an options hash as arguments. It either returns
+an instance of ICU::Tournament or throws an exception. See the documentation for the
+different formats for what options are available. For some, no options are available,
+in which case any options supplied to this method will be silently ignored.
+
 =end
 
   class Tournament
@@ -355,6 +371,18 @@ The return value from _renumber_ is the tournament object itself.
       check_teams
       check_ranks(:allow_none => true)
       true
+    end
+    
+    # Convenience method to parse a file.
+    def self.parse_file!(file, format, opts={})
+      type = format.to_s
+      raise "Invalid format" unless type.match(/^(SwissPerfect|Krause|ForeignCSV)$/);
+      parser = "ICU::Tournament::#{format}".constantize.new
+      if type == 'SwissPerfect'
+        parser.parse_file!(file, opts)
+      else
+        parser.parse_file!(file)
+      end
     end
 
     # Convenience method to serialise the tournament into a supported format.

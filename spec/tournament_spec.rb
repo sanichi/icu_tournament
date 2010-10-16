@@ -799,5 +799,59 @@ EOS
         @t.player(6).rank.should == 6  # 0/5
       end
     end
+
+    context "convenience file parser" do
+      before(:all) do
+        @s = File.dirname(__FILE__) + '/samples'
+        @c = ICU::Tournament
+      end
+
+      it "should parse a valid SwissPerfect file" do
+        t = nil
+        lambda { t = @c.parse_file!("#{@s}/sp/nccz.zip", 'SwissPerfect', :start => '2010-05-08') }.should_not raise_error
+        t.players.size.should == 77
+        t.start.should == '2010-05-08'
+      end
+
+      it "should parse a valid CSV file" do
+        t = nil
+        lambda { t = @c.parse_file!("#{@s}/fcsv/valid.csv", 'ForeignCSV') }.should_not raise_error
+        t.players.size.should == 16
+      end
+
+      it "should parse a valid Krause file" do
+        t = nil
+        lambda { t = @c.parse_file!("#{@s}/krause/valid.tab", 'Krause') }.should_not raise_error
+        t.players.size.should == 12
+      end
+
+      it "should ignore options where appropriate" do
+        t = nil
+        lambda { t = @c.parse_file!("#{@s}/krause/valid.tab", 'Krause', :start => '2010-05-08') }.should_not raise_error
+        t.start.should == '2008-02-01'
+      end
+
+      it "should raise exceptions for invalid files" do
+        lambda { @c.parse_file!("#{@s}/sp/notenoughfiles.zip", 'SwissPerfect', :start => '2010-05-08') }.should raise_error(/files/)
+        lambda { @c.parse_file!("#{@s}/krause/invalid.tab", 'Krause') }.should raise_error(/name/)
+        lambda { @c.parse_file!("#{@s}/fcsv/invalid.csv", 'ForeignCSV') }.should raise_error(/termination/)
+      end
+
+      it "should raise exceptions if the wrong type is used" do
+        lambda { @c.parse_file!("#{@s}/krause/valid.tab", 'ForeignCSV') }.should raise_error(/expected/)
+        lambda { @c.parse_file!("#{@s}/fcsv/valid.csv", 'SwissPerfect') }.should raise_error(/cannot/)
+        lambda { @c.parse_file!("#{@s}/sp/nccz.zip", 'Krause') }.should raise_error(/missing/)
+      end
+
+      it "should raise an exception if file does not exist" do
+        lambda { @c.parse_file!("#{@s}/nosuchfile.cvs", 'ForeignCSV') }.should raise_error(/no such file/i)
+        lambda { @c.parse_file!("#{@s}/nosuchfile.zip", 'SwissPerfect') }.should raise_error(/invalid/i)
+        lambda { @c.parse_file!("#{@s}/nosuchfile.tab", 'Krause') }.should raise_error(/no such file/i)
+      end
+
+      it "should raise an exception if an invalid type is used" do
+        lambda { @c.parse_file!("#{@s}/krause/valid.tab", 'NoSuchType') }.should raise_error(/invalid format/i)
+      end
+    end
   end
 end
