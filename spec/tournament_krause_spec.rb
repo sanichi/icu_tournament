@@ -158,7 +158,7 @@ KRAUSE
           @t.add_result(ICU::Result.new(1, 1, 'L', :opponent => 2, :colour => 'B'))
           @t.add_result(ICU::Result.new(2, 1, 'L', :opponent => 2, :colour => 'W', :rateable => false))
           @t.add_result(ICU::Result.new(3, 1, 'W', :opponent => 2, :colour => 'B'))
-          @t.add_result(ICU::Result.new(4, 1, 'W', :opponent => 2, :colour => 'B'))
+          @t.add_result(ICU::Result.new(4, 1, 'D', :opponent => 2, :colour => 'W'))
           serializer = ICU::Tournament::Krause.new
           @k = serializer.serialize(@t)
         end
@@ -173,7 +173,7 @@ KRAUSE
       end
       
       context "serialisation" do
-        before(:all) do
+        before(:each) do
           @krause = <<KRAUSE
 012 Las Vegas National Open
 022 Las Vegas
@@ -203,10 +203,6 @@ KRAUSE
         
         it "should serialize using the convenience method of the tournament object" do
           @t.serialize('Krause').should == @krause
-        end
-
-        it "should return nil on invalid input" do
-          @q.serialize('Rubbish').should be_nil
         end
       end
 
@@ -374,13 +370,13 @@ KRAUSE
            lambda { t = @p.parse!(@k) }.should raise_error(/opponent/)
         end
       end
-      
+
       context "parsing files" do
         before(:each) do
           @p = ICU::Tournament::Krause.new
           @s = File.dirname(__FILE__) + '/samples/krause'
         end
-        
+
         it "should error on a non-existant valid file" do
           file = "#{@s}/not_there.tab"
           lambda { @p.parse_file!(file) }.should raise_error
@@ -388,7 +384,7 @@ KRAUSE
           t.should be_nil
           @p.error.should match(/no such file/i)
         end
-        
+
         it "should error on an invalid file" do
           file = "#{@s}/invalid.tab"
           lambda { @p.parse_file!(file) }.should raise_error
@@ -396,7 +392,7 @@ KRAUSE
           t.should be_nil
           @p.error.should match(/tournament name missing/i)
         end
-        
+
         it "should parse a valid file" do
           file = "#{@s}/valid.tab"
           lambda { @p.parse_file!(file) }.should_not raise_error

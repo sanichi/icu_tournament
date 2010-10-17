@@ -199,7 +199,7 @@ attributes in an ICU::Tournament instance.
 
       # Serialise a tournament back into Krause format.
       def serialize(t)
-        return nil unless t.class == ICU::Tournament;
+        t.validate!(:type => self)
         krause = ''
         krause << "012 #{t.name}\n"
         krause << "022 #{t.city}\n"         if t.city
@@ -223,6 +223,11 @@ attributes in an ICU::Tournament instance.
         end
         t.players.each{ |p| krause << p.to_krause(rounds) }
         krause
+      end
+
+      # Additional tournament validation rules for this specific type.
+      def validate!(t)
+        # None.
       end
 
       private

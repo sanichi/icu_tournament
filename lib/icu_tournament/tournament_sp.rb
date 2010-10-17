@@ -146,7 +146,7 @@ See ICU::Tournament for more about tie-breaks.
 
       # Serialise a tournament to SwissPerfect text export format.
       def serialize(t)
-        return nil unless t.class == ICU::Tournament && t.players.size > 2;
+        t.validate!(:type => self)
 
         # Ensure a nice set of numbers.
         t.renumber(:order)
@@ -171,6 +171,11 @@ See ICU::Tournament for more about tie-breaks.
 
         # And return the whole lot.
         sp
+      end
+
+      # Additional tournament validation rules for this specific type.
+      def validate!(t)
+        # None.
       end
 
       private

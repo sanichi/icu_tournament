@@ -35,7 +35,7 @@ and then:
 
 or equivalntly, just:
 
-  puts @t.serialize('Krause')
+  puts t.serialize('Krause')
 
 would result in the following output:
 
@@ -72,6 +72,22 @@ Side effects of calling <em>validate!</em> or _invalid_ include:
 * the number of rounds will be set if not set already
 * the finish date will be set if not set already and if there are round dates
 
+Optionally, additional validation checks can be performed given a tournament
+parser/serializer. For example:
+
+  t.validate!(:type => ICU::Tournament.ForeignCSV.new)
+
+Or equivalently:
+
+  t.validate!(:type => 'ForeignCSV')
+
+Such additional validation is always performed before a tournament is serialized.
+For example, the following are equivalent and will throw an exception if
+the tournament is invalid according to either the general rules or the rules
+specific for the type used:
+
+  t.serialize('ForeignCSV')
+  ICU::Tournament::ForeignCSV.new.serialize(t)
 
 == Ranking
 
@@ -370,6 +386,7 @@ in which case any options supplied to this method will be silently ignored.
       check_dates
       check_teams
       check_ranks(:allow_none => true)
+      check_type(options[:type]) if options[:type]
       true
     end
     
@@ -485,6 +502,17 @@ in which case any options supplied to this method will be silently ignored.
           p2 = by_rank[i]
           raise "player #{p1.num} with #{p1.points} points is ranked above player #{p2.num} with #{p2.points} points" if p1.points < p2.points
         end
+      end
+    end
+
+    # Validate against a specific type.
+    def check_type(type)
+      if type.respond_to?(:validate!)
+        type.validate!(self)
+      elsif type.to_s.match(/^(ForeignCSV|Krause|SwissPerfect)$/)
+        parser = "ICU::Tournament::#{type.to_s}".constantize.new.validate!(self)
+      else
+        raise "invalid type supplied for validation check"
       end
     end
 

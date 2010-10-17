@@ -853,5 +853,26 @@ EOS
         lambda { @c.parse_file!("#{@s}/krause/valid.tab", 'NoSuchType') }.should raise_error(/invalid format/i)
       end
     end
+
+    context "type specific validation" do
+      before(:all) do
+        @t = Tournament.new('Bangor Bash', '2009-11-09')
+        @t.add_player(Player.new('Bobby', 'Fischer', 1))
+        @t.add_player(Player.new('Garry', 'Kasparov', 2))
+        @t.add_player(Player.new('Mark', 'Orr', 3))
+        @t.add_result(Result.new(1, 1, '=', :opponent => 2, :colour => 'W'))
+        @t.add_result(Result.new(2, 2, 'L', :opponent => 3, :colour => 'W'))
+        @t.add_result(Result.new(3, 3, 'W', :opponent => 1, :colour => 'W'))
+      end
+
+      it "should pass generic validation" do
+        @t.invalid.should be_false
+      end
+
+      it "should fail type-specific validation when the type supplied is inappropriate" do
+        @t.invalid(:type => String).should match(/invalid type/)
+        @t.invalid(:type => "AbCd").should match(/invalid type/)
+      end
+    end
   end
 end

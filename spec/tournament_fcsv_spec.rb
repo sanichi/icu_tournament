@@ -412,10 +412,6 @@ CSV
         it "should serialize back to the original" do
           @f.serialize(@t).should == @csv
         end
-
-        it "should return nil on invalid input" do
-          @f.serialize('Rubbish').should be_nil
-        end
       end
       
       context "serialisation of ForeignCSV documentation example" do
@@ -515,9 +511,8 @@ Player,456,Fox,Anthony
 9,=,W,Phillips,Roy,2271,,MAU
 Total,4.0
 CSV
-          @t = ICU::Tournament.new("Isle of Man Masters, 2007", '2007-09-22', :round => 9)
+          @t = ICU::Tournament.new("Isle of Man Masters, 2007", '2007-09-22')
           @t.site = 'http://www.bcmchess.co.uk/monarch2007/'
-          @t.rounds = 9
           @t.add_player(ICU::Player.new('Anthony', 'Fox', 1, :id => 456, :rating => 2100, :fed => 'IRL'))
           @t.add_player(ICU::Player.new('Peter P.', 'Taylor', 2, :rating => 2209, :fed => 'ENG'))
           @t.add_player(ICU::Player.new('Egozi', 'Nadav', 3, :rating => 2205, :fed => 'ISR'))
@@ -572,6 +567,72 @@ CSV
           t = @p.parse_file(file)
           t.should be_an_instance_of(ICU::Tournament)
           t.players.size.should == 16
+        end
+      end
+
+      context "type validation" do
+        before(:each) do
+          @p = ICU::Tournament::ForeignCSV.new
+          @t = ICU::Tournament.new("Isle of Man Masters, 2007", '2007-09-22')
+          @t.site = 'http://www.bcmchess.co.uk/monarch2007/'
+          @t.add_player(ICU::Player.new('Anthony', 'Fox', 1, :id => 456))
+          @t.add_player(ICU::Player.new('Peter', 'Cafolla', 2, :id => 159))
+          @t.add_player(ICU::Player.new('Peter P.', 'Taylor', 10, :rating => 2209, :fed => 'ENG'))
+          @t.add_player(ICU::Player.new('Egozi', 'Nadav', 20, :rating => 2205, :fed => 'ISR'))
+          @t.add_player(ICU::Player.new('Tim R.', 'Spanton', 30, :rating => 1982, :fed => 'ENG'))
+          @t.add_player(ICU::Player.new('Alan', 'Grant', 40, :rating => 2223, :fed => 'SCO'))
+          @t.add_result(ICU::Result.new(1, 1, 'W', :opponent => 10, :colour => 'W'))
+          @t.add_result(ICU::Result.new(1, 2, 'L', :opponent => 20, :colour => 'B'))
+          @t.add_result(ICU::Result.new(2, 1, 'D', :opponent => 30, :colour => 'B'))
+          @t.add_result(ICU::Result.new(2, 2, 'L', :opponent => 40, :colour => 'W'))
+        end
+
+        it "should pass" do
+          @t.invalid.should be_false
+          @t.invalid(:type => @p).should be_false
+        end
+
+        it "should fail if there's no site" do
+          @t.site = nil;
+          @t.invalid(:type => @p).to_s.should match(/site/)
+        end
+
+        it "should fail if there are no ICU players" do
+          [1, 2].each { |n| @t.player(n).id = nil }
+          @t.player(2).id = nil;
+          @t.invalid(:type => @p).to_s.should match(/ID/)
+        end
+
+        it "should fail unless all foreign players have a federation" do
+          @t.player(10).fed = nil;
+          @t.invalid(:type => @p).to_s.should match(/federation/)
+        end
+
+        it "should fail unless every ICU player has a result in every round" do
+          @t.add_player(ICU::Player.new('Mark', 'Orr', 3, :id => 1350))
+          @t.add_result(ICU::Result.new(1, 3, 'W', :opponent => 30, :colour => 'B'))
+          @t.invalid(:type => @p).to_s.should match(/result/)
+          @t.add_result(ICU::Result.new(2, 3, 'W', :opponent => 10, :colour => 'W'))
+          @t.invalid(:type => @p).should be_false
+        end
+
+        it "should fail unless every ICU player's opponents have a federation" do
+          @t.add_player(ICU::Player.new('Mark', 'Orr', 3, :id => 1350))
+          @t.add_result(ICU::Result.new(1, 3, 'W', :opponent => 30, :colour => 'B'))
+          @t.add_result(ICU::Result.new(2, 3, 'W', :opponent => 10, :colour => 'W'))
+          @t.add_result(ICU::Result.new(3, 1, 'D', :opponent => 40, :colour => 'W'))
+          @t.add_result(ICU::Result.new(3, 2, 'L', :opponent => 3,  :colour => 'B'))
+          @t.invalid(:type => @p).to_s.should match(/opponents.*federation/)
+          @t.player(2).fed = 'IRL'
+          @t.invalid(:type => @p).to_s.should match(/opponents.*federation/)
+          @t.player(3).fed = 'IRL'
+          @t.invalid(:type => @p).should be_false
+        end
+
+        it "should be serializable unless invalid" do
+          lambda { @p.serialize(@t) }.should_not raise_error
+          @t.site = nil;
+          lambda { @p.serialize(@t) }.should raise_error
         end
       end
     end
