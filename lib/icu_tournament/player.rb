@@ -15,17 +15,17 @@ Names are automatically cannonicalised (tidied up).
   bobby.last_name                  # => 'Fischer'
 
 In addition, players have a number of optional attributes which can be specified
-via setters or in constructor hash options: _id_ (either FIDE or national),
-_fed_ (federation), _title_, _rating_, _rank_ and _dob_ (date of birth).
+via setters or in constructor hash options: _id_ (local or national ID), _fide_
+(FIDE ID), _fed_ (federation), _title_, _rating_, _rank_ and _dob_ (date of birth).
 
   peter = ICU::Player.new('Peter', 'Svidler', 21, :fed => 'rus', :title => 'g', :rating = 2700)
   peter.dob = '17th June, 1976'
   peter.rank = 1
 
 Some of these values will also be canonicalised to some extent. For example,
-the date of birth conforms to a _yyyy-mm-dd_ format, the chess title will be two
+date of birth will be turned into _yyyy-mm-dd_ format, the chess title will be two
 to three capital letters always ending in _M_ and the federation, if it's three
-letters long, will be upper-cased.
+letters long, will be upcased.
 
   peter.dob                        # => 1976-07-17
   peter.title                      # => 'GM'
@@ -33,17 +33,18 @@ letters long, will be upper-cased.
 
 It is preferable to add results (ICU::Result) to a player via the tournament (ICU::Tournament) object's
 _add_result_ method rather than the method of the same name belonging to player instances. Doing so
-allows mirrored results to be added to both players with one method call (e.g. one player won, the
+allows mirrored results to be added to both players with one call (e.g. one player won, so the
 other lost). A player's results can later be retieved via the _results_ accessor.
 
 Total scores is available via the _points_ method.
 
   peter.points                     # => 5.5
 
-A player's _id_ is their ID number in some external database (typically either ICU or FIDE).
+A player can have up to two ID numbers (both positive integers or nil): _id_ (local or national ID,
+such as ICU number) and _fide_ (FIDE ID).
 
-  peter.id = 16790                 # ICU, or
-  peter.id = 4102142               # FIDE
+  peter.id = 16790                 # ICU
+  peter.fide = 4102142             # FIDE
 
 Players can be compared to see if they're roughly or exactly the same, which may be useful in detecting duplicates.
 If the names match and the federations don't disagree then two players are equal according to the _==_ operator.
@@ -56,7 +57,7 @@ The player number is irrelevant.
   john1 == john2                   # => true (federations don't disagree because one is unset)
   john2 == john3                   # => false (federations disagree)
 
-If, in addition, _rating_, _dob_, _gender_ and _id_ do not disagree then two players are equal
+If, in addition, _rating_, _dob_, _gender_, _id_ and _fide_ do not disagree then two players are equal
 according to the stricter criteria of _eql?_.
 
   mark1 = ICU::Player.new('Mark', 'Orr', 31, :fed = 'IRL', :rating => 2100)
@@ -69,7 +70,7 @@ according to the stricter criteria of _eql?_.
 The presence of two players in the same tournament that are equal according to _==_ but unequal
 according to _eql?__ is likely to indicate a data entry error.
 
-If two instances represent the same player and are equal according to _==_ then the _id_, _rating_,
+If two instances represent the same player and are equal according to _==_ then the _id_, _fide_, _rating_,
 _title_ and _fed_ attributes of the two can be merged. For example:
 
   fox1 = ICU::Player.new('Tony', 'Fox', 12, :id => 456)
@@ -89,7 +90,7 @@ All other attributes are unaffected.
     
     extend ICU::Accessor
     attr_integer :num
-    attr_positive_or_nil :id, :rating, :rank
+    attr_positive_or_nil :id, :fide, :rating, :rank
     attr_date_or_nil :dob
     
     attr_reader :results, :first_name, :last_name, :fed, :title, :gender
@@ -99,7 +100,7 @@ All other attributes are unaffected.
       self.first_name = first_name
       self.last_name  = last_name
       self.num        = num
-      [:id, :fed, :title, :rating, :rank, :dob, :gender].each do |atr|
+      [:id, :fide, :fed, :title, :rating, :rank, :dob, :gender].each do |atr|
         self.send("#{atr}=", opt[atr]) unless opt[atr].nil?
       end
       @results = []
@@ -193,11 +194,11 @@ All other attributes are unaffected.
       true
     end
     
-    # Strict equality test. Passes if the playes are loosly equal and also if their ID, rating, gender and title are not different.
+    # Strict equality test. Passes if the playes are loosly equal and also if their IDs, rating, gender and title are not different.
     def eql?(other)
       return true if equal?(other)
       return false unless self == other
-      [:id, :rating, :title, :gender].each do |m|
+      [:id, :fide, :rating, :title, :gender].each do |m|
         return false if self.send(m) && other.send(m) && self.send(m) != other.send(m)
       end
       true
@@ -206,7 +207,7 @@ All other attributes are unaffected.
     # Merge in some of the details of another player.
     def merge(other)
       raise "cannot merge two players that are not equal" unless self == other
-      [:id, :rating, :title, :fed, :gender].each do |m|
+      [:id, :fide, :rating, :title, :fed, :gender].each do |m|
         self.send("#{m}=", other.send(m)) unless self.send(m)
       end
     end

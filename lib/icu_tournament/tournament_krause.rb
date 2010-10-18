@@ -49,7 +49,16 @@ A player can be retrieved from the tournament via the _players_ array or by send
   daffy.rating                      # => 2200
   daffy.fed                         # => "IRL"
   daffy.id                          # => 7654321
+  daffy.fide                        # => nil
   daffy.dob                         # => "1937-04-17"
+
+By default, ID numbers in the input are interpreted as local IDs. If, instead, they should be interpreted as
+FIDE IDs, add the following option:
+
+  tournament = parser.parse_file('tournament.tab', :fide => true)
+  daffy = tournament.player(2)
+  daffy.id                          # => nil
+  daffy.fide                        # => 7654321
 
 If the ranking numbers are missing from the file or inconsistent (e.g. player A is ranked above player B
 but has less points than player B) they are recalculated as a side effect of the parse.
@@ -77,6 +86,12 @@ Or alternatively, by the _serialize_ method of the tournament object if the name
 
   krause = tournament.serialize('Krause')
 
+By default, local (ICU) IDs are used for the serialization, but both methods accept an option that
+causes FIDE IDs to be used instead:
+
+  krause = parser.serialize(tournament, :fide => true)
+  krause = parser.serialize(tournament, :fide => true)
+
 The following lists Krause data identification numbers, their description and, where available, their corresponding
 attributes in an ICU::Tournament instance.
 
@@ -102,7 +117,7 @@ attributes in an ICU::Tournament instance.
       attr_reader :error, :comments
 
       # Parse Krause data returning a Tournament on success or raising an exception on error.
-      def parse!(krs)
+      def parse!(krs, arg={})
         @lineno = 0
         @tournament = Tournament.new('Dummy', '2000-01-01')
         @name_set, @start_set = false, false
@@ -116,7 +131,7 @@ attributes in an ICU::Tournament instance.
           next if line == ''   # skip blank lines
           @line = line         # remember this line for later
 
-          # Does it havea DIN or is it just a comment?
+          # Does it have a DIN or is it just a comment?
           if @line.match(/^(\d{3}) (.*)$/)
             din = $1           # data identification number (DIN)
             @data = $2         # the data after the DIN
@@ -128,7 +143,7 @@ attributes in an ICU::Tournament instance.
           # Process the line given the DIN.
           begin
             case din
-              when '001' then add_player                        # player and results record
+              when '001' then add_player(arg)                   # player and results record
               when '012' then set_name                          # name (mandatory)
               when '013' then add_team                          # team name and members
               when '022' then @tournament.city = @data          # city
@@ -172,9 +187,9 @@ attributes in an ICU::Tournament instance.
 
       # Parse Krause data returning a Tournament on success or a nil on failure.
       # In the case of failure, an error message can be retrived via the <em>error</em> method.
-      def parse(krs)
+      def parse(krs, arg={})
         begin
-          parse!(krs)
+          parse!(krs, arg)
         rescue => ex
           @error = ex.message
           nil
@@ -182,15 +197,15 @@ attributes in an ICU::Tournament instance.
       end
 
       # Same as <em>parse!</em> except the input is a file name rather than file contents.
-      def parse_file!(file)
+      def parse_file!(file, arg={})
         krause = open(file) { |f| f.read }
-        parse!(krause)
+        parse!(krause, arg)
       end
 
       # Same as <em>parse</em> except the input is a file name rather than file contents.
-      def parse_file(file)
+      def parse_file(file, arg={})
         begin
-          parse_file!(file)
+          parse_file!(file, arg)
         rescue => ex
           @error = ex.message
           nil
@@ -198,7 +213,7 @@ attributes in an ICU::Tournament instance.
       end
 
       # Serialise a tournament back into Krause format.
-      def serialize(t)
+      def serialize(t, arg={})
         t.validate!(:type => self)
         krause = ''
         krause << "012 #{t.name}\n"
@@ -221,7 +236,7 @@ attributes in an ICU::Tournament instance.
           t.round_dates.each{ |d| krause << d.sub(/^../, '  ') }
           krause << "\n"
         end
-        t.players.each{ |p| krause << p.to_krause(rounds) }
+        t.players.each{ |p| krause << p.to_krause(rounds, arg) }
         krause
       end
 
@@ -242,7 +257,7 @@ attributes in an ICU::Tournament instance.
         @start_set = true
       end
 
-      def add_player
+      def add_player(arg={})
         raise "player record less than minimum length" if @line.length < 99
 
         # Player details.
@@ -254,10 +269,10 @@ attributes in an ICU::Tournament instance.
           :title  => @data[6, 3],
           :rating => @data[44, 4],
           :fed    => @data[49, 3],
-          :id     => @data[53, 11],
           :dob    => @data[65, 10],
           :rank   => @data[81, 4],
         }
+        opt[arg[:fide] ? :fide : :id] = @data[53, 11]
         player = Player.new(nam.first, nam.last, num, opt)
         @tournament.add_player(player)
 
@@ -320,7 +335,7 @@ attributes in an ICU::Tournament instance.
 
   class Player
     # Format a player's 001 record as it would appear in a Krause formatted file (including the final newline).
-    def to_krause(rounds)
+    def to_krause(rounds, arg)
       krause = '001'
       krause << sprintf(' %4d', @num)
       krause << sprintf(' %1s', case @gender; when 'M' then 'm'; when 'F' then 'w'; else ''; end)
@@ -328,7 +343,7 @@ attributes in an ICU::Tournament instance.
       krause << sprintf(' %-33s', "#{@last_name},#{@first_name}")
       krause << sprintf(' %4s', @rating)
       krause << sprintf(' %3s', @fed)
-      krause << sprintf(' %11s', @id)
+      krause << sprintf(' %11s', arg[:fide] ? @fide : @id)
       krause << sprintf(' %10s', @dob)
       krause << sprintf(' %4.1f', points)
       krause << sprintf(' %4s', @rank)

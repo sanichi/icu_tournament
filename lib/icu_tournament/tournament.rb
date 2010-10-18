@@ -395,17 +395,19 @@ in which case any options supplied to this method will be silently ignored.
       type = format.to_s
       raise "Invalid format" unless type.match(/^(SwissPerfect|Krause|ForeignCSV)$/);
       parser = "ICU::Tournament::#{format}".constantize.new
-      if type == 'SwissPerfect'
-        parser.parse_file!(file, opts)
-      else
+      if type == 'ForeignCSV'
+        # Doesn't take options.
         parser.parse_file!(file)
+      else
+        # The others can take options.
+        parser.parse_file!(file, opts)
       end
     end
 
     # Convenience method to serialise the tournament into a supported format.
     # Throws an exception unless the name of a supported format is supplied
     # or if the tournament is unsuitable for serialisation in that format.
-    def serialize(format)
+    def serialize(format, arg={})
       serializer = case format.to_s.downcase
         when 'krause'       then ICU::Tournament::Krause.new
         when 'foreigncsv'   then ICU::Tournament::ForeignCSV.new
@@ -413,7 +415,7 @@ in which case any options supplied to this method will be silently ignored.
         when ''             then raise "no format supplied"
         else raise "unsupported serialisation format: '#{format}'"
       end
-      serializer.serialize(self)
+      serializer.serialize(self, arg)
     end
 
     private

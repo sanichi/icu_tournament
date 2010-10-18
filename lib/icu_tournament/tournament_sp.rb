@@ -43,16 +43,19 @@ If no start date is supplied it will default to 2000-01-01, and can be reset lat
   tournament.start                # => '2000-01-01'
   tournament.start = '2010-07-03'
 
-By default, the parser extracts local ratings and IDs from the SwissPerfect files. If international
-ratings or IDs are required instead, use the options _id_ and _rating_. For example:
+SwissPerfect files have slots for both local and international IDs and these, if present
+and if intergers are copied to the _id_ and _fide_ attributes respectively.
+
+By default, the parser extracts the local rating from the SwissPerfect files and not the international one.
+If international ratings are required instead, set the _rating_ option to "intl". For example:
 
   tournament = parser.parse_file('ncc', :start => '2010-05-08')
   tournament.player(2).id         # =>  12379 (ICU ID)
-  tournament.player(2).rating     # =>  2556  (ICU rating)
+  tournament.player(2).fide       # =>  1205064 (FIDE ID)
+  tournament.player(2).rating     # =>  2556 (ICU rating)
 
-  tournament = parser.parse_file('ncc', :start => '2010-05-08', :id => 'intl', :rating => 'intl')
-  tournament.player(2).id         # =>  1205064 (FIDE ID)
-  tournament.player(2).rating     # =>  2530    (FIDE rating)
+  tournament = parser.parse_file('ncc', :start => '2010-05-08', :rating => 'intl')
+  tournament.player(2).rating     # =>  2530 (FIDE rating)
 
 By default, the parse will fail completely if the ".trn" file contains any invalid federations (see ICU::Federation).
 There are two alternative behaviours controlled by setting the _fed_ option:
@@ -109,7 +112,8 @@ See ICU::Tournament for more about tie-breaks.
         :fed        => "FEDER",
         :first_name => "FIRSTNAME",
         :gender     => "SEX",
-        :id         => ["LOC_ID", "INTL_ID"],
+        :id         => "LOC_ID",
+        :fide       => "INTL_ID",
         :last_name  => "SURNAME",
         :num        => "ID",
         :rank       => "ORDER",
@@ -145,7 +149,7 @@ See ICU::Tournament for more about tie-breaks.
       end
 
       # Serialise a tournament to SwissPerfect text export format.
-      def serialize(t)
+      def serialize(t, arg={})
         t.validate!(:type => self)
 
         # Ensure a nice set of numbers.
@@ -287,6 +291,7 @@ See ICU::Tournament for more about tie-breaks.
           when :fed    then val = val && val.match(/^[A-Z]{3}$/i) ? val.upcase : nil
           when :gender then val = val.to_i > 0 ? %w(M F)[val.to_i-1] : nil
           when :id     then val = val.to_i > 0 ? val : nil
+          when :fide   then val = val.to_i > 0 ? val : nil
           when :rating then val = val.to_i > 0 ? val : nil
           when :title  then val = val.to_i > 0 ? %w(GM WGM IM WIM FM WFM)[val.to_i-1] : nil
           end

@@ -205,7 +205,7 @@ For example, here are the commands to reproduce the example above.
       end
 
       # Serialise a tournament back into CSV format.
-      def serialize(t)
+      def serialize(t, arg={})
         t.validate!(:type => self)
         Util::CSV.generate do |csv|
           csv << ["Event", t.name]

@@ -10,7 +10,7 @@ module ICU
   class Player
     def signature
       [
-        name, id, rating, points, rank,
+        name, id, fide, rating, points, rank,
         results.map{ |r| r.round }.join(''),
         results.map{ |r| r.score }.join(''),
         results.map{ |r| r.colour || "-" }.join(''),
@@ -38,10 +38,10 @@ module ICU
         end
 
         it "should have correct details for selected players" do
-          @t.player(2).signature.should  == "Mullooly, Neil M.|6438|1083|6.0|1|123456|WWWWWW|WBWBWB|TTTTTT" # winner
-          @t.player(4).signature.should  == "Gallagher, Mark|12138|1036|4.0|9|123456|WLWWWL|WBWBWB|FTTTTT"  # had one bye
-          @t.player(45).signature.should == "Catre, Loredan||507|3.5|18|123456|WDLWLW|BWBWBW|FTTTFT"        # had two byes
-          @t.player(56).signature.should == "McDonnell, Cathal||498|0.0|54|1|L|-|F"                         # last
+          @t.player(2).signature.should  == "Mullooly, Neil M.|6438||1083|6.0|1|123456|WWWWWW|WBWBWB|TTTTTT" # winner
+          @t.player(4).signature.should  == "Gallagher, Mark|12138||1036|4.0|9|123456|WLWWWL|WBWBWB|FTTTTT"  # had one bye
+          @t.player(45).signature.should == "Catre, Loredan|||507|3.5|18|123456|WDLWLW|BWBWBW|FTTTFT"        # had two byes
+          @t.player(56).signature.should == "McDonnell, Cathal|||498|0.0|54|1|L|-|F"                         # last
         end
 
         it "should have consistent ranks" do
@@ -71,10 +71,10 @@ module ICU
         end
 
         it "should have correct details for selected players" do
-          @t.player(1).signature.should == "Griffiths, Ryan-Rhys|6897|2225|3.0|1|123|WWW|WWB|TTT"
-          @t.player(2).signature.should == "Flynn, Jamie|5226|1633|2.0|2|123|WLW|WBW|TTT"
-          @t.player(3).signature.should == "Hulleman, Leon|6409|1466|1.0|3|123|LWL|BBW|TTT"
-          @t.player(4).signature.should == "Dunne, Thomas|10914||0.0|4|123|LLL|BWB|TTT"
+          @t.player(1).signature.should == "Griffiths, Ryan-Rhys|6897||2225|3.0|1|123|WWW|WWB|TTT"
+          @t.player(2).signature.should == "Flynn, Jamie|5226||1633|2.0|2|123|WLW|WBW|TTT"
+          @t.player(3).signature.should == "Hulleman, Leon|6409||1466|1.0|3|123|LWL|BBW|TTT"
+          @t.player(4).signature.should == "Dunne, Thomas|10914|||0.0|4|123|LLL|BWB|TTT"
         end
 
         it "should have consistent ranks" do
@@ -103,12 +103,12 @@ module ICU
         end
 
         it "should have correct details for selected players" do
-          @t.player(15).signature.should == "Talazec, Laurent|10692|1570|5.5|1|1234567|WWWDDDW|WWBWBWB|FTTTTTT"  # winner
-          @t.player(6).signature.should  == "Foenander, Phillip|7168|1434|4.0|7|1234567|WLWLLWW|BWBWBWB|TTFFTTT" # had some byes
-          @t.player(19).signature.should == "Wall, Robert|||3.0|14|34567|WWLWL|WWBBW|FTTTT"                       # didn't play 1st 2 rounds
-          @t.player(17).signature.should == "Freeman, Conor|||2.0|16|1234567|DDLWLLL|--BWBWB|FFTTTTT"             # had byes and bonus (in BONUS)
-          @t.player(18).signature.should == "Freeman, Ruiri|||2.0|17|1234567|DDLLLLW|--WBBWB|FFTTTTF"             # had byes and bonus (in BONUS)
-          @t.player(16).signature.should == "O'Connor, David|||1.0|19|123|WLL|WBW|FTF"                            # last
+          @t.player(15).signature.should == "Talazec, Laurent|10692||1570|5.5|1|1234567|WWWDDDW|WWBWBWB|FTTTTTT"  # winner
+          @t.player(6).signature.should  == "Foenander, Phillip|7168||1434|4.0|7|1234567|WLWLLWW|BWBWBWB|TTFFTTT" # had some byes
+          @t.player(19).signature.should == "Wall, Robert||||3.0|14|34567|WWLWL|WWBBW|FTTTT"                       # didn't play 1st 2 rounds
+          @t.player(17).signature.should == "Freeman, Conor||||2.0|16|1234567|DDLWLLL|--BWBWB|FFTTTTT"             # had byes and bonus (in BONUS)
+          @t.player(18).signature.should == "Freeman, Ruiri||||2.0|17|1234567|DDLLLLW|--WBBWB|FFTTTTF"             # had byes and bonus (in BONUS)
+          @t.player(16).signature.should == "O'Connor, David||||1.0|19|123|WLL|WBW|FTF"                            # last
         end
 
         it "should have consistent ranks" do
@@ -133,10 +133,10 @@ module ICU
         end
 
         it "should have correct details for selected players" do
-          @t.player(15).signature.should == "Gupta, Radhika||1247|3.0|1|123|WWW|BBW|TTT"            # won all his games
-          @t.player(18).signature.should == "Hurley, Thomas|6292|820|1.0|14|1|W|B|F"                 # scored just 1 from a bye in R1
-          @t.player(8).signature.should  == "Berney, Mark|10328|1948|2.0|3|23|WW|BW|TT"             # didn't play in round 1
-          @t.player(10).signature.should == "O'Donnell, Conor E.|10792|1073|2.0|10|123|LWW|WBW|TFT"  # got just 1 point for a bye
+          @t.player(15).signature.should == "Gupta, Radhika|||1247|3.0|1|123|WWW|BBW|TTT"            # won all his games
+          @t.player(18).signature.should == "Hurley, Thomas|6292||820|1.0|14|1|W|B|F"                 # scored just 1 from a bye in R1
+          @t.player(8).signature.should  == "Berney, Mark|10328||1948|2.0|3|23|WW|BW|TT"             # didn't play in round 1
+          @t.player(10).signature.should == "O'Donnell, Conor E.|10792||1073|2.0|10|123|LWW|WBW|TFT"  # got just 1 point for a bye
         end
 
         it "should have consistent ranks" do
@@ -161,11 +161,11 @@ module ICU
         end
 
         it "should have correct details for selection of players who got bonuses (in MEMO)" do
-          @t.player(23).signature.should == "Long, Killian|10293|1506|2.5|33|123456|WDLLWL|WWBWBB|TFTTTT"
-          @t.player(26).signature.should == "Bradley, Michael|6756|1413|3.0|26|123456|DDLWWL|BWWBWW|TFTTTT"
-          @t.player(15).signature.should == "Twomey, Pat|1637|1656|4.5|7|123456|WDLWWW|WWWBWB|FFTTTT"
-          @t.player(46).signature.should == "O'Riordan, Pat|10696|900|2.0|42|123456|LDDLDD|BWBWWB|TTTTFT"
-          @t.player(38).signature.should == "Gill, Craig I.|10637|1081|2.0|43|123456|LLWDDL|BWBWWB|TTTTFT"
+          @t.player(23).signature.should == "Long, Killian|10293|2|1506|2.5|33|123456|WDLLWL|WWBWBB|TFTTTT"
+          @t.player(26).signature.should == "Bradley, Michael|6756|27|1413|3.0|26|123456|DDLWWL|BWWBWW|TFTTTT"
+          @t.player(15).signature.should == "Twomey, Pat|1637|22|1656|4.5|7|123456|WDLWWW|WWWBWB|FFTTTT"
+          @t.player(46).signature.should == "O'Riordan, Pat|10696||900|2.0|42|123456|LDDLDD|BWBWWB|TTTTFT"
+          @t.player(38).signature.should == "Gill, Craig I.|10637|28|1081|2.0|43|123456|LLWDDL|BWBWWB|TTTTFT"
         end
 
         it "should have consistent ranks" do
@@ -186,18 +186,18 @@ module ICU
         end
 
         it "should have correct details for selection of players, including ICU IDs" do
-          @t.player(2).signature.should  == "Szabo, Gergely|12379|2530|4.0|4|1234|WWWW|WBWB|TTTT"
-          @t.player(5).signature.should  == "Daly, Colm|295|2314|3.5|7|1234|WWWD|WBWB|TTTT"
-          @t.player(8).signature.should  == "Vega, Marcos Llaneza||2475|3.0|16|1234|DDWW|BWBW|TTTT"
-          @t.player(67).signature.should == "Lee, Shane|780|1633|1.0|52|134|DLD|WWW|TTT"
+          @t.player(2).signature.should  == "Szabo, Gergely|12379|1205064|2530|4.0|4|1234|WWWW|WBWB|TTTT"
+          @t.player(5).signature.should  == "Daly, Colm|295|2500434|2314|3.5|7|1234|WWWD|WBWB|TTTT"
+          @t.player(8).signature.should  == "Vega, Marcos Llaneza||2253585|2475|3.0|16|1234|DDWW|BWBW|TTTT"
+          @t.player(67).signature.should == "Lee, Shane|780||1633|1.0|52|134|DLD|WWW|TTT"
         end
 
-        it "should have correct details for selection of players, including international IDs and ratings when so configured" do
-          @t = @p.parse_file(SAMPLES + 'ncc', :start => "2010-05-08", :id => 'intl', :rating => :intl)
-          @t.player(2).signature.should  == "Szabo, Gergely|1205064||4.0|4|1234|WWWW|WBWB|TTTT"
-          @t.player(5).signature.should  == "Daly, Colm|2500434||3.5|7|1234|WWWD|WBWB|TTTT"
-          @t.player(8).signature.should  == "Vega, Marcos Llaneza|2253585||3.0|16|1234|DDWW|BWBW|TTTT"
-          @t.player(67).signature.should == "Lee, Shane|||1.0|52|134|DLD|WWW|TTT"
+        it "should have correct details for selection of players, including international ratings when so configured" do
+          @t = @p.parse_file(SAMPLES + 'ncc', :start => "2010-05-08", :rating => :intl)
+          @t.player(2).signature.should  == "Szabo, Gergely|12379|1205064||4.0|4|1234|WWWW|WBWB|TTTT"
+          @t.player(5).signature.should  == "Daly, Colm|295|2500434||3.5|7|1234|WWWD|WBWB|TTTT"
+          @t.player(8).signature.should  == "Vega, Marcos Llaneza||2253585||3.0|16|1234|DDWW|BWBW|TTTT"
+          @t.player(67).signature.should == "Lee, Shane|780|||1.0|52|134|DLD|WWW|TTT"
         end
       end
 
@@ -293,10 +293,10 @@ module ICU
         end
 
         it "should have correct details for selection of players, including ICU IDs" do
-          @t.player(2).signature.should  == "Szabo, Gergely|12379|2530|4.0|4|1234|WWWW|WBWB|TTTT"
-          @t.player(5).signature.should  == "Daly, Colm|295|2314|3.5|7|1234|WWWD|WBWB|TTTT"
-          @t.player(8).signature.should  == "Vega, Marcos Llaneza||2475|3.0|16|1234|DDWW|BWBW|TTTT"
-          @t.player(67).signature.should == "Lee, Shane|780|1633|1.0|52|134|DLD|WWW|TTT"
+          @t.player(2).signature.should  == "Szabo, Gergely|12379|1205064|2530|4.0|4|1234|WWWW|WBWB|TTTT"
+          @t.player(5).signature.should  == "Daly, Colm|295|2500434|2314|3.5|7|1234|WWWD|WBWB|TTTT"
+          @t.player(8).signature.should  == "Vega, Marcos Llaneza||2253585|2475|3.0|16|1234|DDWW|BWBW|TTTT"
+          @t.player(67).signature.should == "Lee, Shane|780||1633|1.0|52|134|DLD|WWW|TTT"
         end
       end
 

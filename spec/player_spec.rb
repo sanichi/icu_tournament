@@ -63,18 +63,30 @@ module ICU
       end
     end
     
-    context "ID" do
+    context "local ID" do
       it "defaults to nil" do
         Player.new('Mark', 'Orr', 3).id.should be_nil
       end
 
       it "should be a positive integer" do
         Player.new('Mark', 'Orr', 3, :id => 1350).id.should == 1350
-        Player.new('Gary', 'Kasparov', 4, :id => '4100018').id.should == 4100018
+        Player.new('Stephen', 'Brady', 4, :id => ' 90 ').id.should == 90
         lambda { Player.new('Mark', 'Orr', 3, :id => ' 0 ') }.should raise_error(/invalid positive integer/)
       end
     end
-    
+
+    context "FIDE ID" do
+      it "defaults to nil" do
+        Player.new('Stephen', 'Brady', 1).fide.should be_nil
+      end
+
+      it "should be a positive integer" do
+        Player.new('Stephen', 'Brady', 1, :fide => 2500124).fide.should == 2500124
+        Player.new('Gary', 'Kasparov', 2, :fide => '4100018').fide.should == 4100018
+        lambda { Player.new('Mark', 'Orr', 3, :fide => ' 0 ') }.should raise_error(/invalid positive integer/)
+      end
+    end
+
     context "federation" do
       it "defaults to nil" do
         Player.new('Mark', 'Orr', 3).fed.should be_nil
@@ -212,8 +224,8 @@ module ICU
     context "merge" do
       before(:each) do
         @p1 = Player.new('Mark', 'Orr', 1, :id => 1350)
-        @p2 = Player.new('Mark', 'Orr', 2, :rating => 2100, :title => 'IM', :fed => 'IRL')
-        @p3 = Player.new('Gearoidin', 'Ui Laighleis', 3, :rating => 1600, :title => 'WIM', :fed => 'IRL')
+        @p2 = Player.new('Mark', 'Orr', 2, :rating => 2100, :title => 'IM', :fed => 'IRL', :fide => 2500035)
+        @p3 = Player.new('Gearoidin', 'Ui Laighleis', 3, :rating => 1600, :title => 'WIM', :fed => 'IRL', :fide =>  2501171)
       end
       
       it "takes on the ID, rating, title and fed of the other player but not the player number" do
@@ -223,6 +235,7 @@ module ICU
         @p1.rating.should == 2100
         @p1.title.should == 'IM'
         @p1.fed.should == 'IRL'
+        @p1.fide.should == 2500035
       end
       
       it "should have a kind of symmetry" do
