@@ -1,167 +1,157 @@
 module ICU
-
-=begin rdoc
-
-== Building a Tournament
-
-One way to create a tournament object is by parsing one of the supported file types (e.g. ICU::Tournament::Krause).
-It is also possible to build one programmatically by:
-
-1. creating a bare tournament instance,
-2. adding all the players,
-3. adding all the results.
-
-For example:
-
-  require 'rubygems'
-  require 'icu_tournament'
-
-  t = ICU::Tournament.new('Bangor Masters', '2009-11-09')
-
-  t.add_player(ICU::Player.new('Bobby', 'Fischer', 10))
-  t.add_player(ICU::Player.new('Garry', 'Kasparov', 20))
-  t.add_player(ICU::Player.new('Mark', 'Orr', 30))
-
-  t.add_result(ICU::Result.new(1, 10, 'D', :opponent => 30, :colour => 'W'))
-  t.add_result(ICU::Result.new(2, 20, 'W', :opponent => 30, :colour => 'B'))
-  t.add_result(ICU::Result.new(3, 20, 'L', :opponent => 10, :colour => 'W'))
-
-  t.validate!(:rerank => true)
-
-and then:
-
-  serializer = ICU::Tournament::Krause.new
-  puts serializer.serialize(@t)
-
-or equivalntly, just:
-
-  puts t.serialize('Krause')
-
-would result in the following output:
-
-  012 Bangor Masters
-  042 2009-11-09
-  001   10      Fischer,Bobby                                                      1.5    1    30 w =              20 b 1
-  001   20      Kasparov,Garry                                                     1.0    2              30 b 1    10 w 0
-  001   30      Orr,Mark                                                           0.5    3    10 b =    20 w 0
-
-Note that the players should be added first because the _add_result_ method will
-raise an exception if the players it references through their tournament numbers
-(10, 20 and 30 in this example) have not already been added to the tournament.
-
-See ICU::Player and ICU::Result for more details about players and results.
-
-
-== Validation
-
-A tournament can be validated with either the <em>validate!</em> or _invalid_ methods.
-On success, the first returns true while the second returns false.
-On error, the first throws an exception while the second returns a string
-describing the error.
-
-Validations checks that:
-
-* there are at least two players
-* every player has a least one result
-* the result round numbers are consistent (no more than one game per player per round)
-* the tournament dates (start, finish, round dates), if there are any, are consistent
-* the player ranks are consistent with their scores
-
-Side effects of calling <em>validate!</em> or _invalid_ include:
-
-* the number of rounds will be set if not set already
-* the finish date will be set if not set already and if there are round dates
-
-Optionally, additional validation checks can be performed given a tournament
-parser/serializer. For example:
-
-  t.validate!(:type => ICU::Tournament.ForeignCSV.new)
-
-Or equivalently:
-
-  t.validate!(:type => 'ForeignCSV')
-
-Such additional validation is always performed before a tournament is serialized.
-For example, the following are equivalent and will throw an exception if
-the tournament is invalid according to either the general rules or the rules
-specific for the type used:
-
-  t.serialize('ForeignCSV')
-  ICU::Tournament::ForeignCSV.new.serialize(t)
-
-== Ranking
-
-The players in a tournament can be ranked by calling the _rerank_ method directly.
-
-  t.rerank
-
-Alternatively they can be ranked as a side effect of validation if the _rerank_ option is set,
-but this only applies if the tournament is not yet ranked or it's ranking is inconsistent.
-
-  t.validate(:rerank => true)
-
-Ranking is inconsistent if some but not all players have a rank or if all players
-have a rank but some are ranked higher than others on lower scores.
-
-To rank the players requires a tie break method to be specified to order players on the same score.
-The default is alphabetical (by last name then first name). Other methods can be specified by supplying
-an array of methods (strings or symbols) in order of precedence to the _tie_breaks_ setter. Examples:
-
-  t.tie_breaks = ['Sonneborn-Berger']
-  t.tie_breaks = [:buchholz, :neustadtl, :blacks, :wins]
-  t.tie_breaks = []  # reset to the default
-
-The full list of supported methods is:
-
-* _Buchholz_: sum of opponents' scores
-* _Harkness_ (or _median_): like Buchholz except the highest and lowest opponents' scores are discarded (or two highest and lowest if 9 rounds or more)
-* _modified_median_: same as Harkness except only lowest (or highest) score(s) are discarded for players with more (or less) than 50%
-* _Neustadtl_ (or _Sonneborn-Berger_): sum of scores of players defeated plus half sum of scores of players drawn against
-* _progressive_ (or _cumulative_): sum of running score for each round
-* _ratings_: sum of opponents ratings
-* _blacks_: number of blacks
-* _wins_: number of wins
-* _name_: alphabetical by name (if _tie_breaks_ is set to an empty array, as it is initially, then this will be used as the back-up tie breaker)
-
-The return value from _rerank_ is the tournament object itself, to allow chaining, for example:
-
-  t.rerank.renumber
-
-
-== Renumbering
-
-The numbers used to uniquely identify each player in a tournament can be any set of unique integers
-(including zero and negative numbers). To renumber the players so that these numbers start at 1 and
-end with the total number of players, use the _renumber_ method. This method takes one optional
-argument to specify how the renumbering is done.
-
-  t.renumber(:rank)       # renumber by rank (if there are consistent rankings), otherwise by name alphabetically
-  t.renumber              # the same, as renumbering by rank is the default
-  t.renumber(:name)       # renumber by name alphabetically
-  t.renumber(:order)      # renumber maintaining the order of the original numbers
-
-The return value from _renumber_ is the tournament object itself.
-
-
-== Parsing Files
-
-As an alternative to processing files by first instantiating a parser of the appropropriate class
-(such as ICU::Tournament::SwissPerfect, ICU::Tournament::Krause and ICU::Tournament::ForeignCSV)
-and then calling the parser's <em>parse_file</em> or <em>parse_file!</em> instance method,
-a convenience class method, <em>parse_file!</em>, is available when a parser instance is not required.
-For example:
-
-  t = ICU::Tournament.parse_file!('champs.zip', 'SwissPerfect', :start => '2010-07-03')
-
-The method takes a filename, format and an options hash as arguments. It either returns
-an instance of ICU::Tournament or throws an exception. See the documentation for the
-different formats for what options are available. For some, no options are available,
-in which case any options supplied to this method will be silently ignored.
-
-=end
-
+  #
+  # One way to create a tournament object is by parsing one of the supported file types (e.g. ICU::Tournament::Krause).
+  # It is also possible to build one programmatically by:
+  #
+  # * creating a bare tournament instance,
+  # * adding all the players,
+  # * adding all the results.
+  #
+  # For example:
+  #
+  #   require 'rubygems'
+  #   require 'icu_tournament'
+  #
+  #   t = ICU::Tournament.new('Bangor Masters', '2009-11-09')
+  #
+  #   t.add_player(ICU::Player.new('Bobby', 'Fischer', 10))
+  #   t.add_player(ICU::Player.new('Garry', 'Kasparov', 20))
+  #   t.add_player(ICU::Player.new('Mark', 'Orr', 30))
+  #
+  #   t.add_result(ICU::Result.new(1, 10, 'D', :opponent => 30, :colour => 'W'))
+  #   t.add_result(ICU::Result.new(2, 20, 'W', :opponent => 30, :colour => 'B'))
+  #   t.add_result(ICU::Result.new(3, 20, 'L', :opponent => 10, :colour => 'W'))
+  #
+  #   t.validate!(:rerank => true)
+  #
+  # and then:
+  #
+  #   serializer = ICU::Tournament::Krause.new
+  #   puts serializer.serialize(@t)
+  #
+  # or equivalntly, just:
+  #
+  #   puts t.serialize('Krause')
+  #
+  # would result in the following output:
+  #
+  #   012 Bangor Masters
+  #   042 2009-11-09
+  #   001   10      Fischer,Bobby                                                      1.5    1    30 w =              20 b 1
+  #   001   20      Kasparov,Garry                                                     1.0    2              30 b 1    10 w 0
+  #   001   30      Orr,Mark                                                           0.5    3    10 b =    20 w 0
+  #
+  # Note that the players should be added first because the _add_result_ method will
+  # raise an exception if the players it references through their tournament numbers
+  # (10, 20 and 30 in this example) have not already been added to the tournament.
+  #
+  # See ICU::Player and ICU::Result for more details about players and results.
+  #
+  # == Validation
+  #
+  # A tournament can be validated with either the <em>validate!</em> or _invalid_ methods.
+  # On success, the first returns true while the second returns false.
+  # On error, the first throws an exception while the second returns a string
+  # describing the error.
+  #
+  # Validations checks that:
+  #
+  # * there are at least two players
+  # * every player has a least one result
+  # * the result round numbers are consistent (no more than one game per player per round)
+  # * the tournament dates (start, finish, round dates), if there are any, are consistent
+  # * the player ranks are consistent with their scores
+  #
+  # Side effects of calling <em>validate!</em> or _invalid_ include:
+  #
+  # * the number of rounds will be set if not set already
+  # * the finish date will be set if not set already and if there are round dates
+  #
+  # Optionally, additional validation checks can be performed given a tournament
+  # parser/serializer. For example:
+  #
+  #   t.validate!(:type => ICU::Tournament.ForeignCSV.new)
+  #
+  # Or equivalently:
+  #
+  #   t.validate!(:type => 'ForeignCSV')
+  #
+  # Such additional validation is always performed before a tournament is serialized.
+  # For example, the following are equivalent and will throw an exception if
+  # the tournament is invalid according to either the general rules or the rules
+  # specific for the type used:
+  #
+  #   t.serialize('ForeignCSV')
+  #   ICU::Tournament::ForeignCSV.new.serialize(t)
+  #
+  # == Ranking
+  #
+  # The players in a tournament can be ranked by calling the _rerank_ method directly.
+  #
+  #   t.rerank
+  #
+  # Alternatively they can be ranked as a side effect of validation if the _rerank_ option is set,
+  # but this only applies if the tournament is not yet ranked or it's ranking is inconsistent.
+  #
+  #   t.validate(:rerank => true)
+  #
+  # Ranking is inconsistent if some but not all players have a rank or if all players
+  # have a rank but some are ranked higher than others on lower scores.
+  #
+  # To rank the players requires a tie break method to be specified to order players on the same score.
+  # The default is alphabetical (by last name then first name). Other methods can be specified by supplying
+  # an array of methods (strings or symbols) in order of precedence to the _tie_breaks_ setter. Examples:
+  #
+  #   t.tie_breaks = ['Sonneborn-Berger']
+  #   t.tie_breaks = [:buchholz, :neustadtl, :blacks, :wins]
+  #   t.tie_breaks = []  # reset to the default
+  #
+  # The full list of supported methods is:
+  #
+  # * _Buchholz_: sum of opponents' scores
+  # * _Harkness_ (or _median_): like Buchholz except the highest and lowest opponents' scores are discarded (or two highest and lowest if 9 rounds or more)
+  # * _modified_median_: same as Harkness except only lowest (or highest) score(s) are discarded for players with more (or less) than 50%
+  # * _Neustadtl_ (or _Sonneborn-Berger_): sum of scores of players defeated plus half sum of scores of players drawn against
+  # * _progressive_ (or _cumulative_): sum of running score for each round
+  # * _ratings_: sum of opponents ratings
+  # * _blacks_: number of blacks
+  # * _wins_: number of wins
+  # * _name_: alphabetical by name (if _tie_breaks_ is set to an empty array, as it is initially, then this will be used as the back-up tie breaker)
+  #
+  # The return value from _rerank_ is the tournament object itself, to allow chaining, for example:
+  #
+  #   t.rerank.renumber
+  #
+  # == Renumbering
+  #
+  # The numbers used to uniquely identify each player in a tournament can be any set of unique integers
+  # (including zero and negative numbers). To renumber the players so that these numbers start at 1 and
+  # end with the total number of players, use the _renumber_ method. This method takes one optional
+  # argument to specify how the renumbering is done.
+  #
+  #   t.renumber(:rank)       # renumber by rank (if there are consistent rankings), otherwise by name alphabetically
+  #   t.renumber              # the same, as renumbering by rank is the default
+  #   t.renumber(:name)       # renumber by name alphabetically
+  #   t.renumber(:order)      # renumber maintaining the order of the original numbers
+  #
+  # The return value from _renumber_ is the tournament object itself.
+  #
+  # == Parsing Files
+  #
+  # As an alternative to processing files by first instantiating a parser of the appropropriate class
+  # (such as ICU::Tournament::SwissPerfect, ICU::Tournament::Krause and ICU::Tournament::ForeignCSV)
+  # and then calling the parser's <em>parse_file</em> or <em>parse_file!</em> instance method,
+  # a convenience class method, <em>parse_file!</em>, is available when a parser instance is not required.
+  # For example:
+  #
+  #   t = ICU::Tournament.parse_file!('champs.zip', 'SwissPerfect', :start => '2010-07-03')
+  #
+  # The method takes a filename, format and an options hash as arguments. It either returns
+  # an instance of ICU::Tournament or throws an exception. See the documentation for the
+  # different formats for what options are available. For some, no options are available,
+  # in which case any options supplied to this method will be silently ignored.
+  #
   class Tournament
-
     extend ICU::Accessor
     attr_date :start
     attr_date_or_nil :finish
@@ -389,7 +379,7 @@ in which case any options supplied to this method will be silently ignored.
       check_type(options[:type]) if options[:type]
       true
     end
-    
+
     # Convenience method to parse a file.
     def self.parse_file!(file, format, opts={})
       type = format.to_s

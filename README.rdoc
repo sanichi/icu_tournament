@@ -5,15 +5,12 @@ For reading or writing files of chess tournament data. Original project name on 
 
 == Install
 
-The gem is hosted on gemcutter only:
+For ruby 1.9.2 (version 1.1.2 was the last compatible with ruby 1.8.7).
 
-  sudo gem install icu_tournament
+  gem install icu_tournament
 
+For name canonicalisation, _icu_name_ is required.
 For handling SwissPerfect files the _dbf_, _inifile_ and _rubyzip_ gems are required.
-For Ruby prior to version 1.9 the _fastercsv_ gem is needed to handle CSV files.
-
-Tested with ruby 1.8.7, 1.9.2.
-
 
 == Usage
 
@@ -30,7 +27,6 @@ The currently supported formats are:
 * ICU::Tournament::Krause - the format used by FIDE.
 * ICU::Tournament::ForeignCSV - used by Irish players to report their individual results in foreign tournaments.
 * ICU::Tournament::SwissPerfect - often used by Irish tournament controllers to report results.
-
 
 == Writing Files
 
@@ -59,7 +55,6 @@ In round 2 player 1 lost by default against player 2. Similarly for all the othe
 Then finally, to create the file:
 
   open('match.txt', 'w') { |f| f.puts @t.serialize('Krause') }
-
 
 == Reading Files
 

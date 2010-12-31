@@ -1,118 +1,112 @@
 module ICU
   class Tournament
-
-=begin rdoc
-
-== Krause
-
-This is the {format}[http://www.fide.com/component/content/article/5-whats-news/2245-736-general-data-exchange-format-for-tournament-results]
-used to submit tournament results to FIDE[http://www.fide.com] for rating.
-
-Suppose, for example, that the following data is the file <em>tournament.tab</em>:
-
-  012 Fantasy Tournament
-  032 IRL
-  042 2009.09.09
-  0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
-  132                                                                                        09.09.09  09.09.10  09.09.11
-  001    1 w    Mouse,Minerva                     1900 USA     1234567 1928.05.15  1.0    2     2 b 0     3 w 1
-  001    2 m  m Duck,Daffy                        2200 IRL     7654321 1937.04.17  2.0    1     1 w 1               3 b 1
-  001    3 m  g Mouse,Mickey                      2600 USA     1726354 1928.05.15  0.0    3               1 b 0     2 w 0
-
-This file can be parsed as follows.
-
-  parser = ICU::Tournament::Krause.new
-  tournament = parser.parse_file('tournament.tab')
-
-If the file is correctly specified, the return value from the <em>parse_file</em> method is an instance of
-ICU::Tournament (rather than <em>nil</em>, which indicates an error). In this example the file is valid, so:
-
-  tournament.name                   # => "Fantasy Tournament"
-  tournament.start                  # => "2009-09-09"
-  tournament.fed                    # => "IRL"
-  tournament.players.size           # => 9
-
-Some values, not explicitly set in the file, are deduced:
-
-  tournament.rounds                 # => 3
-  tournament.finish                 # => "2009-09-11"
-
-A player can be retrieved from the tournament via the _players_ array or by sending a valid player number to the _player_ method.
-
-  minnie = tournament.player(1)
-  minnie.name                       # => "Mouse, Minerva"
-  minnie.points                     # => 1.0
-  minnie.results.size               # => 2
-
-  daffy = tournament.player(2)
-  daffy.title                       # => "IM"
-  daffy.rating                      # => 2200
-  daffy.fed                         # => "IRL"
-  daffy.id                          # => 7654321
-  daffy.fide                        # => nil
-  daffy.dob                         # => "1937-04-17"
-
-By default, ID numbers in the input are interpreted as local IDs. If, instead, they should be interpreted as
-FIDE IDs, add the following option:
-
-  tournament = parser.parse_file('tournament.tab', :fide => true)
-  daffy = tournament.player(2)
-  daffy.id                          # => nil
-  daffy.fide                        # => 7654321
-
-If the ranking numbers are missing from the file or inconsistent (e.g. player A is ranked above player B
-but has less points than player B) they are recalculated as a side effect of the parse.
-
-  daffy.rank                        # => 1
-  minnie.rank                       # => 2
-  mickey.rank                       # => 3
-
-Comments in the input file (lines that do not start with a valid data identification number) are available from the parser
-instance via its _comments_ method (returning a string). Note that these comments are reset evry time the instance is used
-to parse another file.
-
-  parser.comments                   # => "0123456789..."
-
-If the file contains errors, then the return value from <em>parse_file</em> is <em>nil</em> and
-an error message is returned by the <em>error</em> method of the parser object. The method
-<em>parse_file!</em> is similar except that it raises errors, and the methods <em>parse</em>
-and <em>parse!</em> are similar except their inputs are strings rather than file names.
-
-A tournament can be serialized back to Krause format (the reverse of parsing) with the _serialize_ method of the parser.
-
-  krause = parser.serialize(tournament)
-
-Or alternatively, by the _serialize_ method of the tournament object if the name of the serializer is supplied.
-
-  krause = tournament.serialize('Krause')
-
-By default, local (ICU) IDs are used for the serialization, but both methods accept an option that
-causes FIDE IDs to be used instead:
-
-  krause = parser.serialize(tournament, :fide => true)
-  krause = parser.serialize(tournament, :fide => true)
-
-The following lists Krause data identification numbers, their description and, where available, their corresponding
-attributes in an ICU::Tournament instance.
-
-[001 Player record]           Use _players_ to get all players or _player_ with a player number to get a single instance.
-[012 Name]                    Get or set with _name_. Free text. A tounament name is mandatory.
-[013 Teams]                   Create an ICU::Team, add player numbers to it, use _add_team_ to add to tournament, _get_team_/_teams_ to retrive it/them.
-[022 City]                    Get or set with _city_. Free text.
-[032 Federation]              Get or set with _fed_. Getter returns either _nil_ or a three letter code. Setter can take various formats (see ICU::Federation).
-[042 Start date]              Get or set with _start_. Getter returns <em>yyyy-mm-dd</em> format, but setter can use any reasonable date format. Start date is mandadory.
-[052 End date]                Get or set with _finish_. Returns either <em>yyyy-mm-dd</em> format or _nil_ if not set. Like _start_, can be set with various date formats.
-[062 Number of players]       Not used. Treated as comment in parsed files. Can be determined from the size of the _players_ array.
-[072 Number of rated players] Not used. Treated as comment in parsed files. Can be determined by analysing the array returned by _players_.
-[082 Number of teams]         Not used. Treated as comment in parsed files.
-[092 Type of tournament]      Get or set with _type_. Free text.
-[102 Arbiter(s)]              Get or set with -arbiter_. Free text.
-[112 Deputy(ies)]             Get or set with _deputy_. Free text.
-[122 Time control]            Get or set with _time_control_. Free text.
-[132 Round dates]             Get an array of dates using _round_dates_ or one specific round date by calling _round_date_ with a round number.
-
-=end
-
+    #
+    # This is the {format}[http://www.fide.com/component/content/article/5-whats-news/2245-736-general-data-exchange-format-for-tournament-results]
+    # used to submit tournament results to FIDE[http://www.fide.com] for rating.
+    #
+    # Suppose, for example, that the following data is the file <em>tournament.tab</em>:
+    #
+    #   012 Fantasy Tournament
+    #   032 IRL
+    #   042 2009.09.09
+    #   0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+    #   132                                                                                        09.09.09  09.09.10  09.09.11
+    #   001    1 w    Mouse,Minerva                     1900 USA     1234567 1928.05.15  1.0    2     2 b 0     3 w 1
+    #   001    2 m  m Duck,Daffy                        2200 IRL     7654321 1937.04.17  2.0    1     1 w 1               3 b 1
+    #   001    3 m  g Mouse,Mickey                      2600 USA     1726354 1928.05.15  0.0    3               1 b 0     2 w 0
+    #
+    # This file can be parsed as follows.
+    #
+    #   parser = ICU::Tournament::Krause.new
+    #   tournament = parser.parse_file('tournament.tab')
+    #
+    # If the file is correctly specified, the return value from the <em>parse_file</em> method is an instance of
+    # ICU::Tournament (rather than <em>nil</em>, which indicates an error). In this example the file is valid, so:
+    #
+    #   tournament.name                   # => "Fantasy Tournament"
+    #   tournament.start                  # => "2009-09-09"
+    #   tournament.fed                    # => "IRL"
+    #   tournament.players.size           # => 9
+    #
+    # Some values, not explicitly set in the file, are deduced:
+    #
+    #   tournament.rounds                 # => 3
+    #   tournament.finish                 # => "2009-09-11"
+    #
+    # A player can be retrieved from the tournament via the _players_ array or by sending a valid player number to the _player_ method.
+    #
+    #   minnie = tournament.player(1)
+    #   minnie.name                       # => "Mouse, Minerva"
+    #   minnie.points                     # => 1.0
+    #   minnie.results.size               # => 2
+    #
+    #   daffy = tournament.player(2)
+    #   daffy.title                       # => "IM"
+    #   daffy.rating                      # => 2200
+    #   daffy.fed                         # => "IRL"
+    #   daffy.id                          # => 7654321
+    #   daffy.fide                        # => nil
+    #   daffy.dob                         # => "1937-04-17"
+    #
+    # By default, ID numbers in the input are interpreted as local IDs. If, instead, they should be interpreted as
+    # FIDE IDs, add the following option:
+    #
+    #   tournament = parser.parse_file('tournament.tab', :fide => true)
+    #   daffy = tournament.player(2)
+    #   daffy.id                          # => nil
+    #   daffy.fide                        # => 7654321
+    #
+    # If the ranking numbers are missing from the file or inconsistent (e.g. player A is ranked above player B
+    # but has less points than player B) they are recalculated as a side effect of the parse.
+    #
+    #   daffy.rank                        # => 1
+    #   minnie.rank                       # => 2
+    #   mickey.rank                       # => 3
+    #
+    # Comments in the input file (lines that do not start with a valid data identification number) are available from the parser
+    # instance via its _comments_ method (returning a string). Note that these comments are reset evry time the instance is used
+    # to parse another file.
+    #
+    #   parser.comments                   # => "0123456789..."
+    #
+    # If the file contains errors, then the return value from <em>parse_file</em> is <em>nil</em> and
+    # an error message is returned by the <em>error</em> method of the parser object. The method
+    # <em>parse_file!</em> is similar except that it raises errors, and the methods <em>parse</em>
+    # and <em>parse!</em> are similar except their inputs are strings rather than file names.
+    #
+    # A tournament can be serialized back to Krause format (the reverse of parsing) with the _serialize_ method of the parser.
+    #
+    #   krause = parser.serialize(tournament)
+    #
+    # Or alternatively, by the _serialize_ method of the tournament object if the name of the serializer is supplied.
+    #
+    #   krause = tournament.serialize('Krause')
+    #
+    # By default, local (ICU) IDs are used for the serialization, but both methods accept an option that
+    # causes FIDE IDs to be used instead:
+    #
+    #   krause = parser.serialize(tournament, :fide => true)
+    #   krause = parser.serialize(tournament, :fide => true)
+    #
+    # The following lists Krause data identification numbers, their description and, where available, their corresponding
+    # attributes in an ICU::Tournament instance.
+    #
+    # [001 Player record]           Use _players_ to get all players or _player_ with a player number to get a single instance.
+    # [012 Name]                    Get or set with _name_. Free text. A tounament name is mandatory.
+    # [013 Teams]                   Create an ICU::Team, add player numbers to it, use _add_team_ to add to tournament, _get_team_/_teams_ to retrive it/them.
+    # [022 City]                    Get or set with _city_. Free text.
+    # [032 Federation]              Get or set with _fed_. Getter returns either _nil_ or a three letter code. Setter can take various formats (see ICU::Federation).
+    # [042 Start date]              Get or set with _start_. Getter returns <em>yyyy-mm-dd</em> format, but setter can use any reasonable date format. Start date is mandadory.
+    # [052 End date]                Get or set with _finish_. Returns either <em>yyyy-mm-dd</em> format or _nil_ if not set. Like _start_, can be set with various date formats.
+    # [062 Number of players]       Not used. Treated as comment in parsed files. Can be determined from the size of the _players_ array.
+    # [072 Number of rated players] Not used. Treated as comment in parsed files. Can be determined by analysing the array returned by _players_.
+    # [082 Number of teams]         Not used. Treated as comment in parsed files.
+    # [092 Type of tournament]      Get or set with _type_. Free text.
+    # [102 Arbiter(s)]              Get or set with -arbiter_. Free text.
+    # [112 Deputy(ies)]             Get or set with _deputy_. Free text.
+    # [122 Time control]            Get or set with _time_control_. Free text.
+    # [132 Round dates]             Get an array of dates using _round_dates_ or one specific round date by calling _round_date_ with a round number.
+    #
     class Krause
       attr_reader :error, :comments
 

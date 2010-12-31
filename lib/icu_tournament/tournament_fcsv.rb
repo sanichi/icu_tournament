@@ -1,132 +1,126 @@
 module ICU
   class Tournament
-
-=begin rdoc
-
-== Foreign CSV
-
-This is a format ({specification}[http://www.icu.ie/articles/display.php?id=172]) used by the ICU[http://icu.ie]
-for players to submit their individual results in foreign tournaments for domestic rating.
-
-Suppose, for example, that the following data is the file <em>tournament.csv</em>:
-
-  Event,"Isle of Man Masters, 2007"
-  Start,2007-09-22
-  Rounds,9
-  Website,http://www.bcmchess.co.uk/monarch2007/
-
-  Player,456,Fox,Anthony
-  1,0,B,Taylor,Peter P.,2209,,ENG
-  2,=,W,Nadav,Egozi,2205,,ISR
-  3,=,B,Cafolla,Peter,2048,,IRL
-  4,1,W,Spanton,Tim R.,1982,,ENG
-  5,1,B,Grant,Alan,2223,,SCO
-  6,0,-
-  7,=,W,Walton,Alan J.,2223,,ENG
-  8,0,B,Bannink,Bernard,2271,FM,NED
-  9,=,W,Phillips,Roy,2271,,MAU
-  Total,4
-
-This file can be parsed as follows.
-
-  parser = ICU::Tournament::ForeignCSV.new
-  tournament = parser.parse_file('tournament.csv')
-
-If the file is correctly specified, the return value from the <em>parse_file</em> method is an instance of
-ICU::Tournament (rather than <em>nil</em>, which indicates an error). In this example the file is valid, so:
-
-  tournament.name                                     # => "Isle of Man Masters, 2007"
-  tournament.start                                    # => "2007-09-22"
-  tournament.rounds                                   # => 9
-  tournament.website                                  # => "http://www.bcmchess.co.uk/monarch2007/"
-
-The main player (the player whose results are being reported for rating) played 9 rounds
-but only 8 other players (he had a bye in round 6), so the total number of players is 9.
-
-  tournament.players.size                             # => 9
-
-Each player has a unique number for the tournament. The main player always occurs first in this type of file, so his number is 1.
-
-  player = tournament.player(1)
-  player.name                                         # => "Fox, Anthony"
-
-This player has 4 points from 9 rounds but only 8 of his results are are rateable (because of the bye).
-
-  player.points                                       # => 4.0
-  player.results.size                                 # => 9
-  player.results.find_all{ |r| r.rateable }.size      # => 8
-
-The other players all have numbers greater than 1.
-
-  opponents = tournamnet.players.reject { |o| o.num == 1 }
-
-There are 8 opponents (of the main player) each with exactly one game.
-
-  opponents.size                                      # => 8
-  opponents.find_all{ |o| o.results.size == 1 }.size  # => 8
-
-However, none of the opponents' results are rateable because they are foreign to the domestic rating list
-to which the main player belongs. For example:
-
-  opponent = tournament.players(2)
-  opponent.name                                       # => "Taylor, Peter P."
-  opponent.results[0].rateable                        # => false
-
-If the file contains errors, then the return value from <em>parse_file</em> is <em>nil</em> and
-an error message is returned by the <em>error</em> method of the parser object. The method
-<em>parse_file!</em> is similar except that it raises errors, and the methods <em>parse</em>
-and <em>parse!</em> are similar except their inputs are strings rather than file names.
-
-A tournament can be serialized back to CSV format (the reverse of parsing) with the _serialize_ method
-of the parser object.
-
-  csv = parser.serialize(tournament)
-
-Or equivalently, the _serialize_ instance method of the tournament, if the appropriate parser name is supplied.
-
-  csv = tournament.serialize('ForeignCSV')
-
-Extra condtions, over and above the normal validation rules, apply before any tournament validates or can be serialized in this format.
-
-* the tournament must have a _site_ attribute
-* there must be at least one player with an _id_ (interpreted as an ICU ID number)
-* all foreign players (those without an ICU ID) must have a _fed_ attribute (federation)
-* all ICU players must have a result in every round (even if it is just bye or is unrateable)
-* the opponents of all ICU players must have a federation (this could include other ICU players)
-
-If any of these are not satisfied, then the following method calls will all raise an exception:
-
-  tournament.validate!(:type => 'ForeignCSV')
-  tournament.serialize('ForeignCSV')
-  ICU::Tournament::ForeignCSV.new.serialize(tournament)
-
-You can also build the tournament object from scratch using your own data and then serialize it.
-For example, here are the commands to reproduce the example above.
-
-  t = ICU::Tournament.new("Isle of Man Masters, 2007", '2007-09-22', :rounds => 9)
-  t.site = 'http://www.bcmchess.co.uk/monarch2007/'
-  t.add_player(ICU::Player.new('Anthony',  'Fox',      1, :rating => 2100, :fed => 'IRL', :id => 456))
-  t.add_player(ICU::Player.new('Peter P.', 'Taylor',   2, :rating => 2209, :fed => 'ENG'))
-  t.add_player(ICU::Player.new('Egozi',    'Nadav',    3, :rating => 2205, :fed => 'ISR'))
-  t.add_player(ICU::Player.new('Peter',    'Cafolla',  4, :rating => 2048, :fed => 'IRL'))
-  t.add_player(ICU::Player.new('Tim R.',   'Spanton',  5, :rating => 1982, :fed => 'ENG'))
-  t.add_player(ICU::Player.new('Alan',     'Grant',    6, :rating => 2223, :fed => 'SCO'))
-  t.add_player(ICU::Player.new('Alan J.',  'Walton',   7, :rating => 2223, :fed => 'ENG'))
-  t.add_player(ICU::Player.new('Bernard',  'Bannink',  8, :rating => 2271, :fed => 'NED', :title => 'FM'))
-  t.add_player(ICU::Player.new('Roy',      'Phillips', 9, :rating => 2271, :fed => 'MAU'))
-  t.add_result(ICU::Result.new(1, 1, 'L', :opponent => 2, :colour => 'B'))
-  t.add_result(ICU::Result.new(2, 1, 'D', :opponent => 3, :colour => 'W'))
-  t.add_result(ICU::Result.new(3, 1, 'D', :opponent => 4, :colour => 'B'))
-  t.add_result(ICU::Result.new(4, 1, 'W', :opponent => 5, :colour => 'W'))
-  t.add_result(ICU::Result.new(5, 1, 'W', :opponent => 6, :colour => 'B'))
-  t.add_result(ICU::Result.new(6, 1, 'L'))
-  t.add_result(ICU::Result.new(7, 1, 'D', :opponent => 7, :colour => 'W'))
-  t.add_result(ICU::Result.new(8, 1, 'L', :opponent => 8, :colour => 'B'))
-  t.add_result(ICU::Result.new(9, 1, 'D', :opponent => 9, :colour => 'W'))
-  puts t.serialize('ForeignCSV')
-
-=end
-
+    #
+    # This is a format ({specification}[http://www.icu.ie/articles/display.php?id=172]) used by the ICU[http://icu.ie]
+    # for players to submit their individual results in foreign tournaments for domestic rating.
+    #
+    # Suppose, for example, that the following data is the file <em>tournament.csv</em>:
+    #
+    #   Event,"Isle of Man Masters, 2007"
+    #   Start,2007-09-22
+    #   Rounds,9
+    #   Website,http://www.bcmchess.co.uk/monarch2007/
+    #
+    #   Player,456,Fox,Anthony
+    #   1,0,B,Taylor,Peter P.,2209,,ENG
+    #   2,=,W,Nadav,Egozi,2205,,ISR
+    #   3,=,B,Cafolla,Peter,2048,,IRL
+    #   4,1,W,Spanton,Tim R.,1982,,ENG
+    #   5,1,B,Grant,Alan,2223,,SCO
+    #   6,0,-
+    #   7,=,W,Walton,Alan J.,2223,,ENG
+    #   8,0,B,Bannink,Bernard,2271,FM,NED
+    #   9,=,W,Phillips,Roy,2271,,MAU
+    #   Total,4
+    #
+    # This file can be parsed as follows.
+    #
+    #   parser = ICU::Tournament::ForeignCSV.new
+    #   tournament = parser.parse_file('tournament.csv')
+    #
+    # If the file is correctly specified, the return value from the <em>parse_file</em> method is an instance of
+    # ICU::Tournament (rather than <em>nil</em>, which indicates an error). In this example the file is valid, so:
+    #
+    #   tournament.name                                     # => "Isle of Man Masters, 2007"
+    #   tournament.start                                    # => "2007-09-22"
+    #   tournament.rounds                                   # => 9
+    #   tournament.website                                  # => "http://www.bcmchess.co.uk/monarch2007/"
+    #
+    # The main player (the player whose results are being reported for rating) played 9 rounds
+    # but only 8 other players (he had a bye in round 6), so the total number of players is 9.
+    #
+    #   tournament.players.size                             # => 9
+    #
+    # Each player has a unique number for the tournament. The main player always occurs first in this type of file, so his number is 1.
+    #
+    #   player = tournament.player(1)
+    #   player.name                                         # => "Fox, Anthony"
+    #
+    # This player has 4 points from 9 rounds but only 8 of his results are are rateable (because of the bye).
+    #
+    #   player.points                                       # => 4.0
+    #   player.results.size                                 # => 9
+    #   player.results.find_all{ |r| r.rateable }.size      # => 8
+    #
+    # The other players all have numbers greater than 1.
+    #
+    #   opponents = tournamnet.players.reject { |o| o.num == 1 }
+    #
+    # There are 8 opponents (of the main player) each with exactly one game.
+    #
+    #   opponents.size                                      # => 8
+    #   opponents.find_all{ |o| o.results.size == 1 }.size  # => 8
+    #
+    # However, none of the opponents' results are rateable because they are foreign to the domestic rating list
+    # to which the main player belongs. For example:
+    #
+    #   opponent = tournament.players(2)
+    #   opponent.name                                       # => "Taylor, Peter P."
+    #   opponent.results[0].rateable                        # => false
+    #
+    # If the file contains errors, then the return value from <em>parse_file</em> is <em>nil</em> and
+    # an error message is returned by the <em>error</em> method of the parser object. The method
+    # <em>parse_file!</em> is similar except that it raises errors, and the methods <em>parse</em>
+    # and <em>parse!</em> are similar except their inputs are strings rather than file names.
+    #
+    # A tournament can be serialized back to CSV format (the reverse of parsing) with the _serialize_ method
+    # of the parser object.
+    #
+    #   csv = parser.serialize(tournament)
+    #
+    # Or equivalently, the _serialize_ instance method of the tournament, if the appropriate parser name is supplied.
+    #
+    #   csv = tournament.serialize('ForeignCSV')
+    #
+    # Extra condtions, over and above the normal validation rules, apply before any tournament validates or can be serialized in this format.
+    #
+    # * the tournament must have a _site_ attribute
+    # * there must be at least one player with an _id_ (interpreted as an ICU ID number)
+    # * all foreign players (those without an ICU ID) must have a _fed_ attribute (federation)
+    # * all ICU players must have a result in every round (even if it is just bye or is unrateable)
+    # * the opponents of all ICU players must have a federation (this could include other ICU players)
+    #
+    # If any of these are not satisfied, then the following method calls will all raise an exception:
+    #
+    #   tournament.validate!(:type => 'ForeignCSV')
+    #   tournament.serialize('ForeignCSV')
+    #   ICU::Tournament::ForeignCSV.new.serialize(tournament)
+    #
+    # You can also build the tournament object from scratch using your own data and then serialize it.
+    # For example, here are the commands to reproduce the example above.
+    #
+    #   t = ICU::Tournament.new("Isle of Man Masters, 2007", '2007-09-22', :rounds => 9)
+    #   t.site = 'http://www.bcmchess.co.uk/monarch2007/'
+    #   t.add_player(ICU::Player.new('Anthony',  'Fox',      1, :rating => 2100, :fed => 'IRL', :id => 456))
+    #   t.add_player(ICU::Player.new('Peter P.', 'Taylor',   2, :rating => 2209, :fed => 'ENG'))
+    #   t.add_player(ICU::Player.new('Egozi',    'Nadav',    3, :rating => 2205, :fed => 'ISR'))
+    #   t.add_player(ICU::Player.new('Peter',    'Cafolla',  4, :rating => 2048, :fed => 'IRL'))
+    #   t.add_player(ICU::Player.new('Tim R.',   'Spanton',  5, :rating => 1982, :fed => 'ENG'))
+    #   t.add_player(ICU::Player.new('Alan',     'Grant',    6, :rating => 2223, :fed => 'SCO'))
+    #   t.add_player(ICU::Player.new('Alan J.',  'Walton',   7, :rating => 2223, :fed => 'ENG'))
+    #   t.add_player(ICU::Player.new('Bernard',  'Bannink',  8, :rating => 2271, :fed => 'NED', :title => 'FM'))
+    #   t.add_player(ICU::Player.new('Roy',      'Phillips', 9, :rating => 2271, :fed => 'MAU'))
+    #   t.add_result(ICU::Result.new(1, 1, 'L', :opponent => 2, :colour => 'B'))
+    #   t.add_result(ICU::Result.new(2, 1, 'D', :opponent => 3, :colour => 'W'))
+    #   t.add_result(ICU::Result.new(3, 1, 'D', :opponent => 4, :colour => 'B'))
+    #   t.add_result(ICU::Result.new(4, 1, 'W', :opponent => 5, :colour => 'W'))
+    #   t.add_result(ICU::Result.new(5, 1, 'W', :opponent => 6, :colour => 'B'))
+    #   t.add_result(ICU::Result.new(6, 1, 'L'))
+    #   t.add_result(ICU::Result.new(7, 1, 'D', :opponent => 7, :colour => 'W'))
+    #   t.add_result(ICU::Result.new(8, 1, 'L', :opponent => 8, :colour => 'B'))
+    #   t.add_result(ICU::Result.new(9, 1, 'D', :opponent => 9, :colour => 'W'))
+    #   puts t.serialize('ForeignCSV')
+    #
     class ForeignCSV
       attr_reader :error
 
@@ -135,7 +129,7 @@ For example, here are the commands to reproduce the example above.
         @state, @line, @round, @sum, @error = 0, 0, nil, nil, nil
         @tournament = Tournament.new('Dummy', '2000-01-01')
 
-        Util::CSV.parse(csv, :row_sep => :auto) do |r|
+        CSV.parse(csv, :row_sep => :auto) do |r|
           @line += 1                            # increment line number
           next if r.size == 0                   # skip empty lines
           r = r.map{|c| c.nil? ? '' : c.strip}  # trim all spaces, turn nils to blanks
@@ -207,7 +201,7 @@ For example, here are the commands to reproduce the example above.
       # Serialise a tournament back into CSV format.
       def serialize(t, arg={})
         t.validate!(:type => self)
-        Util::CSV.generate do |csv|
+        CSV.generate do |csv|
           csv << ["Event", t.name]
           csv << ["Start", t.start]
           csv << ["Rounds", t.rounds]

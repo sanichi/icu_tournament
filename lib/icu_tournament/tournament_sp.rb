@@ -5,105 +5,99 @@ require 'tempfile'
 
 module ICU
   class Tournament
-
-=begin rdoc
-
-== SwissPerfect
-
-This is the format produced by the Windows program, SwissPerfect[http://www.swissperfect.com/]. It consists of three
-files with the same name but different endings: <em>.ini</em> for meta data such as tournament name and tie-break
-rules, <em>.trn</em> for the player details such as name and rating, and <em>.sco</em> for the results. The first
-file is text and the other two are in an old binary format known as <em>DBase 3</em>.
-
-To parse such a set of files, use either the <em>parse_file!</em> or _parse_file_ method supplying the name of any one
-of the three files or just the stem name without any ending. In case of error, such as any of the files not being
-found, <em>parse_file!</em> will throw an exception while _parse_file_ will return _nil_ and record an error message.
-As well as a file name or stem name, you should also supply a start date in the options as SwissPerfect does not
-record this information.
-
-  parser = ICU::Tournament::SwissPerfect.new
-  tournament = parser.parse_file('champs', :start => '2010-07-03')  # looks for "champs.ini", "champs.trn" and "champs.sco"
-  puts tournament ? 'ok' : "problem: #{parser.error}"
-
-Alternatively, if all three files are in a ZIP archive, the parser will extract them if the name of the
-archive file is supplied to the _parse_file_ method and it ends in ".zip" (case insensitive):
-
-  tournament = parser.parse_file('champs.zip', :start => '2010-07-03')
-
-Or, if the file is a ZIP archive but it's name doesn't end in ".zip", that can be signalled with an option:
-
-  tournament = parser.parse_file('/tmp/a84f21ge', :zip => true, :start => '2010-07-03')
-
-Note there must be only three files in the archive, they must all have the same stem name and
-their endings should be ".ini", ".trn" and ".sco" (case insensitive).
-
-If no start date is supplied it will default to 2000-01-01, and can be reset later.
-
-  tournament = parser.parse_file('champs.zip')
-  tournament.start                # => '2000-01-01'
-  tournament.start = '2010-07-03'
-
-SwissPerfect files have slots for both local and international IDs and these, if present
-and if intergers are copied to the _id_ and _fide_ attributes respectively.
-
-By default, the parser extracts the local rating from the SwissPerfect files and not the international one.
-If international ratings are required instead, set the _rating_ option to "intl". For example:
-
-  tournament = parser.parse_file('ncc', :start => '2010-05-08')
-  tournament.player(2).id         # =>  12379 (ICU ID)
-  tournament.player(2).fide       # =>  1205064 (FIDE ID)
-  tournament.player(2).rating     # =>  2556 (ICU rating)
-
-  tournament = parser.parse_file('ncc', :start => '2010-05-08', :rating => 'intl')
-  tournament.player(2).rating     # =>  2530 (FIDE rating)
-
-By default, the parse will fail completely if the ".trn" file contains any invalid federations (see ICU::Federation).
-There are two alternative behaviours controlled by setting the _fed_ option:
-
-  tournament = parser.parse_file('ncc', :start => '2010-05-08', :fed == 'skip')    # => silently skips invalid federations
-  tournament = parser.parse_file('ncc', :start => '2010-05-08', :fed == 'ignore')  # => ignores all federations
-
-Note that federations that don't match 3 letters are always silently skipped.
-
-Because the data is in three parts, some of which are in a legacy binary format, serialization to this format is
-not supported. Instead, a method is provided to serialize any tournament type into the text export format of
-erfect, an example of which is shown below.
-
-  No  Name                 Loc Id  Total   1     2     3
-
-  1   Griffiths, Ryan-Rhys 6897    3       4:W   2:W   3:W
-  2   Flynn, Jamie         5226    2       3:W   1:L   4:W
-  3   Hulleman, Leon       6409    1       2:L   4:W   1:L
-  4   Dunne, Thomas        10914   0       1:L   3:L   2:L
-
-This format is important in Irish chess, as it's the format used to submit results to the <em>MicroSoft Access</em>
-implementation of the ICU ratings database.
-
-  swiss_perfect = tournament.serialize('SwissPerfect')
-
-The order of players in the serialized output is always by player number and as a side effect of serialization,
-the player numbers will be adjusted to ensure they range from 1 to the total number of players (i.e. renumbered
-in order). If you would prefer rank-order instead, then you must first renumber the players by rank (the default
-renumbering method) before serializing. For example:
-
-  swiss_perfect = tournament.renumber.serialize('SwissPerfect')
-
-There should be no need to explicitly rank the tournament first, as that information is already present in
-SwissPerfect files (i.e. each player should already have a rank after the files have been parsed).
-Additionally, the tie break rules used for the tournament are available from the _tie_break_ method,
-for example:
-
-  tournament.tie_breaks           # => [:buchholz, :harkness]
-
-Should you wish to rank the tournament using a different set of tie-break rules, you can do something like the following:
-
-  tournament.tie_breaks = [:wins, :blacks]
-  swiss_perfect = tournament.rerank.renumber.serialize('SwissPerfect')
-
-See ICU::Tournament for more about tie-breaks.
-
-=end
-
+    #
+    # This is the format produced by the Windows program, SwissPerfect[http://www.swissperfect.com/]. It consists of three
+    # files with the same name but different endings: <em>.ini</em> for meta data such as tournament name and tie-break
+    # rules, <em>.trn</em> for the player details such as name and rating, and <em>.sco</em> for the results. The first
+    # file is text and the other two are in an old binary format known as <em>DBase 3</em>.
+    #
+    # To parse such a set of files, use either the <em>parse_file!</em> or _parse_file_ method supplying the name of any one
+    # of the three files or just the stem name without any ending. In case of error, such as any of the files not being
+    # found, <em>parse_file!</em> will throw an exception while _parse_file_ will return _nil_ and record an error message.
+    # As well as a file name or stem name, you should also supply a start date in the options as SwissPerfect does not
+    # record this information.
+    #
+    #   parser = ICU::Tournament::SwissPerfect.new
+    #   tournament = parser.parse_file('champs', :start => '2010-07-03')  # looks for "champs.ini", "champs.trn" and "champs.sco"
+    #   puts tournament ? 'ok' : "problem: #{parser.error}"
+    #
+    # Alternatively, if all three files are in a ZIP archive, the parser will extract them if the name of the
+    # archive file is supplied to the _parse_file_ method and it ends in ".zip" (case insensitive):
+    #
+    #   tournament = parser.parse_file('champs.zip', :start => '2010-07-03')
+    #
+    # Or, if the file is a ZIP archive but it's name doesn't end in ".zip", that can be signalled with an option:
+    #
+    #   tournament = parser.parse_file('/tmp/a84f21ge', :zip => true, :start => '2010-07-03')
+    #
+    # Note there must be only three files in the archive, they must all have the same stem name and
+    # their endings should be ".ini", ".trn" and ".sco" (case insensitive).
+    #
+    # If no start date is supplied it will default to 2000-01-01, and can be reset later.
+    #
+    #   tournament = parser.parse_file('champs.zip')
+    #   tournament.start                # => '2000-01-01'
+    #   tournament.start = '2010-07-03'
+    #
+    # SwissPerfect files have slots for both local and international IDs and these, if present
+    # and if intergers are copied to the _id_ and _fide_ attributes respectively.
+    #
+    # By default, the parser extracts the local rating from the SwissPerfect files and not the international one.
+    # If international ratings are required instead, set the _rating_ option to "intl". For example:
+    #
+    #   tournament = parser.parse_file('ncc', :start => '2010-05-08')
+    #   tournament.player(2).id         # =>  12379 (ICU ID)
+    #   tournament.player(2).fide       # =>  1205064 (FIDE ID)
+    #   tournament.player(2).rating     # =>  2556 (ICU rating)
+    #
+    #   tournament = parser.parse_file('ncc', :start => '2010-05-08', :rating => 'intl')
+    #   tournament.player(2).rating     # =>  2530 (FIDE rating)
+    #
+    # By default, the parse will fail completely if the ".trn" file contains any invalid federations (see ICU::Federation).
+    # There are two alternative behaviours controlled by setting the _fed_ option:
+    #
+    #   tournament = parser.parse_file('ncc', :start => '2010-05-08', :fed == 'skip')    # => silently skips invalid federations
+    #   tournament = parser.parse_file('ncc', :start => '2010-05-08', :fed == 'ignore')  # => ignores all federations
+    #
+    # Note that federations that don't match 3 letters are always silently skipped.
+    #
+    # Because the data is in three parts, some of which are in a legacy binary format, serialization to this format is
+    # not supported. Instead, a method is provided to serialize any tournament type into the text export format of
+    # erfect, an example of which is shown below.
+    #
+    #   No  Name                 Loc Id  Total   1     2     3
+    #
+    #   1   Griffiths, Ryan-Rhys 6897    3       4:W   2:W   3:W
+    #   2   Flynn, Jamie         5226    2       3:W   1:L   4:W
+    #   3   Hulleman, Leon       6409    1       2:L   4:W   1:L
+    #   4   Dunne, Thomas        10914   0       1:L   3:L   2:L
+    #
+    # This format is important in Irish chess, as it's the format used to submit results to the <em>MicroSoft Access</em>
+    # implementation of the ICU ratings database.
+    #
+    #   swiss_perfect = tournament.serialize('SwissPerfect')
+    #
+    # The order of players in the serialized output is always by player number and as a side effect of serialization,
+    # the player numbers will be adjusted to ensure they range from 1 to the total number of players (i.e. renumbered
+    # in order). If you would prefer rank-order instead, then you must first renumber the players by rank (the default
+    # renumbering method) before serializing. For example:
+    #
+    #   swiss_perfect = tournament.renumber.serialize('SwissPerfect')
+    #
+    # There should be no need to explicitly rank the tournament first, as that information is already present in
+    # SwissPerfect files (i.e. each player should already have a rank after the files have been parsed).
+    # Additionally, the tie break rules used for the tournament are available from the _tie_break_ method,
+    # for example:
+    #
+    #   tournament.tie_breaks           # => [:buchholz, :harkness]
+    #
+    # Should you wish to rank the tournament using a different set of tie-break rules, you can do something like the following:
+    #
+    #   tournament.tie_breaks = [:wins, :blacks]
+    #   swiss_perfect = tournament.rerank.renumber.serialize('SwissPerfect')
+    #
+    # See ICU::Tournament for more about tie-breaks.
+    #
     class SwissPerfect
       attr_reader :error
 
