@@ -4,3 +4,4 @@ pkg
 tmp
 NOTES
 .DS_Store
+.bundle
