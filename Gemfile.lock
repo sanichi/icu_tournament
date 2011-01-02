@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    icu_tournament (1.2.1)
+    icu_tournament (1.2.2)
       dbf (>= 1.2.5)
       icu_name (>= 0.0.2)
       inifile (>= 0.3.0)

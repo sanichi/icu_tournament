@@ -9,7 +9,6 @@ module ICU
   #
   # For example:
   #
-  #   require 'rubygems'
   #   require 'icu_tournament'
   #
   #   t = ICU::Tournament.new('Bangor Masters', '2009-11-09')

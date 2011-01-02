@@ -1,6 +1,5 @@
 # :enddoc:
 
-require 'rubygems'
 require 'icu_name'
 
 icu_tournament_files = Array.new
