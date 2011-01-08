@@ -56,7 +56,7 @@ module ICU
   #
   #   ICU::Federation.menu(:none => 'None')              # => [['None', ''], ['Afghanistan', 'AFG], ...]
   #
-  # The "None" option's code is the empty string and it come above the "top" option if both are specified.
+  # The "None" option's code is the empty string and it comes above the "top" option if both are specified.
   #
   class Federation
     attr_reader :code, :name
