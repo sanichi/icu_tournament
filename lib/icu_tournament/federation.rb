@@ -68,7 +68,7 @@ module ICU
       return nil unless str
       str = str.to_s
       return nil if str.length < 3
-      compile unless @@objects
+      compile
       str = str.strip.squeeze(' ').downcase
       return @@codes[str] if str.length == 3
       return @@names[str] if @@names[str]
@@ -82,13 +82,18 @@ module ICU
     end
 
     def self.menu(opts = {})
-      compile unless @@objects;
+      compile
       top, menu = nil, []
       @@objects.each {|o| opts[:top] == o.code ? top = [o.name, o.code] : menu.push([o.name, o.code]) }
       opts[:order] == 'code' ? menu.sort!{|a,b| a.last <=> b.last} : menu.sort!{|a,b| a.first <=> b.first}
       menu.unshift(top) if top
       menu.unshift([opts[:none], '']) if opts[:none]
       menu
+    end
+    
+    def self.codes
+      compile
+      @@objects.map(&:code).sort
     end
 
     def initialize(code, name) # :nodoc: because new is private
