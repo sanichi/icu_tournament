@@ -1,10 +1,9 @@
 PATH
   remote: .
   specs:
-    icu_tournament (1.2.3)
+    icu_tournament (1.2.4)
       dbf (>= 1.2.5)
-      icu_name (>= 0.0.2)
-      inifile (>= 0.3.0)
+      icu_name (>= 0.0.3)
       rubyzip (>= 0.9.4)
 
 GEM
@@ -18,8 +17,7 @@ GEM
     diff-lcs (1.1.2)
     fastercsv (1.5.3)
     i18n (0.4.2)
-    icu_name (0.0.2)
-    inifile (0.3.0)
+    icu_name (0.0.3)
     rspec (2.3.0)
       rspec-core (~> 2.3.0)
       rspec-expectations (~> 2.3.0)
@@ -35,8 +33,7 @@ PLATFORMS
 
 DEPENDENCIES
   dbf (>= 1.2.5)
-  icu_name (>= 0.0.2)
+  icu_name (>= 0.0.3)
   icu_tournament!
-  inifile (>= 0.3.0)
   rspec (>= 2.3.0)
   rubyzip (>= 0.9.4)

@@ -1,4 +1,3 @@
-require 'inifile'
 require 'dbf'
 require 'zip/zipfilesystem'
 require 'tempfile'
@@ -222,28 +221,30 @@ module ICU
 
       def parse_ini(file)
         begin
-          ini = IniFile.load(file)
+          ini = ICU::Util.load_ini(file)
         rescue
-          raise "invalid INI file"
+          raise "non-existant INI file (#{file})"
         end
-        raise "invalid INI file (no sections)" if ini.sections.size == 0
+        raise "invalid INI file (no sections)" if ini.size == 0
         %w(name arbiter rounds).each do |key|
-          val = (ini['Tournament Info'][key.capitalize] || '').squeeze(" ").strip
+          val = (ini['Tournament Info'][key.capitalize] || '').squeeze(" ")
           @t.send("#{key}=", val) if val.size > 0
         end
-        @t.tie_breaks = ini['Standings']['Tie Breaks'].to_s.split(/,/).map do |tbid|
-          case tbid.to_i              # tie break name in SwissPerfect
-          when 1217 then :buchholz    # Buchholz
-          when 1218 then :harkness    # Median Buchholz
-          when 1219 then :progressive # cumulative
-          when 1220 then :neustadtl   # Berger
-          when 1221 then :ratings     # rating sum
-          when 1222 then :wins        # number of wins
-          when 1223 then nil          # minor scores - not applicable
-          when 1226 then nil          # Brightwell   - not applicable
-          else nil
-          end
-        end.find_all { |tb| tb }
+        if ini['Standings'] && ini['Standings']['Tie Breaks']
+          @t.tie_breaks = ini['Standings']['Tie Breaks'].to_s.split(/,/).map do |tbid|
+            case tbid.to_i              # tie break name in SwissPerfect
+            when 1217 then :buchholz    # Buchholz
+            when 1218 then :harkness    # Median Buchholz
+            when 1219 then :progressive # cumulative
+            when 1220 then :neustadtl   # Berger
+            when 1221 then :ratings     # rating sum
+            when 1222 then :wins        # number of wins
+            when 1223 then nil          # minor scores - not applicable
+            when 1226 then nil          # Brightwell   - not applicable
+            else nil
+            end
+          end.find_all { |tb| tb }
+        end
       end
 
       def parse_trn(file, arg={})

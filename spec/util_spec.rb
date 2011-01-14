@@ -1,3 +1,4 @@
+# encoding: UTF-8
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 module ICU
@@ -31,6 +32,111 @@ module ICU
       it "should handle names of monthsx" do
         Util.parsedate('9th Nov 1955').should == '1955-11-09'
         Util.parsedate('16th June 1986').should == '1986-06-16'
+      end
+    end
+
+    context "#is_utf8" do
+      it "should recognise US-ASCII as a special case of UTF-8" do
+        Util.is_utf8("Resume".encode("US-ASCII")).should be_true
+      end
+
+      it "should recognise UTF-8" do
+        Util.is_utf8("Résumé").should be_true
+        Util.is_utf8("δog").should be_true
+      end
+
+      it "should recognize other encodings as not being UTF-8" do
+        Util.is_utf8("Résumé".encode("ISO-8859-1")).should be_false
+        Util.is_utf8("€50".encode("Windows-1252")).should be_false
+        Util.is_utf8("ひらがな".encode("Shift_JIS")).should be_false
+        Util.is_utf8("\xa3").should be_false
+      end
+    end
+
+    context "#to_utf8" do
+      it "should convert to UTF-8" do
+        Util.to_utf8("Resume").should == "Resume"
+        Util.to_utf8("Resume".force_encoding("US-ASCII")).encoding.name.should == "UTF-8"
+        Util.to_utf8("Résumé".encode("ISO-8859-1")).should == "Résumé"
+        Util.to_utf8("Résumé".encode("Windows-1252")).should == "Résumé"
+        Util.to_utf8("€50".encode("Windows-1252")).should == "€50"
+        Util.to_utf8("\xa350".force_encoding("ASCII-8BIT")).should == "£50"
+        Util.to_utf8("\xa350").should == "£50"
+        Util.to_utf8("ひらがな".encode("Shift_JIS")).should == "ひらがな"
+      end
+    end
+
+    context "#read_utf8" do
+      before(:all) do
+        @s = File.dirname(__FILE__) + '/samples/file'
+      end
+
+      it "should read ASCII" do
+        Util.read_utf8("#{@s}/ascii.txt").should == "Resume\nResume\n"
+      end
+
+      it "should read Latin-1" do
+        Util.read_utf8("#{@s}/latin1.txt").should == "Résumé\nRésumé\n"
+      end
+
+      it "should read Windows CP1252" do
+        Util.read_utf8("#{@s}/cp1252.txt").should == "€3\n£7\n¥1\n"
+      end
+
+      it "should read UTF-8" do
+        Util.read_utf8("#{@s}/utf8.txt").should == "ヒラガナ\nヒラガナ\n"
+      end
+
+      it "should thow an exception for a non-existant file" do
+        lambda { Util.read_utf8("#{@s}/no_such_file.txt") }.should raise_error
+      end
+    end
+
+    context "#load_ini" do
+      before(:all) do
+        @s = File.dirname(__FILE__) + '/samples/ini'
+      end
+
+      it "should read ASCII" do
+        data = Util.load_ini("#{@s}/ascii.ini")
+        data.should be_an_instance_of(Hash)
+        data["Pairing"]["UseRating"].should == "0"
+        data["NoKeys"] == nil
+        data["Tournament Info"]["Arbiter"].should == "Herbert Scarry"
+        data["Tournament Info"]["DrawSymbol"].should == "D"
+      end
+
+      it "should read Latin1" do
+        data = Util.load_ini("#{@s}/latin1.ini")
+        data.should be_an_instance_of(Hash)
+        data["Tournament Info"]["Arbiter"].should == "Gearóidín"
+        data["Tournament Info"]["DrawSymbol"].should == "½"
+      end
+
+      it "should read Windows-1252" do
+        data = Util.load_ini("#{@s}/cp1252.ini")
+        data.should be_an_instance_of(Hash)
+        data["Tournament Info"]["Entry Fee"].should == "€50"
+      end
+
+      it "should read UTF8" do
+        data = Util.load_ini("#{@s}/utf8.ini")
+        data.should be_an_instance_of(Hash)
+        data["Tournament Info"]["Entry Fee"].should == "€50"
+        data["Tournament Info"]["Arbiter"].should == "ヒラガナ"
+        data["Tournament Info"]["DrawSymbol"].should == "½"
+      end
+
+      it "should handle untidily formatted files" do
+        data = Util.load_ini("#{@s}/untidy.ini")
+        data.should be_an_instance_of(Hash)
+        data["Tournament Info"]["Entry Fee"].should == "€50"
+        data["Tournament Info"]["DrawSymbol"].should == "½"
+        data["Pairing"]["Use  Rating"].should == "0"
+      end
+
+      it "should thow an exception for a non-existant file" do
+        lambda { Util.read_utf8("#{@s}/no_such_file.ini") }.should raise_error
       end
     end
   end
@@ -117,7 +223,7 @@ module ICU
         @obj.respond_to?(:hisint=).should be_true
       end
     end
-    
+
     context "#attr_integer_or_nil" do
       before(:each) do
         @class = Class.new
@@ -182,7 +288,7 @@ module ICU
         @obj.respond_to?(:theirpos=).should be_true
       end
     end
-    
+
     context "#attr_positive_or_nil" do
       before(:each) do
         @class = Class.new
@@ -219,7 +325,7 @@ module ICU
         @obj.respond_to?(:theirpon=).should be_true
       end
     end
-    
+
     context "#attr_date" do
       before(:each) do
         @class = Class.new
@@ -251,7 +357,7 @@ module ICU
         @obj.respond_to?(:theirdate=).should be_true
       end
     end
-    
+
     context "#attr_date_or_nil" do
       before(:each) do
         @class = Class.new
@@ -283,7 +389,7 @@ module ICU
         @obj.respond_to?(:theirdate=).should be_true
       end
     end
-    
+
     context "#attr_string" do
       before(:each) do
         @class = Class.new
@@ -317,7 +423,7 @@ module ICU
         @obj.respond_to?(:theirstring).should be_true
       end
     end
-    
+
     context "#attr_string_or_nil" do
       before(:each) do
         @class = Class.new

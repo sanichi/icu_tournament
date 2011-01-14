@@ -9,8 +9,8 @@ For ruby 1.9.2 (version 1.1.2 was the last compatible with ruby 1.8.7).
 
   gem install icu_tournament
 
-For name canonicalisation, _icu_name_ is required.
-For handling SwissPerfect files the _dbf_, _inifile_ and _rubyzip_ gems are required.
+For name canonicalisation, the _icu_name_ gem is required and
+for handling SwissPerfect files the _dbf_ and _rubyzip_ gems are needed.
 
 == Usage
 

@@ -182,7 +182,6 @@ module ICU
         codes = Federation.codes
         codes.should have(@total).items
         all = codes.join(',')
-        puts all
         all.index('AFG').should == 0
         all.index('INA,IND,IRI,IRL,IRQ,ISL,ISR,ISV,ITA,IVB').should_not be_nil
       end
