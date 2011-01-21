@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency("dbf", ">= 1.2.5")        # for SwissPerfect trn/sco files
   s.add_runtime_dependency("rubyzip", ">= 0.9.4")    # for zipped-up SwissPerfect files
-  s.add_runtime_dependency("icu_name", ">=0.0.3")    # for name canonicalisation
+  s.add_runtime_dependency("icu_name", ">=0.0.4")    # for name canonicalisation
 
   s.add_development_dependency("rspec", ">= 2.3.0")
 end
