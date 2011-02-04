@@ -125,9 +125,10 @@ module ICU
       attr_reader :error
 
       # Parse CSV data returning a Tournament on success or raising an exception on error.
-      def parse!(csv)
+      def parse!(csv, arg={})
         @state, @line, @round, @sum, @error = 0, 0, nil, nil, nil
         @tournament = Tournament.new('Dummy', '2000-01-01')
+        csv = ICU::Util.to_utf8(csv) unless arg[:is_utf8]
 
         CSV.parse(csv, :row_sep => :auto) do |r|
           @line += 1                            # increment line number
@@ -184,8 +185,8 @@ module ICU
 
       # Same as <em>parse!</em> except the input is a file name rather than file contents.
       def parse_file!(file)
-        csv = open(file) { |f| f.read }
-        parse!(csv)
+        csv = ICU::Util.read_utf8(file)
+        parse!(csv, :is_utf8 => true)
       end
 
       # Same as <em>parse</em> except the input is a file name rather than file contents.

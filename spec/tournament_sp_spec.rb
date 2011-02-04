@@ -1,3 +1,4 @@
+# encoding: UTF-8
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 SAMPLES = File.dirname(__FILE__) + '/samples/sp/'
 
@@ -25,7 +26,6 @@ module ICU
     describe SwissPerfect do
 
       context "Gonzaga Challengers 2010" do
-
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
           @t = @p.parse_file(SAMPLES + 'gonzaga_challengers_2010.trn', :start => "2010-01-29")
@@ -58,7 +58,6 @@ module ICU
       end
 
       context "U19 Junior Championships 2010" do
-
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
           @t = @p.parse_file(SAMPLES + 'junior_championships_u19_2010.sco', :start => "2010-04-11")
@@ -91,7 +90,6 @@ module ICU
       end
 
       context "Limerick Club Championship 2009-10" do
-
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
           @t = @p.parse_file(SAMPLES + 'LimerickClubChampionship09.ini', :start => "2009-09-15")
@@ -121,7 +119,6 @@ module ICU
       end
 
       context "Junior Inter Provincials U16 2010" do
-
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
           @t = @p.parse_file(SAMPLES + 'junior_provincials_u16_2010', :start => "2010-02-02")
@@ -149,7 +146,6 @@ module ICU
       end
 
       context "Mulcahy Cup 2010" do
-
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
           @t = @p.parse_file(SAMPLES + 'mulcahy_2010', :start => "2010-01-15")
@@ -174,7 +170,6 @@ module ICU
       end
 
       context "National Club Champiomships 2010" do
-
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
           @t = @p.parse_file(SAMPLES + 'ncc', :start => "2010-05-08")
@@ -202,7 +197,6 @@ module ICU
       end
 
       context "Drogheda Section A, 2010, with an invalid federation" do
-
         before(:each) do
           @p = ICU::Tournament::SwissPerfect.new
         end
@@ -212,14 +206,14 @@ module ICU
           t.should be_nil
           @p.error.should match(/invalid federation/i)
         end
-        
+
         it "should parse if instructed to skip bad feds" do
           t = @p.parse_file(SAMPLES + 'drog_a.zip', :start => "2010-06-04", :fed => :skip)
           @p.error.should be_nil
           t.player(5).fed.should be_nil
           t.player(6).fed.should == "ESP"
         end
-        
+
         it "should parse if instructed to skip all feds" do
           t = @p.parse_file(SAMPLES + 'drog_a.zip', :start => "2010-06-04", :fed => 'ignore')
           @p.error.should be_nil
@@ -229,7 +223,6 @@ module ICU
       end
 
       context "Non-existant ZIP file" do
-
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
           @t = @p.parse_file(SAMPLES + 'nosuchzipfile.zip', :start => "2010-05-08")
@@ -255,7 +248,6 @@ module ICU
       end
 
       context "ZIP file containing the wrong number of files" do
-
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
           @t = @p.parse_file(SAMPLES + 'notenoughfiles.zip', :start => "2010-05-08")
@@ -268,7 +260,6 @@ module ICU
       end
 
       context "ZIP file containing the files with mixed stems" do
-
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
           @t = @p.parse_file(SAMPLES + 'mixedstems.zip', :start => "2010-05-08")
@@ -281,7 +272,6 @@ module ICU
       end
 
       context "ZIP file" do
-
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
           @t = @p.parse_file(SAMPLES + 'nccz.zip', :start => "2010-05-08")
@@ -301,7 +291,6 @@ module ICU
       end
 
       context "ZIP file without a ZIP ending" do
-
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
         end
@@ -315,8 +304,20 @@ module ICU
         end
       end
 
-      context "Defaulting the start date" do
+      context "Names with accented characters" do
+        before(:all) do
+          @p = ICU::Tournament::SwissPerfect.new
+        end
 
+        it "should parse and the name should be in UTF-8" do
+          lambda { @t = @p.parse_file!(SAMPLES + 'munster_u10_2011.zip', :start => "2011-01-20") }.should_not raise_error
+          @t.player(1).signature.should  == "Kennedy, Stephen|||849|2.0|6|12345|WLWLL|BWBWB|TTTTT"
+          @t.player(4).signature.should  == "Sheehan, Ciarán||||3.0|5|12345|LWWLW|WBWBW|TTTTF"
+          @t.player(10).signature.should  == "Sheehan, Adam||||2.0|7|12345|WLLWL|WBWWB|TTTFT"
+        end
+      end
+
+      context "Defaulting the start date" do
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
           @t = @p.parse_file(SAMPLES + 'nccz.zip')

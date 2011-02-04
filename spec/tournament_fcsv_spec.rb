@@ -1,3 +1,4 @@
+# encoding: UTF-8
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 module ICU
@@ -15,7 +16,7 @@ module ICU
         p.results.select{|r| r.rateable}.size.should == rateable
         p.points.should == points
       end
-      
+
       context "a typical tournament" do
         before(:all) do
           @csv = <<CSV
@@ -34,27 +35,27 @@ CSV
           @f = ICU::Tournament::ForeignCSV.new
           @t = @f.parse!(@csv)
         end
-        
+
         it "should have a name" do
           @t.name.should == 'Bangor Open, 2003'
         end
-        
+
         it "should have a start date" do
           @t.start.should == '2003-07-01'
         end
-        
+
         it "should have a number of rounds" do
           @t.rounds.should == 4
         end
-        
+
         it "should have a website" do
           @t.site.should == 'http://www.icu.ie/tournaments/display.php?id=371'
         end
-        
+
         it "should have some players" do
           @t.should have(4).players
         end
-        
+
         it "should have correct player details" do
           check_player(1, 'Gearoidin', 'Ui Laighleis', 4, 3, 2.0, :id => 3364)
           check_player(2, 'April',     'Cronin',       1, 0, 1.0, :rating => 2005, :fed => 'IRL')
@@ -62,7 +63,7 @@ CSV
           check_player(4, 'Linda',     'Powell',       1, 0, 0.0, :rating => 1850, :fed => 'WLS')
         end
       end
-      
+
       context "the rdoc example tournament" do
         before(:all) do
           @csv = <<CSV
@@ -89,26 +90,26 @@ CSV
           @o = @t.players.reject { |o| o.num == 1 }
           @r = @t.player(2)
         end
-        
+
         it "should have correct basic details" do
           @t.name.should == 'Isle of Man Masters, 2007'
           @t.start.should == '2007-09-22'
           @t.rounds.should == 9
           @t.site.should == 'http://www.bcmchess.co.uk/monarch2007/'
         end
-        
+
         it "should have the right number of players in the right order" do
           @t.players.size.should == 9
           @t.players.inject(''){ |a,o| a << o.num.to_s }.should == '123456789'
         end
-        
+
         it "should have the right details for the main player" do
           @p.name.should == "Fox, Anthony"
           @p.results.size == 9
           @p.results.find_all{ |r| r.rateable }.size.should == 8
           @p.points.should == 4.0
         end
-        
+
         it "should have the right details for the opponents" do
           @o.size.should == 8
           @o.find_all{ |o| o.results.size == 1}.size.should == 8
@@ -116,7 +117,7 @@ CSV
           @r.results[0].rateable.should be_false
         end
       end
-    
+
       context "a tournament with more than one player" do
         before(:all) do
           @csv = <<CSV
@@ -158,7 +159,7 @@ CSV
           check_player(5, 'Bobby',     'Fischer',      1, 0, 0.0, :rating => 2700, :fed => 'USA', :title => 'GM')
         end
       end
-      
+
       context "a tournament where someone is both a player and an opponent" do
         before(:all) do
           @csv = <<CSV
@@ -199,11 +200,11 @@ CSV
           check_player(4, 'April',     'Cronin',       1, 0, 0.5, :rating => 2005, :fed => 'IRL')
         end
       end
-      
+
       context "a file that contains spurious white space and other untidiness" do
         before(:all) do
           @csv = <<CSV
-          
+
  Event," Bratto Open, 2001 "
 Start, 7th  March  2001
  Rounds, 2
@@ -237,7 +238,7 @@ CSV
           check_player(3, 'Mark',      'Orr',          1, 0, 0.5, :rating => 2100, :fed => 'IRL', :title => 'IM')
         end
       end
-      
+
       context "#parse" do
         before(:each) do
           @f = ICU::Tournament::ForeignCSV.new
@@ -258,7 +259,7 @@ CSV
           @f.parse(csv).should be_an_instance_of(ICU::Tournament)
           @f.error.should be_nil
         end
-        
+
         it "should not throw an exception but return nil on error" do
           @f.parse(' ').should be_nil
           @f.error.should match(/event/)
@@ -269,11 +270,11 @@ CSV
         before(:each) do
           @f = ICU::Tournament::ForeignCSV.new
         end
-        
+
         it "a blank file is invalid" do
           lambda { @f.parse!(' ') }.should raise_error(/event/i)
         end
-        
+
         it "the event should come first" do
           csv = <<CSV
 Start,7th March 2001
@@ -283,7 +284,7 @@ Website,http://www.federscacchi.it/
 CSV
           lambda { @f.parse!(csv) }.should raise_error(/line 1.*event/i)
         end
-        
+
         it "the start should come second" do
           csv = <<CSV
 Event,"Bratto Open, 2001"
@@ -293,7 +294,7 @@ Website,http://www.federscacchi.it/
 CSV
           lambda { @f.parse!(csv) }.should raise_error(/line 2.*start/i)
         end
-        
+
         it "the number of rounds should come third" do
           csv = <<CSV
 Event,"Bratto Open, 2001"
@@ -303,7 +304,7 @@ Rounds,2
 CSV
           lambda { @f.parse!(csv) }.should raise_error(/line 3.*rounds/i)
         end
-        
+
         it "there should be a web site" do
           csv = <<CSV
 Event,"Bratto Open, 2001"
@@ -313,7 +314,7 @@ Rounds,2
 CSV
           lambda { @f.parse!(csv) }.should raise_error(/line 4.*site/i)
         end
-        
+
         it "should have at least one player" do
           csv = <<CSV
 Event,"Bratto Open, 2001"
@@ -323,7 +324,7 @@ Website,http://www.federscacchi.it/
 CSV
           lambda { @f.parse!(csv) }.should raise_error(/line 4.*no players/i)
         end
-        
+
         it "the player needs to have a valid ID number" do
           csv = <<CSV
 Event,"Bratto Open, 2001"
@@ -335,7 +336,7 @@ Player,0,Ui Laighleis,Gearoidin
 CSV
           lambda { @f.parse!(csv) }.should raise_error(/line 6.*number/i)
         end
-        
+
         it "should have the right number of results for each player" do
           csv = <<CSV
 Event,"Bratto Open, 2001"
@@ -349,7 +350,7 @@ Total,0.5
 CSV
           lambda { @f.parse!(csv) }.should raise_error(/line 8.*round/i)
         end
-        
+
         it "should have correct totals" do
           csv = <<CSV
 Event,"Bratto Open, 2001"
@@ -364,8 +365,8 @@ Total,1.5
 CSV
           lambda { @f.parse!(csv) }.should raise_error(/line 9.*total/i)
         end
-        
-        
+
+
         it "players who match by name and federation should match in all other details" do
           csv = <<CSV
 Event,"Bratto Open, 2001"
@@ -386,7 +387,7 @@ CSV
           lambda { @f.parse!(csv) }.should raise_error(/line 13.*same name.*conflicting/i)
         end
       end
-      
+
       context "serialisation of simple tournament" do
         before(:each) do
           @csv = <<CSV
@@ -413,7 +414,7 @@ CSV
           @f.serialize(@t).should == @csv
         end
       end
-      
+
       context "serialisation of ForeignCSV documentation example" do
         before(:each) do
           @csv = <<CSV
@@ -490,7 +491,7 @@ CSV
           @t.serialize('ForeignCSV').should == @csv
         end
       end
-      
+
       context "serialisation of shortened ForeignCSV documentation example" do
         before(:each) do
           @csv = <<CSV
@@ -538,13 +539,47 @@ CSV
           @t.serialize('ForeignCSV').should == @csv
         end
       end
-      
+
+      context "encoding" do
+        before(:each) do
+          @csv = <<CSV
+Event,"Brätto Open, 2001"
+Start,7th March 2001
+Rounds,2
+Website,http://www.federscacchi.it/
+
+Player,3364,Uì Laighlèis,Gearoìdin
+1,=,W,Kasparov,Gary,2800,GM,RUS
+2,=,B,Örr,Mârk,2100,IM,IRL
+Total,1.0
+CSV
+          @f = ICU::Tournament::ForeignCSV.new
+        end
+
+        it "should parse UTF-8" do
+          lambda { @t = @f.parse!(@csv) }.should_not raise_error
+          check_player(1, 'Gearoìdin', 'Uì Laighlèis', 2, 2, 1.0, :id => 3364)
+          check_player(2, 'Gary', 'Kasparov', 1, 0, 0.5, :rating => 2800, :fed => 'RUS', :title => 'GM')
+          check_player(3, 'Mârk', 'Örr', 1, 0, 0.5, :rating => 2100, :fed => 'IRL', :title => 'IM')
+          @t.name.should == "Brätto Open, 2001"
+        end
+
+        it "should parse Latin-1" do
+          @csv = @csv.encode("ISO-8859-1")
+          lambda { @t = @f.parse!(@csv) }.should_not raise_error
+          check_player(1, 'Gearoìdin', 'Uì Laighlèis', 2, 2, 1.0, :id => 3364)
+          check_player(2, 'Gary', 'Kasparov', 1, 0, 0.5, :rating => 2800, :fed => 'RUS', :title => 'GM')
+          check_player(3, 'Mârk', 'Örr', 1, 0, 0.5, :rating => 2100, :fed => 'IRL', :title => 'IM')
+          @t.name.should == "Brätto Open, 2001"
+        end
+      end
+
       context "parsing files" do
         before(:each) do
           @p = ICU::Tournament::ForeignCSV.new
           @s = File.dirname(__FILE__) + '/samples/fcsv'
         end
-        
+
         it "should error on a non-existant valid file" do
           file = "#{@s}/not_there.csv"
           lambda { @p.parse_file!(file) }.should raise_error
@@ -552,7 +587,7 @@ CSV
           t.should be_nil
           @p.error.should match(/no such file/i)
         end
-        
+
         it "should error on an invalid file" do
           file = "#{@s}/invalid.csv"
           lambda { @p.parse_file!(file) }.should raise_error
@@ -560,13 +595,31 @@ CSV
           t.should be_nil
           @p.error.should match(/expected.*event.*name/i)
         end
-        
+
         it "should parse a valid file" do
           file = "#{@s}/valid.csv"
           lambda { @p.parse_file!(file) }.should_not raise_error
           t = @p.parse_file(file)
           t.should be_an_instance_of(ICU::Tournament)
           t.players.size.should == 16
+        end
+
+        it "should parse a file encoded in UTF-8" do
+          file = "#{@s}/utf-8.csv"
+          lambda { @t = @p.parse_file!(file) }.should_not raise_error
+          check_player(1, 'Gearoìdin', 'Uì Laighlèis', 2, 2, 1.0, :id => 3364)
+          check_player(2, 'Gary', 'Kasparov', 1, 0, 0.5, :rating => 2800, :fed => 'RUS', :title => 'GM')
+          check_player(3, 'Mârk', 'Örr', 1, 0, 0.5, :rating => 2100, :fed => 'IRL', :title => 'IM')
+          @t.name.should == "Brätto Open, 2001"
+        end
+
+        it "should parse a file encoded in Latin-1" do
+          file = "#{@s}/latin-1.csv"
+          lambda { @t = @p.parse_file!(file) }.should_not raise_error
+          check_player(1, 'Gearoìdin', 'Uì Laighlèis', 2, 2, 1.0, :id => 3364)
+          check_player(2, 'Gary', 'Kasparov', 1, 0, 0.5, :rating => 2800, :fed => 'RUS', :title => 'GM')
+          check_player(3, 'Mârk', 'Örr', 1, 0, 0.5, :rating => 2100, :fed => 'IRL', :title => 'IM')
+          @t.name.should == "Brätto Open, 2001"
         end
       end
 
