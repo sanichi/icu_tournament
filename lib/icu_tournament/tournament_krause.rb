@@ -119,7 +119,7 @@ module ICU
         @results = Array.new
 
         # Process all lines.
-        krs.each_line do |line|
+        ICU::Util.to_utf8(krs).each_line do |line|
           @lineno += 1         # increment line number
           line.strip!          # remove leading and trailing white space
           next if line == ''   # skip blank lines
@@ -192,7 +192,7 @@ module ICU
 
       # Same as <em>parse!</em> except the input is a file name rather than file contents.
       def parse_file!(file, arg={})
-        krause = open(file) { |f| f.read }
+        krause = ICU::Util.read_utf8(file) { |f| f.read }
         parse!(krause, arg)
       end
 

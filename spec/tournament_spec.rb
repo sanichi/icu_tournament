@@ -840,7 +840,7 @@ EOS
       it "should raise exceptions if the wrong type is used" do
         lambda { @c.parse_file!("#{@s}/krause/valid.tab", 'ForeignCSV') }.should raise_error(/expected/)
         lambda { @c.parse_file!("#{@s}/fcsv/valid.csv", 'SwissPerfect') }.should raise_error(/cannot/)
-        lambda { @c.parse_file!("#{@s}/sp/nccz.zip", 'Krause') }.should raise_error(/(missing|invalid byte sequence)/)
+        lambda { @c.parse_file!("#{@s}/sp/nccz.zip", 'Krause') }.should raise_error(/(invalid|conversion)/i)
       end
 
       it "should raise an exception if file does not exist" do

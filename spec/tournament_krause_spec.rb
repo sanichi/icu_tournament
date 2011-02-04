@@ -1,3 +1,4 @@
+# encoding: UTF-8
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 module ICU
@@ -232,7 +233,7 @@ KRAUSE
           @t.player(3).rank.should == 3
         end
       end
-
+      
       context "local or FIDE IDs" do
         before(:each) do
           @krause = <<KRAUSE
@@ -404,6 +405,36 @@ KRAUSE
            lambda { t = @p.parse!(@k) }.should raise_error(/opponent/)
         end
       end
+      
+      context "encoding" do
+        before(:all) do
+          @utf8 = <<KRAUSE
+012 Läs Végas National Opeñ
+042 2008-06-07
+001    1 w    Uì Laighlèis,Gearoìdin                                             1.0          2 b 0     3 w 1
+001    2 m  m Örr,Mârk                                                           2.0          1 w 1               3 b 1
+001    3 m  g Bologan,Viktor                                                     0.0                    1 b 0     2 w 0
+KRAUSE
+          @p = ICU::Tournament::Krause.new
+        end
+
+        it "should handle UTF-8" do
+          @t = @p.parse!(@utf8)
+          check_player(1, 'Gearoìdin', 'Uì Laighlèis')
+          check_player(2, 'Mârk', 'Örr')
+          check_player(3, 'Viktor', 'Bologan')
+          @t.name.should == "Läs Végas National Opeñ"
+        end
+
+        it "should handle Latin-1" do
+          latin1 = @utf8.encode("ISO-8859-1")
+          @t = @p.parse!(latin1)
+          check_player(1, 'Gearoìdin', 'Uì Laighlèis')
+          check_player(2, 'Mârk', 'Örr')
+          check_player(3, 'Viktor', 'Bologan')
+          @t.name.should == "Läs Végas National Opeñ"
+        end
+      end
 
       context "parsing files" do
         before(:each) do
@@ -433,6 +464,24 @@ KRAUSE
           t = @p.parse_file(file)
           t.should be_an_instance_of(ICU::Tournament)
           t.players.size.should == 12
+        end
+
+        it "should parse a file with UTF-8 encoding" do
+          file = "#{@s}/utf-8.tab"
+          lambda { @t = @p.parse_file!(file) }.should_not raise_error
+          check_player(1, 'Gearoìdin', 'Uì Laighlèis')
+          check_player(2, 'Mârk', 'Örr')
+          check_player(3, 'Viktor', 'Bologan')
+          @t.name.should == "Läs Végas National Opeñ"
+        end
+
+        it "should parse a file with Latin-1 encoding" do
+          file = "#{@s}/latin-1.tab"
+          lambda { @t = @p.parse_file!(file) }.should_not raise_error
+          check_player(1, 'Gearoìdin', 'Uì Laighlèis')
+          check_player(2, 'Mârk', 'Örr')
+          check_player(3, 'Viktor', 'Bologan')
+          @t.name.should == "Läs Végas National Opeñ"
         end
       end
     end
