@@ -95,7 +95,7 @@ module ICU
   #   t.validate(:rerank => true)
   #
   # Ranking is inconsistent if some but not all players have a rank or if all players
-  # have a rank but some are ranked higher than others on lower scores.
+  # but at least one pair of players exist where one has a higher score but a lower rank.
   #
   # To rank the players requires a tie break method to be specified to order players on the same score.
   # The default is alphabetical (by last name then first name). Other methods can be specified by supplying
@@ -382,7 +382,7 @@ module ICU
     # Convenience method to parse a file.
     def self.parse_file!(file, format, opts={})
       type = format.to_s
-      raise "Invalid format" unless type.match(/^(SwissPerfect|Krause|ForeignCSV)$/);
+      raise "Invalid format" unless type.match(/^(SwissPerfect|SPExport|Krause|ForeignCSV)$/);
       parser = "ICU::Tournament::#{format}".constantize.new
       if type == 'ForeignCSV'
         # Doesn't take options.
@@ -398,10 +398,10 @@ module ICU
     # or if the tournament is unsuitable for serialisation in that format.
     def serialize(format, arg={})
       serializer = case format.to_s.downcase
-        when 'krause'       then ICU::Tournament::Krause.new
-        when 'foreigncsv'   then ICU::Tournament::ForeignCSV.new
-        when 'swissperfect' then ICU::Tournament::SwissPerfect.new
-        when ''             then raise "no format supplied"
+        when 'krause'     then ICU::Tournament::Krause.new
+        when 'foreigncsv' then ICU::Tournament::ForeignCSV.new
+        when 'spexport'   then ICU::Tournament::SPExport.new
+        when ''           then raise "no format supplied"
         else raise "unsupported serialisation format: '#{format}'"
       end
       serializer.serialize(self, arg)
@@ -500,8 +500,8 @@ module ICU
     def check_type(type)
       if type.respond_to?(:validate!)
         type.validate!(self)
-      elsif type.to_s.match(/^(ForeignCSV|Krause|SwissPerfect)$/)
-        parser = "ICU::Tournament::#{type.to_s}".constantize.new.validate!(self)
+      elsif type.to_s.match(/^(ForeignCSV|Krause|SwissPerfect|SPExport)$/)
+        "ICU::Tournament::#{type.to_s}".constantize.new.validate!(self)
       else
         raise "invalid type supplied for validation check"
       end

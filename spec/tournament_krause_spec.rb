@@ -346,27 +346,27 @@ KRAUSE
 
         it "removing the line on which the tournament name is specified should cause an error" do
           @k.sub!('012 Gonzaga Classic', '')
-          lambda { t = @p.parse!(@k) }.should raise_error(/name missing/)
+          lambda { @p.parse!(@k) }.should raise_error(/name missing/)
         end
 
         it "blanking the tournament name should cause an error" do
           @k.sub!('Gonzaga Classic', '')
-          lambda { t = @p.parse!(@k) }.should raise_error(/name missing/)
+          lambda { @p.parse!(@k) }.should raise_error(/name missing/)
         end
 
         it "blanking the start date should cause an error" do
           @k.sub!('2008-02-01', '2008-02-04')
-          lambda { t = @p.parse!(@k) }.should raise_error(/start.*after.*end/)
+          lambda { @p.parse!(@k) }.should raise_error(/start.*after.*end/)
         end
 
         it "the start cannot be later than the end date" do
           @k.sub!('2008-02-01', '')
-          lambda { t = @p.parse!(@k) }.should raise_error(/start date missing/)
+          lambda { @p.parse!(@k) }.should raise_error(/start date missing/)
         end
 
         it "creating a duplicate player number should cause an error" do
           @k.sub!('  2  ', '  1  ')
-          lambda { t = @p.parse!(@k) }.should raise_error(/player number/)
+          lambda { @p.parse!(@k) }.should raise_error(/player number/)
         end
 
         it "creating a duplicate rank number should not cause an error becuse the tournament will be reranked" do
@@ -377,32 +377,32 @@ KRAUSE
 
         it "referring to a non-existant player number should cause an error" do
            @k.sub!(' 3 b 1', '33 b 1')
-           lambda { t = @p.parse!(@k) }.should raise_error(/opponent number/)
+           lambda { @p.parse!(@k) }.should raise_error(/opponent number/)
         end
 
         it "inconsistent colours should cause an error" do
            @k.sub!('3 b 1', '3 w 1')
-           lambda { t = @p.parse!(@k) }.should raise_error(/result/)
+           lambda { @p.parse!(@k) }.should raise_error(/result/)
         end
 
         it "inconsistent scores should cause an error" do
            @k.sub!('3 b 1', '3 b =')
-           lambda { t = @p.parse!(@k) }.should raise_error(/result/)
+           lambda { @p.parse!(@k) }.should raise_error(/result/)
         end
 
         it "inconsistent totals should cause an error" do
            @k.sub!('4.0', '4.5')
-           lambda { t = @p.parse!(@k) }.should raise_error(/total/)
+           lambda { @p.parse!(@k) }.should raise_error(/total/)
         end
 
         it "invalid federations should cause an error" do
            @k.sub!('SCO', 'XYZ')
-           lambda { t = @p.parse!(@k) }.should raise_error(/federation/)
+           lambda { @p.parse!(@k) }.should raise_error(/federation/)
         end
 
         it "removing any player that somebody else has played should cause an error" do
            @k.sub!(/^001   12.*$/, '')
-           lambda { t = @p.parse!(@k) }.should raise_error(/opponent/)
+           lambda { @p.parse!(@k) }.should raise_error(/opponent/)
         end
       end
       

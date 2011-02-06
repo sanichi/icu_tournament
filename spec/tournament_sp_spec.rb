@@ -4,12 +4,12 @@ SAMPLES = File.dirname(__FILE__) + '/samples/sp/'
 
 module ICU
   class Tournament
-    def signature
+    def sp_signature
       [name, arbiter, rounds, start, players.size].join("|")
     end
   end
   class Player
-    def signature
+    def sp_signature
       [
         name, id, fide, rating, points, rank,
         results.map{ |r| r.round }.join(''),
@@ -34,14 +34,14 @@ module ICU
 
         it "should parse and have the right basic details" do
           @p.error.should be_nil
-          @t.signature.should == "Gonzaga Chess Classic 2010 Challengers Section|Herbert Scarry|6|2010-01-29|56"
+          @t.sp_signature.should == "Gonzaga Chess Classic 2010 Challengers Section|Herbert Scarry|6|2010-01-29|56"
         end
 
         it "should have correct details for selected players" do
-          @t.player(2).signature.should  == "Mullooly, Neil M.|6438||1083|6.0|1|123456|WWWWWW|WBWBWB|TTTTTT" # winner
-          @t.player(4).signature.should  == "Gallagher, Mark|12138||1036|4.0|9|123456|WLWWWL|WBWBWB|FTTTTT"  # had one bye
-          @t.player(45).signature.should == "Catre, Loredan|||507|3.5|18|123456|WDLWLW|BWBWBW|FTTTFT"        # had two byes
-          @t.player(56).signature.should == "McDonnell, Cathal|||498|0.0|54|1|L|-|F"                         # last
+          @t.player(2).sp_signature.should  == "Mullooly, Neil M.|6438||1083|6.0|1|123456|WWWWWW|WBWBWB|TTTTTT" # winner
+          @t.player(4).sp_signature.should  == "Gallagher, Mark|12138||1036|4.0|9|123456|WLWWWL|WBWBWB|FTTTTT"  # had one bye
+          @t.player(45).sp_signature.should == "Catre, Loredan|||507|3.5|18|123456|WDLWLW|BWBWBW|FTTTFT"        # had two byes
+          @t.player(56).sp_signature.should == "McDonnell, Cathal|||498|0.0|54|1|L|-|F"                         # last
         end
 
         it "should have consistent ranks" do
@@ -53,7 +53,7 @@ module ICU
         end
 
         it "should serialize to the text export format" do
-          @t.serialize('SwissPerfect').should == @s
+          @t.serialize('SPExport').should == @s
         end
       end
 
@@ -66,14 +66,14 @@ module ICU
 
         it "should parse and have the right basic details" do
           @p.error.should be_nil
-          @t.signature.should == "U - 19 All Ireland||3|2010-04-11|4"
+          @t.sp_signature.should == "U - 19 All Ireland||3|2010-04-11|4"
         end
 
         it "should have correct details for selected players" do
-          @t.player(1).signature.should == "Griffiths, Ryan-Rhys|6897||2225|3.0|1|123|WWW|WWB|TTT"
-          @t.player(2).signature.should == "Flynn, Jamie|5226||1633|2.0|2|123|WLW|WBW|TTT"
-          @t.player(3).signature.should == "Hulleman, Leon|6409||1466|1.0|3|123|LWL|BBW|TTT"
-          @t.player(4).signature.should == "Dunne, Thomas|10914|||0.0|4|123|LLL|BWB|TTT"
+          @t.player(1).sp_signature.should == "Griffiths, Ryan-Rhys|6897||2225|3.0|1|123|WWW|WWB|TTT"
+          @t.player(2).sp_signature.should == "Flynn, Jamie|5226||1633|2.0|2|123|WLW|WBW|TTT"
+          @t.player(3).sp_signature.should == "Hulleman, Leon|6409||1466|1.0|3|123|LWL|BBW|TTT"
+          @t.player(4).sp_signature.should == "Dunne, Thomas|10914|||0.0|4|123|LLL|BWB|TTT"
         end
 
         it "should have consistent ranks" do
@@ -85,7 +85,7 @@ module ICU
         end
 
         it "should serialize to the text export format" do
-          @t.rerank.renumber.serialize('SwissPerfect').should == @s
+          @t.rerank.renumber.serialize('SPExport').should == @s
         end
       end
 
@@ -97,16 +97,16 @@ module ICU
 
         it "should parse and have the right basic details" do
           @p.error.should be_nil
-          @t.signature.should == "Limerick Club Championship 2009||7|2009-09-15|19"
+          @t.sp_signature.should == "Limerick Club Championship 2009||7|2009-09-15|19"
         end
 
         it "should have correct details for selected players" do
-          @t.player(15).signature.should == "Talazec, Laurent|10692||1570|5.5|1|1234567|WWWDDDW|WWBWBWB|FTTTTTT"  # winner
-          @t.player(6).signature.should  == "Foenander, Phillip|7168||1434|4.0|7|1234567|WLWLLWW|BWBWBWB|TTFFTTT" # had some byes
-          @t.player(19).signature.should == "Wall, Robert||||3.0|14|34567|WWLWL|WWBBW|FTTTT"                       # didn't play 1st 2 rounds
-          @t.player(17).signature.should == "Freeman, Conor||||2.0|16|1234567|DDLWLLL|--BWBWB|FFTTTTT"             # had byes and bonus (in BONUS)
-          @t.player(18).signature.should == "Freeman, Ruiri||||2.0|17|1234567|DDLLLLW|--WBBWB|FFTTTTF"             # had byes and bonus (in BONUS)
-          @t.player(16).signature.should == "O'Connor, David||||1.0|19|123|WLL|WBW|FTF"                            # last
+          @t.player(15).sp_signature.should == "Talazec, Laurent|10692||1570|5.5|1|1234567|WWWDDDW|WWBWBWB|FTTTTTT"  # winner
+          @t.player(6).sp_signature.should  == "Foenander, Phillip|7168||1434|4.0|7|1234567|WLWLLWW|BWBWBWB|TTFFTTT" # had some byes
+          @t.player(19).sp_signature.should == "Wall, Robert||||3.0|14|34567|WWLWL|WWBBW|FTTTT"                       # didn't play 1st 2 rounds
+          @t.player(17).sp_signature.should == "Freeman, Conor||||2.0|16|1234567|DDLWLLL|--BWBWB|FFTTTTT"             # had byes and bonus (in BONUS)
+          @t.player(18).sp_signature.should == "Freeman, Ruiri||||2.0|17|1234567|DDLLLLW|--WBBWB|FFTTTTF"             # had byes and bonus (in BONUS)
+          @t.player(16).sp_signature.should == "O'Connor, David||||1.0|19|123|WLL|WBW|FTF"                            # last
         end
 
         it "should have consistent ranks" do
@@ -126,14 +126,14 @@ module ICU
 
         it "should parse and have the right basic details" do
           @p.error.should be_nil
-          @t.signature.should == "U16 Inter Provincials 2010|David B Murray|3|2010-02-02|18"
+          @t.sp_signature.should == "U16 Inter Provincials 2010|David B Murray|3|2010-02-02|18"
         end
 
         it "should have correct details for selected players" do
-          @t.player(15).signature.should == "Gupta, Radhika|||1247|3.0|1|123|WWW|BBW|TTT"            # won all his games
-          @t.player(18).signature.should == "Hurley, Thomas|6292||820|1.0|14|1|W|B|F"                 # scored just 1 from a bye in R1
-          @t.player(8).signature.should  == "Berney, Mark|10328||1948|2.0|3|23|WW|BW|TT"             # didn't play in round 1
-          @t.player(10).signature.should == "O'Donnell, Conor E.|10792||1073|2.0|10|123|LWW|WBW|TFT"  # got just 1 point for a bye
+          @t.player(15).sp_signature.should == "Gupta, Radhika|||1247|3.0|1|123|WWW|BBW|TTT"            # won all his games
+          @t.player(18).sp_signature.should == "Hurley, Thomas|6292||820|1.0|14|1|W|B|F"                 # scored just 1 from a bye in R1
+          @t.player(8).sp_signature.should  == "Berney, Mark|10328||1948|2.0|3|23|WW|BW|TT"             # didn't play in round 1
+          @t.player(10).sp_signature.should == "O'Donnell, Conor E.|10792||1073|2.0|10|123|LWW|WBW|TFT"  # got just 1 point for a bye
         end
 
         it "should have consistent ranks" do
@@ -153,15 +153,15 @@ module ICU
 
         it "should parse and have the right basic details" do
           @p.error.should be_nil
-          @t.signature.should == "Mulcahy Cup 2010|Stephen Short|6|2010-01-15|50"
+          @t.sp_signature.should == "Mulcahy Cup 2010|Stephen Short|6|2010-01-15|50"
         end
 
         it "should have correct details for selection of players who got bonuses (in MEMO)" do
-          @t.player(23).signature.should == "Long, Killian|10293|2|1506|2.5|33|123456|WDLLWL|WWBWBB|TFTTTT"
-          @t.player(26).signature.should == "Bradley, Michael|6756|27|1413|3.0|26|123456|DDLWWL|BWWBWW|TFTTTT"
-          @t.player(15).signature.should == "Twomey, Pat|1637|22|1656|4.5|7|123456|WDLWWW|WWWBWB|FFTTTT"
-          @t.player(46).signature.should == "O'Riordan, Pat|10696||900|2.0|42|123456|LDDLDD|BWBWWB|TTTTFT"
-          @t.player(38).signature.should == "Gill, Craig I.|10637|28|1081|2.0|43|123456|LLWDDL|BWBWWB|TTTTFT"
+          @t.player(23).sp_signature.should == "Long, Killian|10293|2|1506|2.5|33|123456|WDLLWL|WWBWBB|TFTTTT"
+          @t.player(26).sp_signature.should == "Bradley, Michael|6756|27|1413|3.0|26|123456|DDLWWL|BWWBWW|TFTTTT"
+          @t.player(15).sp_signature.should == "Twomey, Pat|1637|22|1656|4.5|7|123456|WDLWWW|WWWBWB|FFTTTT"
+          @t.player(46).sp_signature.should == "O'Riordan, Pat|10696||900|2.0|42|123456|LDDLDD|BWBWWB|TTTTFT"
+          @t.player(38).sp_signature.should == "Gill, Craig I.|10637|28|1081|2.0|43|123456|LLWDDL|BWBWWB|TTTTFT"
         end
 
         it "should have consistent ranks" do
@@ -177,22 +177,22 @@ module ICU
 
         it "should parse and have the right basic details" do
           @p.error.should be_nil
-          @t.signature.should == "National Club Championship 2010|Gerry Graham|4|2010-05-08|77"
+          @t.sp_signature.should == "National Club Championship 2010|Gerry Graham|4|2010-05-08|77"
         end
 
         it "should have correct details for selection of players, including ICU IDs" do
-          @t.player(2).signature.should  == "Szabo, Gergely|12379|1205064|2530|4.0|4|1234|WWWW|WBWB|TTTT"
-          @t.player(5).signature.should  == "Daly, Colm|295|2500434|2314|3.5|7|1234|WWWD|WBWB|TTTT"
-          @t.player(8).signature.should  == "Vega, Marcos Llaneza||2253585|2475|3.0|16|1234|DDWW|BWBW|TTTT"
-          @t.player(67).signature.should == "Lee, Shane|780||1633|1.0|52|134|DLD|WWW|TTT"
+          @t.player(2).sp_signature.should  == "Szabo, Gergely|12379|1205064|2530|4.0|4|1234|WWWW|WBWB|TTTT"
+          @t.player(5).sp_signature.should  == "Daly, Colm|295|2500434|2314|3.5|7|1234|WWWD|WBWB|TTTT"
+          @t.player(8).sp_signature.should  == "Vega, Marcos Llaneza||2253585|2475|3.0|16|1234|DDWW|BWBW|TTTT"
+          @t.player(67).sp_signature.should == "Lee, Shane|780||1633|1.0|52|134|DLD|WWW|TTT"
         end
 
         it "should have correct details for selection of players, including international ratings when so configured" do
           @t = @p.parse_file(SAMPLES + 'ncc', :start => "2010-05-08", :rating => :intl)
-          @t.player(2).signature.should  == "Szabo, Gergely|12379|1205064||4.0|4|1234|WWWW|WBWB|TTTT"
-          @t.player(5).signature.should  == "Daly, Colm|295|2500434||3.5|7|1234|WWWD|WBWB|TTTT"
-          @t.player(8).signature.should  == "Vega, Marcos Llaneza||2253585||3.0|16|1234|DDWW|BWBW|TTTT"
-          @t.player(67).signature.should == "Lee, Shane|780|||1.0|52|134|DLD|WWW|TTT"
+          @t.player(2).sp_signature.should  == "Szabo, Gergely|12379|1205064||4.0|4|1234|WWWW|WBWB|TTTT"
+          @t.player(5).sp_signature.should  == "Daly, Colm|295|2500434||3.5|7|1234|WWWD|WBWB|TTTT"
+          @t.player(8).sp_signature.should  == "Vega, Marcos Llaneza||2253585||3.0|16|1234|DDWW|BWBW|TTTT"
+          @t.player(67).sp_signature.should == "Lee, Shane|780|||1.0|52|134|DLD|WWW|TTT"
         end
       end
 
@@ -279,14 +279,14 @@ module ICU
 
         it "should parse and have the right basic details" do
           @p.error.should be_nil
-          @t.signature.should == "National Club Championship 2010|Gerry Graham|4|2010-05-08|77"
+          @t.sp_signature.should == "National Club Championship 2010|Gerry Graham|4|2010-05-08|77"
         end
 
         it "should have correct details for selection of players, including ICU IDs" do
-          @t.player(2).signature.should  == "Szabo, Gergely|12379|1205064|2530|4.0|4|1234|WWWW|WBWB|TTTT"
-          @t.player(5).signature.should  == "Daly, Colm|295|2500434|2314|3.5|7|1234|WWWD|WBWB|TTTT"
-          @t.player(8).signature.should  == "Vega, Marcos Llaneza||2253585|2475|3.0|16|1234|DDWW|BWBW|TTTT"
-          @t.player(67).signature.should == "Lee, Shane|780||1633|1.0|52|134|DLD|WWW|TTT"
+          @t.player(2).sp_signature.should  == "Szabo, Gergely|12379|1205064|2530|4.0|4|1234|WWWW|WBWB|TTTT"
+          @t.player(5).sp_signature.should  == "Daly, Colm|295|2500434|2314|3.5|7|1234|WWWD|WBWB|TTTT"
+          @t.player(8).sp_signature.should  == "Vega, Marcos Llaneza||2253585|2475|3.0|16|1234|DDWW|BWBW|TTTT"
+          @t.player(67).sp_signature.should == "Lee, Shane|780||1633|1.0|52|134|DLD|WWW|TTT"
         end
       end
 
@@ -311,9 +311,9 @@ module ICU
 
         it "should parse and the name should be in UTF-8" do
           lambda { @t = @p.parse_file!(SAMPLES + 'munster_u10_2011.zip', :start => "2011-01-20") }.should_not raise_error
-          @t.player(1).signature.should  == "Kennedy, Stephen|||849|2.0|6|12345|WLWLL|BWBWB|TTTTT"
-          @t.player(4).signature.should  == "Sheehan, Ciarán||||3.0|5|12345|LWWLW|WBWBW|TTTTF"
-          @t.player(10).signature.should  == "Sheehan, Adam||||2.0|7|12345|WLLWL|WBWWB|TTTFT"
+          @t.player(1).sp_signature.should  == "Kennedy, Stephen|||849|2.0|6|12345|WLWLL|BWBWB|TTTTT"
+          @t.player(4).sp_signature.should  == "Sheehan, Ciarán||||3.0|5|12345|LWWLW|WBWBW|TTTTF"
+          @t.player(10).sp_signature.should  == "Sheehan, Adam||||2.0|7|12345|WLLWL|WBWWB|TTTFT"
         end
       end
 

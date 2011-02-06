@@ -2,7 +2,6 @@
 
 For reading or writing files of chess tournament data. Original project name on github was _chess_icu_.
 
-
 == Install
 
 For ruby 1.9.2 (version 1.1.2 was the last compatible with ruby 1.8.7).
@@ -27,6 +26,7 @@ The currently supported formats are:
 * ICU::Tournament::Krause - the format used by FIDE.
 * ICU::Tournament::ForeignCSV - used by Irish players to report their individual results in foreign tournaments.
 * ICU::Tournament::SwissPerfect - often used by Irish tournament controllers to report results.
+* ICU::Tournament::SPExport - the SwissPerfect text export format.
 
 == Writing Files
 
