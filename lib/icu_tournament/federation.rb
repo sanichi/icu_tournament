@@ -81,6 +81,10 @@ module ICU
       matches[0]
     end
 
+    # Return an array of codes and names suitable for creating a federation menu in Rails.
+    #   ICU::Federation.menu(:order => 'code')     # order federations by code (instead of by name)
+    #   ICU::Federation.menu(:top => 'IRL')        # make this federation come first
+    #   ICU::Federation.menu(:none => 'None')      # add a dummy top entry with name "None" and blank code
     def self.menu(opts = {})
       compile
       top, menu = nil, []
@@ -91,6 +95,7 @@ module ICU
       menu
     end
     
+    # Return an array of sorted federation codes.
     def self.codes
       compile
       @@objects.map(&:code).sort
@@ -101,6 +106,7 @@ module ICU
       @name = name
     end
 
+    # :enddoc:
     private
 
     def self.compile

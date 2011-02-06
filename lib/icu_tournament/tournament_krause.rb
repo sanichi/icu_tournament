@@ -241,6 +241,7 @@ module ICU
         # None.
       end
 
+      # :enddoc:
       private
 
       def set_name

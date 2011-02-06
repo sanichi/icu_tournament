@@ -407,6 +407,7 @@ module ICU
       serializer.serialize(self, arg)
     end
 
+    # :enddoc:
     private
 
     # Check players.

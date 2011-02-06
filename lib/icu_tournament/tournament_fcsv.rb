@@ -250,6 +250,7 @@ module ICU
         end
       end
 
+      # :enddoc:
       private
 
       def event

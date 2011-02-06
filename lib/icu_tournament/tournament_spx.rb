@@ -168,6 +168,7 @@ module ICU
         # None.
       end
 
+      # :enddoc:
       private
 
       def init_tournament(arg)

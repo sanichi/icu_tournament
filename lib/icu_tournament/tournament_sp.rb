@@ -142,6 +142,7 @@ module ICU
         # None.
       end
 
+      # :enddoc:
       private
 
       def get_files(file, arg)
