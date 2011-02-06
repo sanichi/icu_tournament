@@ -62,40 +62,7 @@ module ICU
     #
     # Because the data is in three parts, some of which are in a legacy binary format, serialization to this format is
     # not supported. Instead, a method is provided to serialize any tournament type into the text export format of
-    # erfect, an example of which is shown below.
-    #
-    #   No  Name                 Loc Id  Total   1     2     3
-    #
-    #   1   Griffiths, Ryan-Rhys 6897    3       4:W   2:W   3:W
-    #   2   Flynn, Jamie         5226    2       3:W   1:L   4:W
-    #   3   Hulleman, Leon       6409    1       2:L   4:W   1:L
-    #   4   Dunne, Thomas        10914   0       1:L   3:L   2:L
-    #
-    # This format is important in Irish chess, as it's the format used to submit results to the <em>MicroSoft Access</em>
-    # implementation of the ICU ratings database.
-    #
-    #   swiss_perfect = tournament.serialize('SwissPerfect')
-    #
-    # The order of players in the serialized output is always by player number and as a side effect of serialization,
-    # the player numbers will be adjusted to ensure they range from 1 to the total number of players (i.e. renumbered
-    # in order). If you would prefer rank-order instead, then you must first renumber the players by rank (the default
-    # renumbering method) before serializing. For example:
-    #
-    #   swiss_perfect = tournament.renumber.serialize('SwissPerfect')
-    #
-    # There should be no need to explicitly rank the tournament first, as that information is already present in
-    # SwissPerfect files (i.e. each player should already have a rank after the files have been parsed).
-    # Additionally, the tie break rules used for the tournament are available from the _tie_break_ method,
-    # for example:
-    #
-    #   tournament.tie_breaks           # => [:buchholz, :harkness]
-    #
-    # Should you wish to rank the tournament using a different set of tie-break rules, you can do something like the following:
-    #
-    #   tournament.tie_breaks = [:wins, :blacks]
-    #   swiss_perfect = tournament.rerank.renumber.serialize('SwissPerfect')
-    #
-    # See ICU::Tournament for more about tie-breaks.
+    # SwissPerfect (see ICU::Tournament::SPExport).
     #
     class SwissPerfect
       attr_reader :error

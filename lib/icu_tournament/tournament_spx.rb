@@ -1,7 +1,70 @@
 module ICU
   class Tournament
     #
-    # TODO
+    # The SWissPerfect export format was important in Irish chess as it was used to submit
+    # results to the ICU's first computerised ratings system based on <em>MicroSoft Access</em>.
+    # As a text based format, it was easier to manipulate than the binary formats of SwissPerfect.
+    # Here's an example:
+    #
+    #   No Name           Feder Intl Id Loc Id Rtg  Loc  Title Total  1   2   3
+    #
+    #   1  Duck, Daffy    IRL           12345       2200 im    2     0:= 3:W 2:D
+    #   2  Mouse, Minerva       1234568        1900            1.5   3:D 0:= 1:D
+    #   3  Mouse, Mickey  USA   1234567                  gm    1     2:D 1:L 0:=
+    #
+    # The format does not record either the name nor the start date of the tournament (and also
+    # the player colours is missing). When parsing data in this format it is therefore necessary
+    # to specify these two mandatory attributes:
+    #
+    #   parser = ICU::Tournament::SPExport.new
+    #   tournament = parser.parse_file('tournament.txt', :name => 'Mickey Mouse Masters', :start => '2011-02-06')
+    #
+    #   tournament.name                   # => "Mickey Mouse Masters"
+    #   tournament.start                  # => "2011-02-06"
+    #   tournament.rounds                 # => 3
+    #   tournament.player(1).name         # => "Duck, Daffy"
+    #   tournament.player(2).points       # => 1.5
+    #   tournament.player(3).fed          # => "USA"
+    #
+    # And so on. See ICU::Tournament for further details.
+    #
+    # The SwissPerfect application offers a number of choices when exporting a tournament cross table,
+    # one of which is the column separator. The ICU::Tournament::SPExport parser can only handle data
+    # with tab separators but is able to cope with any other configuration choices. For example, if
+    # some of the optional columns are missing or if the data is not formatted with space padding.
+    #
+    # To serialize a tournament to the format, use the format name with the _serialize_ method.
+    #
+    #   spexport = tournament.serialize('SPExport')
+    #   puts spexport
+    #
+    #   No  Name                 Loc Id  Total   1     2     3
+    #
+    #   1   Griffiths, Ryan-Rhys 6897    3       4:W   2:W   3:W
+    #   2   Flynn, Jamie         5226    2       3:W   1:L   4:W
+    #   3   Hulleman, Leon       6409    1       2:L   4:W   1:L
+    #   4   Dunne, Thomas        10914   0       1:L   3:L   2:L
+    #
+    # Currently only ICU ID (<em>Loc Id</em>) and total score are output, as this is the
+    # configuration used by the ICU's old rating program.
+    #
+    # The order of players in the serialized output is always by player number and as a side effect of serialization,
+    # the player numbers will be adjusted to ensure they range from 1 to the total number of players maintaining the
+    # original order. If you would prefer rank-order instead, then you must first renumber the players by rank (the
+    # default renumbering method) before serializing. For example:
+    #
+    #   spexport = tournament.renumber(:rank).serialize('SPExport')
+    #
+    # Or equivalently, since renumbering by rank is the default, just:
+    #
+    #   spexport = tournament.renumber.serialize('SPExport')
+    #
+    # You may wish set the tie-break rules before ranking:
+    #
+    #   tournament.tie_breaks = [:buchholz, ::neustadtl]
+    #   spexport = tournament.rerank.renumber.serialize('SwissPerfect')
+    #
+    # See ICU::Tournament for more about tie-breaks.
     #
     class SPExport
       attr_reader :error
@@ -26,7 +89,7 @@ module ICU
             process_header(line)
           end
         end
-        
+
         # Now that all players are present, add the results to the tournament.
         @results.each do |r|
           lineno, player, data, result = r
@@ -36,7 +99,7 @@ module ICU
             raise "line #{lineno}, player #{player}, result '#{data}': #{err.message}"
           end
         end
-        
+
         # Finally, exercise the tournament object's internal validation, reranking if neccessary.
         @tournament.validate!(:rerank => true)
 
@@ -90,8 +153,8 @@ module ICU
         sp = formats.join("\t") % ['No', 'Name', 'Loc Id', 'Total']
         sp << "\r\n\r\n"
 
-        # Adjust the round parts of the formats for players results.
-        (1..t.last_round).each { |r| formats[r+3] = "%#{m1+2}s" }
+        # Adjust the rounds part of the formats for players results.
+        (1..rounds).each { |r| formats[r+3] = "%#{m1+2}s" }
 
         # Now add a line for each player.
         t.players.each { |p| sp << p.to_sp_text(rounds, "#{formats.join(%Q{\t})}\r\n") }
@@ -157,7 +220,7 @@ module ICU
             opt[key] = val unless val.nil? || val == ''
           end
         end
-        
+
         # Rating (prefer international over local).
         [:int_rating, :loc_rating].each do |key|
           if @header[key]
@@ -165,7 +228,7 @@ module ICU
             opt[:rating] = val unless opt[:rating] || val.nil? || val == ''
           end
         end
-        
+
         # Create the player and add it to the tournament.
         player = Player.new(name.first, name.last, num, opt)
         @tournament.add_player(player)
@@ -181,7 +244,7 @@ module ICU
         total = points if points && fix_invisible_bonuses(player.num, points - total)
         raise "declared points total (#{points}) does not agree with total from summed results (#{total})" if points && points != total
       end
-      
+
       def process_result(round, player_num, data)
         raise "illegal result (#{data})" unless data.match(/^(0|[1-9]\d*)?:([-+=LWD])?$/i)
         opponent = $1.to_i
@@ -193,7 +256,7 @@ module ICU
         @results << [@lineno, player_num, data, result]
         result.points
       end
-      
+
       def fix_invisible_bonuses(player_num, difference)
         # We don't need to fix it if it's not broken.
         return false if difference == 0.0
