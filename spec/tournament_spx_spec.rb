@@ -75,10 +75,16 @@ EXPORT
           @t.player(3).fide.should == 1234567
         end
 
-        it "players should have correct ratings" do
+        it "players should have correct ICU ratings" do
           @t.player(1).rating.should == 2200
-          @t.player(2).rating.should == 1900
+          @t.player(2).rating.should be_nil
           @t.player(3).rating.should be_nil
+        end
+
+        it "players should have correct FIDE ratings" do
+          @t.player(1).fide_rating.should be_nil
+          @t.player(2).fide_rating.should == 1900
+          @t.player(3).fide_rating.should be_nil
         end
 
         it "players should have correct titles" do

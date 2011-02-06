@@ -12,9 +12,10 @@ module ICU
   #
   # In addition, players have a number of optional attributes which can be specified
   # via setters or in constructor hash options: _id_ (local or national ID), _fide_
-  # (FIDE ID), _fed_ (federation), _title_, _rating_, _rank_ and _dob_ (date of birth).
+  # (FIDE ID), _fed_ (federation), _title_, _rating_ (local rating), _fide_rating,
+  # _rank_ and _dob_ (date of birth).
   #
-  #   peter = ICU::Player.new('Peter', 'Svidler', 21, :fed => 'rus', :title => 'g', :rating = 2700)
+  #   peter = ICU::Player.new('Peter', 'Svidler', 21, :fed => 'rus', :title => 'g', :fide_rating = 2700)
   #   peter.dob = '17th June, 1976'
   #   peter.rank = 1
   #
@@ -84,7 +85,7 @@ module ICU
   class Player
     extend ICU::Accessor
     attr_integer :num
-    attr_positive_or_nil :id, :fide, :rating, :rank
+    attr_positive_or_nil :id, :fide, :rating, :fide_rating, :rank
     attr_date_or_nil :dob
 
     attr_reader :results, :first_name, :last_name, :fed, :title, :gender
@@ -94,7 +95,7 @@ module ICU
       self.first_name = first_name
       self.last_name  = last_name
       self.num        = num
-      [:id, :fide, :fed, :title, :rating, :rank, :dob, :gender].each do |atr|
+      [:id, :fide, :fed, :title, :rating, :fide_rating, :rank, :dob, :gender].each do |atr|
         self.send("#{atr}=", opt[atr]) unless opt[atr].nil?
       end
       @results = []
@@ -192,7 +193,7 @@ module ICU
     def eql?(other)
       return true if equal?(other)
       return false unless self == other
-      [:id, :fide, :rating, :title, :gender].each do |m|
+      [:id, :fide, :rating, :fide_rating, :title, :gender].each do |m|
         return false if self.send(m) && other.send(m) && self.send(m) != other.send(m)
       end
       true
@@ -201,7 +202,7 @@ module ICU
     # Merge in some of the details of another player.
     def merge(other)
       raise "cannot merge two players that are not equal" unless self == other
-      [:id, :fide, :rating, :title, :fed, :gender].each do |m|
+      [:id, :fide, :rating, :fide_rating, :title, :fed, :gender].each do |m|
         self.send("#{m}=", other.send(m)) unless self.send(m)
       end
     end

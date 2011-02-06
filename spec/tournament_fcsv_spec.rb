@@ -9,7 +9,7 @@ module ICU
         p.first_name.should == first
         p.last_name.should == last
         p.id.should == other[:id]
-        p.rating.should == other[:rating]
+        p.fide_rating.should == other[:fide_rating]
         p.fed.should == other[:fed]
         p.title.should == other[:title]
         p.results.size.should == results
@@ -58,9 +58,9 @@ CSV
 
         it "should have correct player details" do
           check_player(1, 'Gearoidin', 'Ui Laighleis', 4, 3, 2.0, :id => 3364)
-          check_player(2, 'April',     'Cronin',       1, 0, 1.0, :rating => 2005, :fed => 'IRL')
-          check_player(3, 'Suzanne',   'Connolly',     1, 0, 0.5, :rating => 1950, :fed => 'IRL')
-          check_player(4, 'Linda',     'Powell',       1, 0, 0.0, :rating => 1850, :fed => 'WLS')
+          check_player(2, 'April',     'Cronin',       1, 0, 1.0, :fide_rating => 2005, :fed => 'IRL')
+          check_player(3, 'Suzanne',   'Connolly',     1, 0, 0.5, :fide_rating => 1950, :fed => 'IRL')
+          check_player(4, 'Linda',     'Powell',       1, 0, 0.0, :fide_rating => 1850, :fed => 'WLS')
         end
       end
 
@@ -154,9 +154,9 @@ CSV
         it "should have correct player details" do
           check_player(1, 'Gearoidin', 'Ui Laighleis', 2, 2, 1.0, :id => 3364)
           check_player(4, 'Mark',      'Orr',          2, 2, 1.5, :id => 1350)
-          check_player(2, 'Gary',      'Kasparov',     1, 0, 0.5, :rating => 2800, :fed => 'RUS', :title => 'GM')
-          check_player(3, 'April',     'Cronin',       2, 0, 1.0, :rating => 2005, :fed => 'IRL')
-          check_player(5, 'Bobby',     'Fischer',      1, 0, 0.0, :rating => 2700, :fed => 'USA', :title => 'GM')
+          check_player(2, 'Gary',      'Kasparov',     1, 0, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
+          check_player(3, 'April',     'Cronin',       2, 0, 1.0, :fide_rating => 2005, :fed => 'IRL')
+          check_player(5, 'Bobby',     'Fischer',      1, 0, 0.0, :fide_rating => 2700, :fed => 'USA', :title => 'GM')
         end
       end
 
@@ -194,10 +194,10 @@ CSV
         end
 
         it "should have correct player details" do
-          check_player(1, 'Gearoidin', 'Ui Laighleis', 2, 2, 1.0, :rating => 1800, :fed => 'IRL', :id => 3364)
-          check_player(3, 'Mark',      'Orr',          2, 2, 1.0, :rating => 2100, :fed => 'IRL', :id => 1350, :title => 'IM')
-          check_player(2, 'Gary',      'Kasparov',     1, 0, 0.5, :rating => 2800, :fed => 'RUS')
-          check_player(4, 'April',     'Cronin',       1, 0, 0.5, :rating => 2005, :fed => 'IRL')
+          check_player(1, 'Gearoidin', 'Ui Laighleis', 2, 2, 1.0, :fide_rating => 1800, :fed => 'IRL', :id => 3364)
+          check_player(3, 'Mark',      'Orr',          2, 2, 1.0, :fide_rating => 2100, :fed => 'IRL', :id => 1350, :title => 'IM')
+          check_player(2, 'Gary',      'Kasparov',     1, 0, 0.5, :fide_rating => 2800, :fed => 'RUS')
+          check_player(4, 'April',     'Cronin',       1, 0, 0.5, :fide_rating => 2005, :fed => 'IRL')
         end
       end
 
@@ -234,8 +234,8 @@ CSV
 
         it "should have correct player details" do
           check_player(1, 'Gearoidin', 'Ui Laighleis', 2, 2, 1.0, :id => 3364)
-          check_player(2, 'Gary',      'Kasparov',     1, 0, 0.5, :rating => 2800, :fed => 'RUS', :title => 'GM')
-          check_player(3, 'Mark',      'Orr',          1, 0, 0.5, :rating => 2100, :fed => 'IRL', :title => 'IM')
+          check_player(2, 'Gary',      'Kasparov',     1, 0, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
+          check_player(3, 'Mark',      'Orr',          1, 0, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
         end
       end
 
@@ -450,23 +450,23 @@ CSV
           @t = ICU::Tournament.new("Isle of Man Masters, 2007", '2007-09-22')
           @t.site = 'http://www.bcmchess.co.uk/monarch2007/'
           @t.rounds = 9
-          @t.add_player(ICU::Player.new('Anthony', 'Fox', 1, :id => 456, :rating => 2100, :fed => 'IRL'))
-          @t.add_player(ICU::Player.new('Peter', 'Cafolla', 2, :id => 159, :rating => 2048, :fed => 'IRL'))
-          @t.add_player(ICU::Player.new('Peter P.', 'Taylor', 3, :rating => 2209, :fed => 'ENG'))
-          @t.add_player(ICU::Player.new('Egozi', 'Nadav', 4, :rating => 2205, :fed => 'ISR'))
-          @t.add_player(ICU::Player.new('Tim R.', 'Spanton', 5, :rating => 1982, :fed => 'ENG'))
-          @t.add_player(ICU::Player.new('Alan', 'Grant', 6, :rating => 2223, :fed => 'SCO'))
-          @t.add_player(ICU::Player.new('Alan J.', 'Walton', 7, :rating => 2223, :fed => 'ENG'))
-          @t.add_player(ICU::Player.new('Bernard', 'Bannink', 8, :rating => 2271, :fed => 'NED', :title => 'FM'))
-          @t.add_player(ICU::Player.new('Roy', 'Phillips', 9, :rating => 2271, :fed => 'MAU'))
-          @t.add_player(ICU::Player.new('Oliver A.', 'Jackson', 10, :rating => 2198, :fed => 'ENG'))
+          @t.add_player(ICU::Player.new('Anthony', 'Fox', 1, :id => 456, :fide_rating => 2100, :fed => 'IRL'))
+          @t.add_player(ICU::Player.new('Peter', 'Cafolla', 2, :id => 159, :fide_rating => 2048, :fed => 'IRL'))
+          @t.add_player(ICU::Player.new('Peter P.', 'Taylor', 3, :fide_rating => 2209, :fed => 'ENG'))
+          @t.add_player(ICU::Player.new('Egozi', 'Nadav', 4, :fide_rating => 2205, :fed => 'ISR'))
+          @t.add_player(ICU::Player.new('Tim R.', 'Spanton', 5, :fide_rating => 1982, :fed => 'ENG'))
+          @t.add_player(ICU::Player.new('Alan', 'Grant', 6, :fide_rating => 2223, :fed => 'SCO'))
+          @t.add_player(ICU::Player.new('Alan J.', 'Walton', 7, :fide_rating => 2223, :fed => 'ENG'))
+          @t.add_player(ICU::Player.new('Bernard', 'Bannink', 8, :fide_rating => 2271, :fed => 'NED', :title => 'FM'))
+          @t.add_player(ICU::Player.new('Roy', 'Phillips', 9, :fide_rating => 2271, :fed => 'MAU'))
+          @t.add_player(ICU::Player.new('Oliver A.', 'Jackson', 10, :fide_rating => 2198, :fed => 'ENG'))
           @t.add_player(ICU::Player.new('Van Den Berssalaar', 'Jeroen', 11, :fed => 'NED'))
-          @t.add_player(ICU::Player.new('Sam E.', 'Collins', 12, :rating => 2394, :fed => 'IRL', :title => 'IM'))
-          @t.add_player(ICU::Player.new('Doreen', 'Troyke', 13, :rating => 2151, :fed => 'GER', :title => 'WFM'))
-          @t.add_player(ICU::Player.new('Jonathan P.', 'Nelson', 14, :rating => 2282, :fed => 'ENG'))
-          @t.add_player(ICU::Player.new('Nadav', 'Egozi', 15, :rating => 2205, :fed => 'ISR'))
-          @t.add_player(ICU::Player.new('Manuel', 'Weeks', 16, :rating => 2200, :fed => 'AUS', :title => 'FM'))
-          @t.add_player(ICU::Player.new('Alan', 'Grant', 17, :rating => 2223, :fed => 'SCO'))
+          @t.add_player(ICU::Player.new('Sam E.', 'Collins', 12, :fide_rating => 2394, :fed => 'IRL', :title => 'IM'))
+          @t.add_player(ICU::Player.new('Doreen', 'Troyke', 13, :fide_rating => 2151, :fed => 'GER', :title => 'WFM'))
+          @t.add_player(ICU::Player.new('Jonathan P.', 'Nelson', 14, :fide_rating => 2282, :fed => 'ENG'))
+          @t.add_player(ICU::Player.new('Nadav', 'Egozi', 15, :fide_rating => 2205, :fed => 'ISR'))
+          @t.add_player(ICU::Player.new('Manuel', 'Weeks', 16, :fide_rating => 2200, :fed => 'AUS', :title => 'FM'))
+          @t.add_player(ICU::Player.new('Alan', 'Grant', 17, :fide_rating => 2223, :fed => 'SCO'))
           @t.add_result(ICU::Result.new(1, 1, 'L', :opponent => 3,  :colour => 'B'))
           @t.add_result(ICU::Result.new(2, 1, 'D', :opponent => 4,  :colour => 'W'))
           @t.add_result(ICU::Result.new(3, 1, 'D', :opponent => 2,  :colour => 'B'))
@@ -514,15 +514,15 @@ Total,4.0
 CSV
           @t = ICU::Tournament.new("Isle of Man Masters, 2007", '2007-09-22')
           @t.site = 'http://www.bcmchess.co.uk/monarch2007/'
-          @t.add_player(ICU::Player.new('Anthony', 'Fox', 1, :id => 456, :rating => 2100, :fed => 'IRL'))
-          @t.add_player(ICU::Player.new('Peter P.', 'Taylor', 2, :rating => 2209, :fed => 'ENG'))
-          @t.add_player(ICU::Player.new('Egozi', 'Nadav', 3, :rating => 2205, :fed => 'ISR'))
-          @t.add_player(ICU::Player.new('Peter', 'Cafolla', 4, :rating => 2048, :fed => 'IRL'))
-          @t.add_player(ICU::Player.new('Tim R.', 'Spanton', 5, :rating => 1982, :fed => 'ENG'))
-          @t.add_player(ICU::Player.new('Alan', 'Grant', 6, :rating => 2223, :fed => 'SCO'))
-          @t.add_player(ICU::Player.new('Alan J.', 'Walton', 7, :rating => 2223, :fed => 'ENG'))
-          @t.add_player(ICU::Player.new('Bernard', 'Bannink', 8, :rating => 2271, :fed => 'NED', :title => 'FM'))
-          @t.add_player(ICU::Player.new('Roy', 'Phillips', 9, :rating => 2271, :fed => 'MAU'))
+          @t.add_player(ICU::Player.new('Anthony', 'Fox', 1, :id => 456, :fide_rating => 2100, :fed => 'IRL'))
+          @t.add_player(ICU::Player.new('Peter P.', 'Taylor', 2, :fide_rating => 2209, :fed => 'ENG'))
+          @t.add_player(ICU::Player.new('Egozi', 'Nadav', 3, :fide_rating => 2205, :fed => 'ISR'))
+          @t.add_player(ICU::Player.new('Peter', 'Cafolla', 4, :fide_rating => 2048, :fed => 'IRL'))
+          @t.add_player(ICU::Player.new('Tim R.', 'Spanton', 5, :fide_rating => 1982, :fed => 'ENG'))
+          @t.add_player(ICU::Player.new('Alan', 'Grant', 6, :fide_rating => 2223, :fed => 'SCO'))
+          @t.add_player(ICU::Player.new('Alan J.', 'Walton', 7, :fide_rating => 2223, :fed => 'ENG'))
+          @t.add_player(ICU::Player.new('Bernard', 'Bannink', 8, :fide_rating => 2271, :fed => 'NED', :title => 'FM'))
+          @t.add_player(ICU::Player.new('Roy', 'Phillips', 9, :fide_rating => 2271, :fed => 'MAU'))
           @t.add_result(ICU::Result.new(1, 1, 'L', :opponent => 2,  :colour => 'B'))
           @t.add_result(ICU::Result.new(2, 1, 'D', :opponent => 3,  :colour => 'W'))
           @t.add_result(ICU::Result.new(3, 1, 'D', :opponent => 4,  :colour => 'B'))
@@ -559,8 +559,8 @@ CSV
         it "should parse UTF-8" do
           lambda { @t = @f.parse!(@csv) }.should_not raise_error
           check_player(1, 'Gearoìdin', 'Uì Laighlèis', 2, 2, 1.0, :id => 3364)
-          check_player(2, 'Gary', 'Kasparov', 1, 0, 0.5, :rating => 2800, :fed => 'RUS', :title => 'GM')
-          check_player(3, 'Mârk', 'Örr', 1, 0, 0.5, :rating => 2100, :fed => 'IRL', :title => 'IM')
+          check_player(2, 'Gary', 'Kasparov', 1, 0, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
+          check_player(3, 'Mârk', 'Örr', 1, 0, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
           @t.name.should == "Brätto Open, 2001"
         end
 
@@ -568,8 +568,8 @@ CSV
           @csv = @csv.encode("ISO-8859-1")
           lambda { @t = @f.parse!(@csv) }.should_not raise_error
           check_player(1, 'Gearoìdin', 'Uì Laighlèis', 2, 2, 1.0, :id => 3364)
-          check_player(2, 'Gary', 'Kasparov', 1, 0, 0.5, :rating => 2800, :fed => 'RUS', :title => 'GM')
-          check_player(3, 'Mârk', 'Örr', 1, 0, 0.5, :rating => 2100, :fed => 'IRL', :title => 'IM')
+          check_player(2, 'Gary', 'Kasparov', 1, 0, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
+          check_player(3, 'Mârk', 'Örr', 1, 0, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
           @t.name.should == "Brätto Open, 2001"
         end
       end
@@ -608,8 +608,8 @@ CSV
           file = "#{@s}/utf-8.csv"
           lambda { @t = @p.parse_file!(file) }.should_not raise_error
           check_player(1, 'Gearoìdin', 'Uì Laighlèis', 2, 2, 1.0, :id => 3364)
-          check_player(2, 'Gary', 'Kasparov', 1, 0, 0.5, :rating => 2800, :fed => 'RUS', :title => 'GM')
-          check_player(3, 'Mârk', 'Örr', 1, 0, 0.5, :rating => 2100, :fed => 'IRL', :title => 'IM')
+          check_player(2, 'Gary', 'Kasparov', 1, 0, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
+          check_player(3, 'Mârk', 'Örr', 1, 0, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
           @t.name.should == "Brätto Open, 2001"
         end
 
@@ -617,8 +617,8 @@ CSV
           file = "#{@s}/latin-1.csv"
           lambda { @t = @p.parse_file!(file) }.should_not raise_error
           check_player(1, 'Gearoìdin', 'Uì Laighlèis', 2, 2, 1.0, :id => 3364)
-          check_player(2, 'Gary', 'Kasparov', 1, 0, 0.5, :rating => 2800, :fed => 'RUS', :title => 'GM')
-          check_player(3, 'Mârk', 'Örr', 1, 0, 0.5, :rating => 2100, :fed => 'IRL', :title => 'IM')
+          check_player(2, 'Gary', 'Kasparov', 1, 0, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
+          check_player(3, 'Mârk', 'Örr', 1, 0, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
           @t.name.should == "Brätto Open, 2001"
         end
       end
@@ -630,10 +630,10 @@ CSV
           @t.site = 'http://www.bcmchess.co.uk/monarch2007/'
           @t.add_player(ICU::Player.new('Anthony', 'Fox', 1, :id => 456))
           @t.add_player(ICU::Player.new('Peter', 'Cafolla', 2, :id => 159))
-          @t.add_player(ICU::Player.new('Peter P.', 'Taylor', 10, :rating => 2209, :fed => 'ENG'))
-          @t.add_player(ICU::Player.new('Egozi', 'Nadav', 20, :rating => 2205, :fed => 'ISR'))
-          @t.add_player(ICU::Player.new('Tim R.', 'Spanton', 30, :rating => 1982, :fed => 'ENG'))
-          @t.add_player(ICU::Player.new('Alan', 'Grant', 40, :rating => 2223, :fed => 'SCO'))
+          @t.add_player(ICU::Player.new('Peter P.', 'Taylor', 10, :fide_rating => 2209, :fed => 'ENG'))
+          @t.add_player(ICU::Player.new('Egozi', 'Nadav', 20, :fide_rating => 2205, :fed => 'ISR'))
+          @t.add_player(ICU::Player.new('Tim R.', 'Spanton', 30, :fide_rating => 1982, :fed => 'ENG'))
+          @t.add_player(ICU::Player.new('Alan', 'Grant', 40, :fide_rating => 2223, :fed => 'SCO'))
           @t.add_result(ICU::Result.new(1, 1, 'W', :opponent => 10, :colour => 'W'))
           @t.add_result(ICU::Result.new(1, 2, 'L', :opponent => 20, :colour => 'B'))
           @t.add_result(ICU::Result.new(2, 1, 'D', :opponent => 30, :colour => 'B'))

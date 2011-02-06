@@ -13,8 +13,8 @@ module ICU
     #   3  Mouse, Mickey  USA   1234567                  gm    1     2:D 1:L 0:=
     #
     # The format does not record either the name nor the start date of the tournament (and also
-    # the player colours is missing). When parsing data in this format it is therefore necessary
-    # to specify these two mandatory attributes:
+    # player colours are missing). When parsing data in this format it is therefore necessary
+    # to specify name and start date explicitly:
     #
     #   parser = ICU::Tournament::SPExport.new
     #   tournament = parser.parse_file('tournament.txt', :name => 'Mickey Mouse Masters', :start => '2011-02-06')
@@ -33,10 +33,19 @@ module ICU
     # with tab separators but is able to cope with any other configuration choices. For example, if
     # some of the optional columns are missing or if the data is not formatted with space padding.
     #
-    # To serialize a tournament to the format, use the format name with the _serialize_ method.
+    # To serialize a tournament to the format, use the format name with the _serialize_ method of
+    # the appropriate parser:
+    #
+    #   parser = ICU::Tournament::Krause.new
+    #   spexport = parser.serialize(tournament)
+    #
+    # or use the _serialize_ method of the ICU::Tournament instance with the appropraie format name:
     #
     #   spexport = tournament.serialize('SPExport')
-    #   puts spexport
+    #
+    # In either case the method returns a string representation of the tourament in SwissPerfect export
+    # format with tab separators, space padding and (currently) only the local player ID and total score
+    # optional columns:
     #
     #   No  Name                 Loc Id  Total   1     2     3
     #
@@ -44,9 +53,6 @@ module ICU
     #   2   Flynn, Jamie         5226    2       3:W   1:L   4:W
     #   3   Hulleman, Leon       6409    1       2:L   4:W   1:L
     #   4   Dunne, Thomas        10914   0       1:L   3:L   2:L
-    #
-    # Currently only ICU ID (<em>Loc Id</em>) and total score are output, as this is the
-    # configuration used by the ICU's old rating program.
     #
     # The order of players in the serialized output is always by player number and as a side effect of serialization,
     # the player numbers will be adjusted to ensure they range from 1 to the total number of players maintaining the
@@ -192,8 +198,8 @@ module ICU
           when 'Intl Id' then :fide
           when 'Title'   then :title
           when 'Feder'   then :fed
-          when 'Rtg'     then :int_rating
-          when 'Loc'     then :loc_rating
+          when 'Loc'     then :rating
+          when 'Rtg'     then :fide_rating
           when /^[1-9]\d*$/
             round   = item.to_i
             @rounds = round if round > @rounds
@@ -215,18 +221,10 @@ module ICU
         num  = items[@header[:num]]
         name = Name.new(items[@header[:name]])
         opt  = Hash.new
-        [:fed, :title, :id, :fide].each do |key|
+        [:fed, :title, :id, :fide, :rating, :fide_rating].each do |key|
           if @header[key]
             val = items[@header[key]]
             opt[key] = val unless val.nil? || val == ''
-          end
-        end
-
-        # Rating (prefer international over local).
-        [:int_rating, :loc_rating].each do |key|
-          if @header[key]
-            val = items[@header[key]]
-            opt[:rating] = val unless opt[:rating] || val.nil? || val == ''
           end
         end
 

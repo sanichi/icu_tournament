@@ -112,7 +112,7 @@ module ICU
   # * _modified_median_: same as Harkness except only lowest (or highest) score(s) are discarded for players with more (or less) than 50%
   # * _Neustadtl_ (or _Sonneborn-Berger_): sum of scores of players defeated plus half sum of scores of players drawn against
   # * _progressive_ (or _cumulative_): sum of running score for each round
-  # * _ratings_: sum of opponents ratings
+  # * _ratings_: sum of opponents ratings (FIDE ratings are used in preference to local ratings if available)
   # * _blacks_: number of blacks
   # * _wins_: number of wins
   # * _name_: alphabetical by name (if _tie_breaks_ is set to an empty array, as it is initially, then this will be used as the back-up tie breaker)
@@ -564,7 +564,7 @@ module ICU
         when 'neustadtl'   then player.results.inject(0.0) { |t,r| t + (r.opponent ? hash['opp-score'][r.opponent] * r.points : 0.0) }
         when 'opp-score'   then player.results.inject(0.0) { |t,r| t + (r.opponent ? r.points : 0.5) } + (rounds - player.results.size) * 0.5
         when 'progressive' then (1..rounds).inject(0.0)    { |t,n| r = player.find_result(n); s = r ? r.points : 0.0; t + s * (rounds + 1 - n) }
-        when 'ratings'     then player.results.inject(0)   { |t,r| t + (r.opponent && @player[r.opponent].rating ? @player[r.opponent].rating : 0) }
+        when 'ratings'     then player.results.inject(0)   { |t,r| t + (r.opponent && (@player[r.opponent].fide_rating || @player[r.opponent].rating) ? (@player[r.opponent].fide_rating || @player[r.opponent].rating) : 0) }
         when 'harkness', 'modified'
           scores = player.results.map{ |r| r.opponent ? hash['opp-score'][r.opponent] : 0.0 }.sort
           1.upto(rounds - player.results.size) { scores << 0.0 }

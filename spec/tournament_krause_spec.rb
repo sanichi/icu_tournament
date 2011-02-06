@@ -8,7 +8,7 @@ module ICU
         p = @t.player(num)
         p.first_name.should == first
         p.last_name.should  == last
-        [:gender, :title, :rating, :fed, :id, :fide, :dob, :rank].each do |key|
+        [:gender, :title, :rating, :fide_rating, :fed, :id, :fide, :dob, :rank].each do |key|
           p.send(key).should == other[key] if other.has_key?(key)
         end
       end
@@ -43,7 +43,7 @@ module ICU
 001    3 m  g Bologan,Viktor                    2663 MDA    13900048 1971.01.01  0.0    3               1 b 0     2 w 0
 KRAUSE
           @p = ICU::Tournament::Krause.new
-          @t = @p.parse!(krause)
+          @t = @p.parse!(krause, :fide => true)
         end
 
         it "should have a name, city and federation" do
@@ -71,9 +71,9 @@ KRAUSE
 
         it "should have players and their details" do
           @t.should have(3).players
-          check_player(1, 'Gearoidin', 'Ui Laighleis', :gender => 'F', :rating => 1985, :fed => 'IRL', :id =>  2501171, :dob => '1964-06-10', :rank => 2)
-          check_player(2, 'Mark', 'Orr',               :gender => 'M', :rating => 2258, :fed => 'IRL', :id =>  2500035, :dob => '1955-11-09', :rank => 1, :title => 'IM')
-          check_player(3, 'Viktor', 'Bologan',         :gender => 'M', :rating => 2663, :fed => 'MDA', :id => 13900048, :dob => '1971-01-01', :rank => 3, :title => 'GM')
+          check_player(1, 'Gearoidin', 'Ui Laighleis', :gender => 'F', :fide_rating => 1985, :fed => 'IRL', :fide =>  2501171, :dob => '1964-06-10', :rank => 2)
+          check_player(2, 'Mark', 'Orr',               :gender => 'M', :fide_rating => 2258, :fed => 'IRL', :fide =>  2500035, :dob => '1955-11-09', :rank => 1, :title => 'IM')
+          check_player(3, 'Viktor', 'Bologan',         :gender => 'M', :fide_rating => 2663, :fed => 'MDA', :fide => 13900048, :dob => '1971-01-01', :rank => 3, :title => 'GM')
         end
 
         it "should have correct results for each player" do
@@ -202,6 +202,12 @@ KRAUSE
           t.serialize('Krause').should == @krause
         end
 
+        it "should serialize only if :fide option is used correctly" do
+          t = @p.parse!(@krause, :fide => true)
+          t.serialize('Krause', :fide => true).should == @krause
+          t.serialize('Krause').should_not == @krause
+        end
+
         it "should not serialize coorectly if mixed ID types are used" do
           t = @p.parse!(@krause, :fide => true)
           t.serialize('Krause').should_not == @krause
@@ -233,7 +239,7 @@ KRAUSE
           @t.player(3).rank.should == 3
         end
       end
-      
+
       context "local or FIDE IDs" do
         before(:each) do
           @krause = <<KRAUSE
@@ -266,7 +272,7 @@ KRAUSE
           @krause = <<KRAUSE
 012 Las Vegas National Open
 042 2008-06-07
-001   10 w    Ui Laighleis,Gearoidin            1985 IRL                         1.0         20 b 0    30 w 1          
+001   10 w    Ui Laighleis,Gearoidin            1985 IRL                         1.0         20 b 0    30 w 1
 001   20 m  m Orr,Mark                          2258 IRL                         2.0         10 w 1              30 b 1
 001   30 m  g Bologan,Viktor                    2663 MDA                         0.0                   10 b 0    20 w 0
 KRAUSE
@@ -307,7 +313,7 @@ KRAUSE
           @output = @p.serialize(@t)
         end
 
-        it "should serialise manually build tournaments" do
+        it "should serialise" do
           @output.should == @krause
         end
       end
@@ -405,7 +411,7 @@ KRAUSE
            lambda { @p.parse!(@k) }.should raise_error(/opponent/)
         end
       end
-      
+
       context "encoding" do
         before(:all) do
           @utf8 = <<KRAUSE

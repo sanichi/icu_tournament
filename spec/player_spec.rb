@@ -12,14 +12,14 @@ module ICU
         end.should_not raise_error
       end
     end
-    
+
     context "names" do
       it "should be specified in constructor" do
         p = Player.new('Mark', 'Orr', 1)
         p.first_name.should == 'Mark'
         p.last_name.should == 'Orr'
       end
-      
+
       it "should be resettable via accessors" do
         p = Player.new('Mark', 'Orr', 1)
         p.first_name= 'Gary'
@@ -27,22 +27,22 @@ module ICU
         p.first_name.should == 'Gary'
         p.last_name.should == 'Kasparov'
       end
-      
+
       it "should not contain invalid characters" do
         lambda { Player.new('12', 'Orr', 1) }.should raise_error(/invalid first name/)
         lambda { Player.new('Mark', '*!', 1) }.should raise_error(/invalid last name/)
       end
-      
+
       it "should not have empty last name" do
         lambda { Player.new('Mark', '', 1) }.should raise_error(/invalid last name/)
         lambda { Player.new('', 'Orr', 1) }.should raise_error(/invalid first name/)
       end
-      
+
       it "both names can be returned together" do
         p = Player.new('Mark', 'Orr', 1)
         p.name.should == 'Orr, Mark'
       end
-      
+
       it "names should be automatically canonicalised" do
         p = Player.new(' maRk J   l ', '  ORR', 1)
         p.name.should == 'Orr, Mark J. L.'
@@ -52,7 +52,7 @@ module ICU
         p.name.should == "O'Mefisto, Z."
       end
     end
-    
+
     context "number" do
       it "should just be an integer" do
         Player.new('Mark', 'Orr', 3).num.should == 3
@@ -62,7 +62,7 @@ module ICU
         lambda { Player.new('Mark', 'Orr', '  ') }.should raise_error(/invalid integer/)
       end
     end
-    
+
     context "local ID" do
       it "defaults to nil" do
         Player.new('Mark', 'Orr', 3).id.should be_nil
@@ -99,7 +99,7 @@ module ICU
         lambda { Player.new('Danny', 'Kopec', 3, :fed => 'US') }.should raise_error(/invalid federation/)
       end
     end
-    
+
     context "title" do
       it "defaults to nil" do
         Player.new('Mark', 'Orr', 3).title.should be_nil
@@ -118,7 +118,7 @@ module ICU
         lambda { Player.new('Mark', 'Orr', 3, :title => 'Dr') }.should raise_error(/invalid chess title/)
       end
     end
-    
+
     context "rating" do
       it "defaults to nil" do
         Player.new('Mark', 'Orr', 3).rating.should be_nil
@@ -132,7 +132,21 @@ module ICU
         lambda { Player.new('Mark', 'Orr', 3, :rating => 'IM') }.should raise_error(/invalid positive integer/)
       end
     end
-    
+
+    context "FIDE rating" do
+      it "defaults to nil" do
+        Player.new('Mark', 'Orr', 3).fide_rating.should be_nil
+        Player.new('Mark', 'Orr', 3, :fide_rating => '   ').fide_rating.should be_nil
+      end
+
+      it "should be a positive integer" do
+        Player.new('Gary', 'Kasparov', 1, :fide_rating => 2800).fide_rating.should == 2800
+        Player.new('Mark', 'Orr', 2, :fide_rating => ' 2200 ').fide_rating.should == 2200
+        lambda { Player.new('Mark', 'Orr', 3, :fide_rating => -2100) }.should raise_error(/invalid positive integer/)
+        lambda { Player.new('Mark', 'Orr', 3, :fide_rating => 'IM') }.should raise_error(/invalid positive integer/)
+      end
+    end
+
     context "rank" do
       it "defaults to nil" do
         Player.new('Mark', 'Orr', 3).rank.should be_nil
@@ -145,7 +159,7 @@ module ICU
         lambda { Player.new('Mark', 'Orr', 3, :rank => ' -1 ') }.should raise_error(/invalid positive integer/)
       end
     end
-    
+
     context "date of birth" do
       it "defaults to nil" do
         Player.new('Mark', 'Orr', 3).dob.should be_nil
@@ -157,7 +171,7 @@ module ICU
         lambda { Player.new('Mark', 'Orr', 3, :dob => 'X') }.should raise_error(/invalid.*dob/)
       end
     end
-    
+
     context "gender" do
       it "defaults to nil" do
         Player.new('Mark', 'Orr', 3).gender.should be_nil
@@ -168,19 +182,19 @@ module ICU
         Player.new('Mark', 'Orr', 3, :gender => 'male').gender.should == 'M'
         Player.new('April', 'Cronin', 3, :gender => 'woman').gender.should == 'F'
       end
-      
+
       it "should raise an exception if the gender is not specified properly" do
         lambda { Player.new('Mark', 'Orr', 3, :gender => 'X') }.should raise_error(/invalid gender/)
       end
     end
-    
+
     context "results and points" do
       it "should initialise to an empty array" do
         results = Player.new('Mark', 'Orr', 3).results
         results.should be_instance_of Array
         results.size.should == 0
       end
-      
+
       it "can be added to" do
         player = Player.new('Mark', 'Orr', 3)
         player.add_result(Result.new(1, 3, 'W', :opponent => 1))
@@ -191,12 +205,12 @@ module ICU
         results.size.should == 3
         player.points.should == 1.5
       end
-      
+
       it "should not allow mismatched player numbers" do
         player = Player.new('Mark', 'Orr', 3)
         lambda { player.add_result(Result.new(1, 4, 'W', :opponent => 1)) }.should raise_error(/player number .* matched/)
       end
-      
+
       it "should enforce unique round numbers" do
         player = Player.new('Mark', 'Orr', 3)
         player.add_result(Result.new(1, 3, 'W', :opponent => 1))
@@ -204,7 +218,7 @@ module ICU
         lambda { player.add_result(Result.new(2, 3, 'L', :opponent => 4)) }.should raise_error(/round number .* unique/)
       end
     end
-    
+
     context "looking up results" do
       before(:all) do
         @p = Player.new('Mark', 'Orr', 1)
@@ -212,7 +226,7 @@ module ICU
         @p.add_result(Result.new(2, 1, 'W', :opponent => 13, :score => 'W', :colour => 'B'))
         @p.add_result(Result.new(3, 1, 'W', :opponent => 7,  :score => 'D', :colour => 'W'))
       end
-      
+
       it "should find results by round number" do
         @p.find_result(1).opponent.should == 37
         @p.find_result(2).opponent.should == 13
@@ -220,14 +234,14 @@ module ICU
         @p.find_result(4).should be_nil
       end
     end
-    
+
     context "merge" do
       before(:each) do
         @p1 = Player.new('Mark', 'Orr', 1, :id => 1350)
         @p2 = Player.new('Mark', 'Orr', 2, :rating => 2100, :title => 'IM', :fed => 'IRL', :fide => 2500035)
         @p3 = Player.new('Gearoidin', 'Ui Laighleis', 3, :rating => 1600, :title => 'WIM', :fed => 'IRL', :fide =>  2501171)
       end
-      
+
       it "takes on the ID, rating, title and fed of the other player but not the player number" do
         @p1.merge(@p2)
         @p1.num.should == 1
@@ -237,37 +251,37 @@ module ICU
         @p1.fed.should == 'IRL'
         @p1.fide.should == 2500035
       end
-      
+
       it "should have a kind of symmetry" do
         p1 = @p1.dup
         p2 = @p2.dup
         p1.merge(p2).eql?(@p2.merge(@p1))
       end
-      
+
       it "cannot be done with unequal objects" do
         lambda { @p1.merge(@p3) }.should raise_error(/cannot merge.*not equal/)
       end
     end
-    
+
     context "renumber the player numbers" do
       before(:each) do
         @p = Player.new('Mark', 'Orr', 10)
         @p.add_result(Result.new(1, 10, 'W', :opponent => 20))
         @p.add_result(Result.new(2, 10, 'W', :opponent => 30))
       end
-      
+
       it "should renumber successfully if the map has the relevant player numbers" do
         map = { 10 => 1, 20 => 2, 30 => 3 }
         @p.renumber(map).num.should == 1
         @p.results.map{ |r| r.opponent }.sort.join('').should == '23'
       end
-      
+
       it "should raise exception if a player number is not in the map" do
         lambda { @p.renumber({ 100 => 1, 20 => 2, 30 => 3 }) }.should raise_error(/player.*10.*not found/)
         lambda { @p.renumber({ 10 => 1, 200 => 2, 30 => 3 }) }.should raise_error(/opponent.*20.*not found/)
       end
     end
-    
+
     context "loose equality" do
       before(:all) do
         @mark1 = Player.new('Mark', 'Orr', 1)
@@ -276,26 +290,26 @@ module ICU
         @mark4 = Player.new('Mark', 'Sax', 4, :def => 'HUN')
         @john1 = Player.new('John', 'Orr', 5, :fed => 'IRL')
       end
-      
+
       it "any player is equal to itself" do
         (@mark1 == @mark1).should be_true
       end
-      
+
       it "two players are equal if their names are the same and their federations do not conflict" do
         (@mark1 == @mark2).should be_true
       end
-      
+
       it "two players cannot be equal if they have different names" do
         (@mark1 == @mark4).should be_false
         (@mark1 == @john1).should be_false
       end
-      
+
       it "two players cannot be equal if they have different federations" do
         (@mark2 == @mark3).should be_false
         (@mark1 == @mark3).should be_true
       end
     end
-  
+
     context "strict equality" do
       before(:all) do
         @mark1 = Player.new('Mark', 'Orr', 1)
@@ -304,18 +318,18 @@ module ICU
         @mark4 = Player.new('Mark', 'Orr', 4, :rating => 2200)
         @mark5 = Player.new('Mark', 'Orr', 5, :title => 'GM')
       end
-    
+
       it "any player is equal to itself" do
         @mark1.eql?(@mark1).should be_true
         @mark1.eql?(@mark1).should be_true
       end
-      
+
       it "two players are equal as long as their ID, rating and title do not conflict" do
         @mark1.eql?(@mark2).should be_true
         @mark3.eql?(@mark4).should be_true
         @mark4.eql?(@mark5).should be_true
       end
-      
+
       it "two players are not equal if their ID, rating or title conflict" do
         @mark2.eql?(@mark3).should be_false
         @mark2.eql?(@mark4).should be_false

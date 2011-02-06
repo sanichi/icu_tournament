@@ -35,22 +35,17 @@ module ICU
     # If no start date is supplied it will default to 2000-01-01, and can be reset later.
     #
     #   tournament = parser.parse_file('champs.zip')
-    #   tournament.start                # => '2000-01-01'
+    #   tournament.start                 # => '2000-01-01'
     #   tournament.start = '2010-07-03'
     #
-    # SwissPerfect files have slots for both local and international IDs and these, if present
-    # and if intergers are copied to the _id_ and _fide_ attributes respectively.
-    #
-    # By default, the parser extracts the local rating from the SwissPerfect files and not the international one.
-    # If international ratings are required instead, set the _rating_ option to "intl". For example:
+    # SwissPerfect files have slots for both local and international IDs and ratings and these, if present
+    # (and if integers) are copied to the _id_, _fide_, _rating_ and _fide_rating_ attributes.
     #
     #   tournament = parser.parse_file('ncc', :start => '2010-05-08')
-    #   tournament.player(2).id         # =>  12379 (ICU ID)
-    #   tournament.player(2).fide       # =>  1205064 (FIDE ID)
-    #   tournament.player(2).rating     # =>  2556 (ICU rating)
-    #
-    #   tournament = parser.parse_file('ncc', :start => '2010-05-08', :rating => 'intl')
-    #   tournament.player(2).rating     # =>  2530 (FIDE rating)
+    #   tournament.player(2).id          # =>  12379 (ICU ID)
+    #   tournament.player(2).fide        # =>  1205064 (FIDE ID)
+    #   tournament.player(2).rating      # =>  2556 (ICU rating)
+    #   tournament.player(2).fide_rating # =>  2530 (FIDE rating)
     #
     # By default, the parse will fail completely if the ".trn" file contains any invalid federations (see ICU::Federation).
     # There are two alternative behaviours controlled by setting the _fed_ option:
@@ -68,16 +63,17 @@ module ICU
       attr_reader :error
 
       TRN = {
-        :dob        => "BIRTH_DATE",
-        :fed        => "FEDER",
-        :first_name => "FIRSTNAME",
-        :gender     => "SEX",
-        :id         => "LOC_ID",
-        :fide       => "INTL_ID",
-        :last_name  => "SURNAME",
-        :num        => "ID",
-        :rank       => "ORDER",
-        :rating     => ["LOC_RTG", "INTL_RTG"],
+        :dob         => "BIRTH_DATE",
+        :fed         => "FEDER",
+        :first_name  => "FIRSTNAME",
+        :gender      => "SEX",
+        :id          => "LOC_ID",
+        :fide        => "INTL_ID",
+        :last_name   => "SURNAME",
+        :num         => "ID",
+        :rank        => "ORDER",
+        :rating      => "LOC_RTG",
+        :fide_rating => "INTL_RTG",
       } # not used: ABSENT BOARD CLUB FORB_PAIRS LATE_ENTRY LOC_RTG2 MEMO TEAM TECH_SCORE WITHDRAWAL (START_NO, BONUS used below)
 
       SCO = %w{ROUND WHITE BLACK W_SCORE B_SCORE W_TYPE B_TYPE}  # not used W_SUBSCO, B_SUBSCO
@@ -248,15 +244,15 @@ module ICU
         @start_no[r.attributes["ID"]] = r.attributes["START_NO"]
         TRN.inject(Hash.new) do |hash, pair|
           key = pair[1]
-          key = key[arg[pair[0]].to_s == 'intl' ? 1 : 0] if key.class == Array
           val = r.attributes[key]
           case pair[0]
-          when :fed    then val = val && val.match(/^[A-Z]{3}$/i) ? val.upcase : nil
-          when :gender then val = val.to_i > 0 ? %w(M F)[val.to_i-1] : nil
-          when :id     then val = val.to_i > 0 ? val : nil
-          when :fide   then val = val.to_i > 0 ? val : nil
-          when :rating then val = val.to_i > 0 ? val : nil
-          when :title  then val = val.to_i > 0 ? %w(GM WGM IM WIM FM WFM)[val.to_i-1] : nil
+          when :fed         then val = val && val.match(/^[A-Z]{3}$/i) ? val.upcase : nil
+          when :gender      then val = val.to_i > 0 ? %w(M F)[val.to_i-1] : nil
+          when :id          then val = val.to_i > 0 ? val : nil
+          when :fide        then val = val.to_i > 0 ? val : nil
+          when :rating      then val = val.to_i > 0 ? val : nil
+          when :fide_rating then val = val.to_i > 0 ? val : nil
+          when :title       then val = val.to_i > 0 ? %w(GM WGM IM WIM FM WFM)[val.to_i-1] : nil
           end
           if pair[0] == :fed && val && arg[:fed]
             val = nil if arg[:fed].to_s == 'ignore'

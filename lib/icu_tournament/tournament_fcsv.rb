@@ -97,19 +97,20 @@ module ICU
     #   ICU::Tournament::ForeignCSV.new.serialize(tournament)
     #
     # You can also build the tournament object from scratch using your own data and then serialize it.
-    # For example, here are the commands to reproduce the example above.
+    # For example, here are the commands to reproduce the example above. Note that in this format
+    # opponents' ratings are FIDE while players' IDs are ICU.
     #
     #   t = ICU::Tournament.new("Isle of Man Masters, 2007", '2007-09-22', :rounds => 9)
     #   t.site = 'http://www.bcmchess.co.uk/monarch2007/'
-    #   t.add_player(ICU::Player.new('Anthony',  'Fox',      1, :rating => 2100, :fed => 'IRL', :id => 456))
-    #   t.add_player(ICU::Player.new('Peter P.', 'Taylor',   2, :rating => 2209, :fed => 'ENG'))
-    #   t.add_player(ICU::Player.new('Egozi',    'Nadav',    3, :rating => 2205, :fed => 'ISR'))
-    #   t.add_player(ICU::Player.new('Peter',    'Cafolla',  4, :rating => 2048, :fed => 'IRL'))
-    #   t.add_player(ICU::Player.new('Tim R.',   'Spanton',  5, :rating => 1982, :fed => 'ENG'))
-    #   t.add_player(ICU::Player.new('Alan',     'Grant',    6, :rating => 2223, :fed => 'SCO'))
-    #   t.add_player(ICU::Player.new('Alan J.',  'Walton',   7, :rating => 2223, :fed => 'ENG'))
-    #   t.add_player(ICU::Player.new('Bernard',  'Bannink',  8, :rating => 2271, :fed => 'NED', :title => 'FM'))
-    #   t.add_player(ICU::Player.new('Roy',      'Phillips', 9, :rating => 2271, :fed => 'MAU'))
+    #   t.add_player(ICU::Player.new('Anthony',  'Fox',      1, :fide_rating => 2100, :fed => 'IRL', :id => 456))
+    #   t.add_player(ICU::Player.new('Peter P.', 'Taylor',   2, :fide_rating => 2209, :fed => 'ENG'))
+    #   t.add_player(ICU::Player.new('Egozi',    'Nadav',    3, :fide_rating => 2205, :fed => 'ISR'))
+    #   t.add_player(ICU::Player.new('Peter',    'Cafolla',  4, :fide_rating => 2048, :fed => 'IRL'))
+    #   t.add_player(ICU::Player.new('Tim R.',   'Spanton',  5, :fide_rating => 1982, :fed => 'ENG'))
+    #   t.add_player(ICU::Player.new('Alan',     'Grant',    6, :fide_rating => 2223, :fed => 'SCO'))
+    #   t.add_player(ICU::Player.new('Alan J.',  'Walton',   7, :fide_rating => 2223, :fed => 'ENG'))
+    #   t.add_player(ICU::Player.new('Bernard',  'Bannink',  8, :fide_rating => 2271, :fed => 'NED', :title => 'FM'))
+    #   t.add_player(ICU::Player.new('Roy',      'Phillips', 9, :fide_rating => 2271, :fed => 'MAU'))
     #   t.add_result(ICU::Result.new(1, 1, 'L', :opponent => 2, :colour => 'B'))
     #   t.add_result(ICU::Result.new(2, 1, 'D', :opponent => 3, :colour => 'W'))
     #   t.add_result(ICU::Result.new(3, 1, 'D', :opponent => 4, :colour => 'B'))
@@ -221,7 +222,7 @@ module ICU
                 o = t.player(r.opponent)
                 data << o.last_name
                 data << o.first_name
-                data << o.rating
+                data << o.fide_rating
                 data << o.title
                 data << o.fed
               else
@@ -309,7 +310,7 @@ module ICU
           @tournament.add_result(result)
         else
           result.colour = @r[2]
-          opponent = Player.new(@r[4], @r[3], @tournament.players.size + 1, :rating => @r[5], :title => @r[6], :fed => @r[7])
+          opponent = Player.new(@r[4], @r[3], @tournament.players.size + 1, :fide_rating => @r[5], :title => @r[6], :fed => @r[7])
           raise "opponent must have a federation" unless opponent.fed
           old_player = @tournament.find_player(opponent)
           if old_player

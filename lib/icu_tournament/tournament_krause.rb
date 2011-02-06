@@ -48,13 +48,15 @@ module ICU
     #   daffy.fide                        # => nil
     #   daffy.dob                         # => "1937-04-17"
     #
-    # By default, ID numbers in the input are interpreted as local IDs. If, instead, they should be interpreted as
-    # FIDE IDs, add the following option:
+    # By default, ID numbers and ratings in the input are interpreted as local IDs and ratings. If, instead, they should be interpreted as
+    # FIDE IDs and ratings, add the following option:
     #
     #   tournament = parser.parse_file('tournament.tab', :fide => true)
     #   daffy = tournament.player(2)
     #   daffy.id                          # => nil
     #   daffy.fide                        # => 7654321
+    #   daffy.rating                      # => nil
+    #   daffy.fide_rating                 # => 2200
     #
     # If the ranking numbers are missing from the file or inconsistent (e.g. player A is ranked above player B
     # but has less points than player B) they are recalculated as a side effect of the parse.
@@ -82,11 +84,11 @@ module ICU
     #
     #   krause = tournament.serialize('Krause')
     #
-    # By default, local (ICU) IDs are used for the serialization, but both methods accept an option that
-    # causes FIDE IDs to be used instead:
+    # By default, local (ICU) IDs and ratings are used for the serialization, but both methods accept an option that
+    # causes FIDE IDs and ratings to be used instead:
     #
     #   krause = parser.serialize(tournament, :fide => true)
-    #   krause = parser.serialize(tournament, :fide => true)
+    #   krause = tournament.serialize('Krause', :fide => true)
     #
     # The following lists Krause data identification numbers, their description and, where available, their corresponding
     # attributes in an ICU::Tournament instance.
@@ -264,12 +266,12 @@ module ICU
         {
           :gender => @data[5, 1],
           :title  => @data[6, 3],
-          :rating => @data[44, 4],
           :fed    => @data[49, 3],
           :dob    => @data[65, 10],
           :rank   => @data[81, 4],
         }
         opt[arg[:fide] ? :fide : :id] = @data[53, 11]
+        opt[arg[:fide] ? :fide_rating : :rating] = @data[44, 4]
         player = Player.new(nam.first, nam.last, num, opt)
         @tournament.add_player(player)
 
@@ -338,7 +340,7 @@ module ICU
       krause << sprintf(' %1s', case @gender; when 'M' then 'm'; when 'F' then 'w'; else ''; end)
       krause << sprintf(' %2s', case @title; when nil then ''; when 'IM' then 'm'; when 'WIM' then 'wm'; else @title[0, @title.length-1].downcase; end)
       krause << sprintf(' %-33s', "#{@last_name},#{@first_name}")
-      krause << sprintf(' %4s', @rating)
+      krause << sprintf(' %4s', arg[:fide] ? @fide_rating : @rating)
       krause << sprintf(' %3s', @fed)
       krause << sprintf(' %11s', arg[:fide] ? @fide : @id)
       krause << sprintf(' %10s', @dob)
