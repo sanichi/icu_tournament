@@ -8,7 +8,7 @@ module ICU
         p = @t.player(num)
         p.first_name.should == first
         p.last_name.should  == last
-        [:gender, :title, :rating, :fide_rating, :fed, :id, :fide, :dob, :rank].each do |key|
+        [:gender, :title, :rating, :fide_rating, :fed, :id, :fide_id, :dob, :rank].each do |key|
           p.send(key).should == other[key] if other.has_key?(key)
         end
       end
@@ -71,9 +71,9 @@ KRAUSE
 
         it "should have players and their details" do
           @t.should have(3).players
-          check_player(1, 'Gearoidin', 'Ui Laighleis', :gender => 'F', :fide_rating => 1985, :fed => 'IRL', :fide =>  2501171, :dob => '1964-06-10', :rank => 2)
-          check_player(2, 'Mark', 'Orr',               :gender => 'M', :fide_rating => 2258, :fed => 'IRL', :fide =>  2500035, :dob => '1955-11-09', :rank => 1, :title => 'IM')
-          check_player(3, 'Viktor', 'Bologan',         :gender => 'M', :fide_rating => 2663, :fed => 'MDA', :fide => 13900048, :dob => '1971-01-01', :rank => 3, :title => 'GM')
+          check_player(1, 'Gearoidin', 'Ui Laighleis', :gender => 'F', :fide_rating => 1985, :fed => 'IRL', :fide_id =>  2501171, :dob => '1964-06-10', :rank => 2)
+          check_player(2, 'Mark', 'Orr',               :gender => 'M', :fide_rating => 2258, :fed => 'IRL', :fide_id =>  2500035, :dob => '1955-11-09', :rank => 1, :title => 'IM')
+          check_player(3, 'Viktor', 'Bologan',         :gender => 'M', :fide_rating => 2663, :fed => 'MDA', :fide_id => 13900048, :dob => '1971-01-01', :rank => 3, :title => 'GM')
         end
 
         it "should have correct results for each player" do
@@ -254,9 +254,9 @@ KRAUSE
 
         it "should have local IDs by default" do
           @t = @p.parse(@krause)
-          check_player(1, 'Gearoidin', 'Ui Laighleis', :id => 2501171, :fide => nil)
-          check_player(2, 'Mark',      'Orr',          :id => 2500035, :fide => nil)
-          check_player(3, 'Viktor',    'Bologan',      :id => nil,     :fide => nil)
+          check_player(1, 'Gearoidin', 'Ui Laighleis', :id => 2501171, :fide_id => nil)
+          check_player(2, 'Mark',      'Orr',          :id => 2500035, :fide_id => nil)
+          check_player(3, 'Viktor',    'Bologan',      :id => nil,     :fide_id => nil)
         end
 
         it "should have FIDE IDs if option is used" do

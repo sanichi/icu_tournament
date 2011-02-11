@@ -78,7 +78,7 @@ module ICU
     #
     # Or supply whatever columns you want, for example:
     #
-    #   tournament.serialize('SPExport', :columns => [:fide, :fide_rating])
+    #   tournament.serialize('SPExport', :columns => [:fide_id, :fide_rating])
     #
     # Note that the column order in the serialised string is the same as it is in the SwissPerfect application.
     # The order of column names in the _columns_ hash has no effect.
@@ -189,7 +189,7 @@ module ICU
         columns = Array.new
         columns.push(:num)
         columns.push(:name)
-        [:fed, :fide, :id, :fide_rating, :rating, :title, :points].each { |x| columns.push(x) if optional.include?(x) }
+        [:fed, :fide_id, :id, :fide_rating, :rating, :title, :points].each { |x| columns.push(x) if optional.include?(x) }
         
         # SwissPerfect headers for each column (other than the rounds, which are treated separately).
         header = Hash.new
@@ -198,7 +198,7 @@ module ICU
           when :num         then "No"
           when :name        then "Name"
           when :fed         then "Feder"
-          when :fide        then "Intl Id"
+          when :fide_id     then "Intl Id"
           when :id          then "Loc Id"
           when :fide_rating then "Rtg"
           when :rating      then "Loc"
@@ -259,13 +259,13 @@ module ICU
           key = case item
           when 'No'      then :num
           when 'Name'    then :name
-          when 'Total'   then :total
-          when 'Loc Id'  then :id
-          when 'Intl Id' then :fide
-          when 'Title'   then :title
           when 'Feder'   then :fed
-          when 'Loc'     then :rating
+          when 'Intl Id' then :fide_id
+          when 'Loc Id'  then :id
           when 'Rtg'     then :fide_rating
+          when 'Loc'     then :rating
+          when 'Title'   then :title
+          when 'Total'   then :points
           when /^[1-9]\d*$/
             round   = item.to_i
             @rounds = round if round > @rounds
@@ -287,7 +287,7 @@ module ICU
         num  = items[@header[:num]]
         name = Name.new(items[@header[:name]])
         opt  = Hash.new
-        [:fed, :title, :id, :fide, :rating, :fide_rating].each do |key|
+        [:fed, :title, :id, :fide_id, :rating, :fide_rating].each do |key|
           if @header[key]
             val = items[@header[key]]
             opt[key] = val unless val.nil? || val == ''
@@ -299,7 +299,7 @@ module ICU
         @tournament.add_player(player)
 
         # Save the results for later processing.
-        points = items[@header[:total]] if @header[:total]
+        points = items[@header[:points]] if @header[:points]
         points = nil if points == ''
         points = points.to_f if points
         total = 0.0;

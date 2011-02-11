@@ -11,7 +11,7 @@ module ICU
   class Player
     def sp_signature
       [
-        name, id, fide, rating, fide_rating, points, rank,
+        name, id, fide_id, rating, fide_rating, points, rank,
         results.map{ |r| r.round }.join(''),
         results.map{ |r| r.score }.join(''),
         results.map{ |r| r.colour || "-" }.join(''),

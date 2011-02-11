@@ -70,9 +70,9 @@ EXPORT
         end
 
         it "players should have correct FIDE IDs" do
-          @t.player(1).fide.should be_nil
-          @t.player(2).fide.should == 1234568
-          @t.player(3).fide.should == 1234567
+          @t.player(1).fide_id.should be_nil
+          @t.player(2).fide_id.should == 1234568
+          @t.player(3).fide_id.should == 1234567
         end
 
         it "players should have correct ICU ratings" do
@@ -125,7 +125,7 @@ EXPORT
           @t = ICU::Tournament.new(name, start)
           @t.add_player(ICU::Player.new('Bobby', 'Fischer', 10))
           @t.add_player(ICU::Player.new('Garry', 'Kasparov', 20))
-          @t.add_player(ICU::Player.new('Mark', 'Orr', 30, :id => 1350, :fide => 2500035, :fed => 'IRL', :rating => 2200, :fide_rating => 2250))
+          @t.add_player(ICU::Player.new('Mark', 'Orr', 30, :id => 1350, :fide_id => 2500035, :fed => 'IRL', :rating => 2200, :fide_rating => 2250))
           @t.add_result(ICU::Result.new(1, 10, 'D', :opponent => 30))
           @t.add_result(ICU::Result.new(2, 20, 'W', :opponent => 30))
           @t.add_result(ICU::Result.new(3, 20, 'L', :opponent => 10))
@@ -156,11 +156,11 @@ EXPORT
           @x.should match(/^No\s*Name\s*Loc Id\s*Total\s*1\s*2\s*3\s*/)
           @x = @t.serialize('SPExport', :columns => [:points, :id, :fed])
           @x.should match(/^No\s*Name\s*Feder\s*Loc Id\s*Total\s*1\s*2\s*3\s*/)
-          @x = @t.serialize('SPExport', :columns => [:points, :id, :fed, :fed, :rubbish, :fide])
+          @x = @t.serialize('SPExport', :columns => [:points, :id, :fed, :fed, :rubbish, :fide_id])
           @x.should match(/^No\s*Name\s*Feder\s*Intl Id\s*Loc Id\s*Total\s*1\s*2\s*3\s*/)
-          @x = @t.serialize('SPExport', :columns => [:fed, :fide, :points, :id, :rating])
+          @x = @t.serialize('SPExport', :columns => [:fed, :fide_id, :points, :id, :rating])
           @x.should match(/^No\s*Name\s*Feder\s*Intl Id\s*Loc Id\s*Loc\s*Total\s*1\s*2\s*3\s*/)
-          @x = @t.serialize('SPExport', :columns => [:fed, :fide, :fide_rating, :points, :id, :rating])
+          @x = @t.serialize('SPExport', :columns => [:fed, :fide_id, :fide_rating, :points, :id, :rating])
           @x.should match(/^No\s*Name\s*Feder\s*Intl Id\s*Loc Id\s*Rtg\s*Loc\s*Total\s*1\s*2\s*3\s*/)
           @x.should match(/3\s*Orr,\s*Mark\s*IRL\s*2500035\s*1350\s*2250\s*2200\s*0.5\s*1:D\s*2:L\s*:\s*/)
         end

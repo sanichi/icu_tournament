@@ -51,7 +51,7 @@ module ICU
     # By default, ID numbers and ratings in the input are interpreted as local IDs and ratings. If, instead, they should be interpreted as
     # FIDE IDs and ratings, add the following option:
     #
-    #   tournament = parser.parse_file('tournament.tab', :fide => true)
+    #   tournament = parser.parse_file('tournament.tab', :fide_id => true)
     #   daffy = tournament.player(2)
     #   daffy.id                          # => nil
     #   daffy.fide                        # => 7654321
@@ -87,8 +87,8 @@ module ICU
     # By default, local (ICU) IDs and ratings are used for the serialization, but both methods accept an option that
     # causes FIDE IDs and ratings to be used instead:
     #
-    #   krause = parser.serialize(tournament, :fide => true)
-    #   krause = tournament.serialize('Krause', :fide => true)
+    #   krause = parser.serialize(tournament, :fide_id => true)
+    #   krause = tournament.serialize('Krause', :fide_id => true)
     #
     # The following lists Krause data identification numbers, their description and, where available, their corresponding
     # attributes in an ICU::Tournament instance.
@@ -270,7 +270,7 @@ module ICU
           :dob    => @data[65, 10],
           :rank   => @data[81, 4],
         }
-        opt[arg[:fide] ? :fide : :id] = @data[53, 11]
+        opt[arg[:fide] ? :fide_id : :id] = @data[53, 11]
         opt[arg[:fide] ? :fide_rating : :rating] = @data[44, 4]
         player = Player.new(nam.first, nam.last, num, opt)
         @tournament.add_player(player)
@@ -342,7 +342,7 @@ module ICU
       krause << sprintf(' %-33s', "#{@last_name},#{@first_name}")
       krause << sprintf(' %4s', arg[:fide] ? @fide_rating : @rating)
       krause << sprintf(' %3s', @fed)
-      krause << sprintf(' %11s', arg[:fide] ? @fide : @id)
+      krause << sprintf(' %11s', arg[:fide] ? @fide_id : @id)
       krause << sprintf(' %10s', @dob)
       krause << sprintf(' %4.1f', points)
       krause << sprintf(' %4s', @rank)

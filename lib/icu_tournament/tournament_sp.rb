@@ -68,7 +68,7 @@ module ICU
         :first_name  => "FIRSTNAME",
         :gender      => "SEX",
         :id          => "LOC_ID",
-        :fide        => "INTL_ID",
+        :fide_id     => "INTL_ID",
         :last_name   => "SURNAME",
         :num         => "ID",
         :rank        => "ORDER",
@@ -249,7 +249,7 @@ module ICU
           when :fed         then val = val && val.match(/^[A-Z]{3}$/i) ? val.upcase : nil
           when :gender      then val = val.to_i > 0 ? %w(M F)[val.to_i-1] : nil
           when :id          then val = val.to_i > 0 ? val : nil
-          when :fide        then val = val.to_i > 0 ? val : nil
+          when :fide_id     then val = val.to_i > 0 ? val : nil
           when :rating      then val = val.to_i > 0 ? val : nil
           when :fide_rating then val = val.to_i > 0 ? val : nil
           when :title       then val = val.to_i > 0 ? %w(GM WGM IM WIM FM WFM)[val.to_i-1] : nil
