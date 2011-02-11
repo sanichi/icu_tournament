@@ -122,23 +122,47 @@ EXPORT
         before(:each) do
           name = "Bangor Masters"
           start = "2009-11-09"
-          t = ICU::Tournament.new(name, start)
-          t.add_player(ICU::Player.new('Bobby', 'Fischer', 10))
-          t.add_player(ICU::Player.new('Garry', 'Kasparov', 20))
-          t.add_player(ICU::Player.new('Mark', 'Orr', 30))
-          t.add_result(ICU::Result.new(1, 10, 'D', :opponent => 30))
-          t.add_result(ICU::Result.new(2, 20, 'W', :opponent => 30))
-          t.add_result(ICU::Result.new(3, 20, 'L', :opponent => 10))
+          @t = ICU::Tournament.new(name, start)
+          @t.add_player(ICU::Player.new('Bobby', 'Fischer', 10))
+          @t.add_player(ICU::Player.new('Garry', 'Kasparov', 20))
+          @t.add_player(ICU::Player.new('Mark', 'Orr', 30, :id => 1350, :fide => 2500035, :fed => 'IRL', :rating => 2200, :fide_rating => 2250))
+          @t.add_result(ICU::Result.new(1, 10, 'D', :opponent => 30))
+          @t.add_result(ICU::Result.new(2, 20, 'W', :opponent => 30))
+          @t.add_result(ICU::Result.new(3, 20, 'L', :opponent => 10))
           @p = ICU::Tournament::SPExport.new
-          @t = @p.parse(t.serialize('SPExport'), :name => name, :start => start)
+          @x = @t.serialize('SPExport')
+          @r = @p.parse(@x, :name => name, :start => start)
         end
 
-        it "round trip" do
+        it "should round trip" do
           @p.error.should be_nil
-          @t.spx_signature.should == "Bangor Masters|3|2009-11-09|3"
-          @t.player(1).spx_signature.should == "Fischer, Bobby||1.5|123|DLW|---|TFT"
-          @t.player(2).spx_signature.should == "Kasparov, Garry||1.0|123|LWL|---|FTT"
-          @t.player(3).spx_signature.should == "Orr, Mark||0.5|123|DLL|---|TTF"
+          @r.spx_signature.should == "Bangor Masters|3|2009-11-09|3"
+          @r.player(1).spx_signature.should == "Fischer, Bobby||1.5|123|DLW|---|TFT"
+          @r.player(2).spx_signature.should == "Kasparov, Garry||1.0|123|LWL|---|FTT"
+          @r.player(3).spx_signature.should == "Orr, Mark|1350|0.5|123|DLL|---|TTF"
+        end
+
+        it "should have default columns" do
+          @x.should match(/^No\s*Name\s*Loc Id\s*Total\s*1\s*2\s*3\s*/)
+          @x.should match(/1\s*Fischer,\s*Bobby\s*1\.5\s*3:D\s*0?:L?\s*2:W\s*/)
+        end
+
+        it "can have custom columns" do
+          @x = @t.serialize('SPExport', :columns => [])
+          @x.should match(/^No\s*Name\s*1\s*2\s*3\s*/)
+          @x = @t.serialize('SPExport', :columns => [:points])
+          @x.should match(/^No\s*Name\s*Total\s*1\s*2\s*3\s*/)
+          @x = @t.serialize('SPExport', :columns => [:points, :id])
+          @x.should match(/^No\s*Name\s*Loc Id\s*Total\s*1\s*2\s*3\s*/)
+          @x = @t.serialize('SPExport', :columns => [:points, :id, :fed])
+          @x.should match(/^No\s*Name\s*Feder\s*Loc Id\s*Total\s*1\s*2\s*3\s*/)
+          @x = @t.serialize('SPExport', :columns => [:points, :id, :fed, :fed, :rubbish, :fide])
+          @x.should match(/^No\s*Name\s*Feder\s*Intl Id\s*Loc Id\s*Total\s*1\s*2\s*3\s*/)
+          @x = @t.serialize('SPExport', :columns => [:fed, :fide, :points, :id, :rating])
+          @x.should match(/^No\s*Name\s*Feder\s*Intl Id\s*Loc Id\s*Loc\s*Total\s*1\s*2\s*3\s*/)
+          @x = @t.serialize('SPExport', :columns => [:fed, :fide, :fide_rating, :points, :id, :rating])
+          @x.should match(/^No\s*Name\s*Feder\s*Intl Id\s*Loc Id\s*Rtg\s*Loc\s*Total\s*1\s*2\s*3\s*/)
+          @x.should match(/3\s*Orr,\s*Mark\s*IRL\s*2500035\s*1350\s*2250\s*2200\s*0.5\s*1:D\s*2:L\s*:\s*/)
         end
       end
 

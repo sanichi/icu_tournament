@@ -81,7 +81,6 @@ module ICU
   #   fox1.fed                         # => 'IRL'
   #   fox1.gender                      # => 'M'
   #
-  #
   class Player
     extend ICU::Accessor
     attr_integer :num

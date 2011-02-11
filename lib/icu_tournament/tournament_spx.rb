@@ -1,10 +1,10 @@
 module ICU
   class Tournament
     #
-    # The SWissPerfect export format was important in Irish chess as it was used to submit
-    # results to the ICU's first computerised ratings system based on <em>MicroSoft Access</em>.
-    # As a text based format, it was easier to manipulate than the binary formats of SwissPerfect.
-    # Here's an example:
+    # The SWissPerfect export format used to be important in Irish chess as it was used to submit
+    # results to the ICU's first computerised ratings system, a <em>MicroSoft Access</em> database.
+    # As a text based format, it was easier to manipulate than the full binary formats of SwissPerfect.
+    # Here is an illustrative example of this format:
     #
     #   No Name           Feder Intl Id Loc Id Rtg  Loc  Title Total  1   2   3
     #
@@ -12,12 +12,12 @@ module ICU
     #   2  Mouse, Minerva       1234568        1900            1.5   3:D 0:= 1:D
     #   3  Mouse, Mickey  USA   1234567                  gm    1     2:D 1:L 0:=
     #
-    # The format does not record either the name nor the start date of the tournament (and also
-    # player colours are missing). When parsing data in this format it is therefore necessary
+    # The format does not record either the name nor the start date of the tournament.
+    # Player colours are also missing. When parsing data in this format it is necessary
     # to specify name and start date explicitly:
     #
     #   parser = ICU::Tournament::SPExport.new
-    #   tournament = parser.parse_file('tournament.txt', :name => 'Mickey Mouse Masters', :start => '2011-02-06')
+    #   tournament = parser.parse_file('sample.txt', :name => 'Mickey Mouse Masters', :start => '2011-02-06')
     #
     #   tournament.name                   # => "Mickey Mouse Masters"
     #   tournament.start                  # => "2011-02-06"
@@ -26,33 +26,66 @@ module ICU
     #   tournament.player(2).points       # => 1.5
     #   tournament.player(3).fed          # => "USA"
     #
-    # And so on. See ICU::Tournament for further details.
+    # See ICU::Tournament for further details about the object returned.
     #
     # The SwissPerfect application offers a number of choices when exporting a tournament cross table,
     # one of which is the column separator. The ICU::Tournament::SPExport parser can only handle data
     # with tab separators but is able to cope with any other configuration choices. For example, if
     # some of the optional columns are missing or if the data is not formatted with space padding.
     #
-    # To serialize a tournament to the format, use the format name with the _serialize_ method of
+    # To serialize an ICU::Tournament instance to the format, use the _serialize_ method of
     # the appropriate parser:
     #
     #   parser = ICU::Tournament::Krause.new
     #   spexport = parser.serialize(tournament)
     #
-    # or use the _serialize_ method of the ICU::Tournament instance with the appropraie format name:
+    # or use the _serialize_ method of the instance with the appropraie format name:
     #
     #   spexport = tournament.serialize('SPExport')
     #
     # In either case the method returns a string representation of the tourament in SwissPerfect export
-    # format with tab separators, space padding and (currently) only the local player ID and total score
+    # format with tab separators, space padding and (by default) the local player ID and total score
     # optional columns:
     #
-    #   No  Name                 Loc Id  Total   1     2     3
+    #   No  Name                 Loc Id  Total    1     2     3
     #
     #   1   Griffiths, Ryan-Rhys 6897    3       4:W   2:W   3:W
     #   2   Flynn, Jamie         5226    2       3:W   1:L   4:W
     #   3   Hulleman, Leon       6409    1       2:L   4:W   1:L
     #   4   Dunne, Thomas        10914   0       1:L   3:L   2:L
+    #
+    # To change which optional columns are output, use the _columns_ option with an array of the column attribute names.
+    # The optional attribute names, together with their column header names in SwissPerfect, are as follows:
+    #
+    # * _fed_: Feder
+    # * _fide_: Intl Id
+    # * _id_: Loc Id
+    # * _fide_: ting_ (Rtg
+    # * _rating_: Loc
+    # * _title_: Title
+    # * _points_: Total
+    #
+    # So, for example, to omitt the optional columns completely, supply an empty array of column names:
+    #
+    #   tournament.serialize('SPExport', :columns => [])
+    #
+    #   No  Name                  1     2     3
+    #                            
+    #   1   Griffiths, Ryan-Rhys 4:W   2:W   3:W
+    #   2   Flynn, Jamie         3:W   1:L   4:W
+    #   3   Hulleman, Leon       2:L   4:W   1:L
+    #   4   Dunne, Thomas        1:L   3:L   2:L
+    #
+    # Or supply whatever columns you want, for example:
+    #
+    #   tournament.serialize('SPExport', :columns => [:fide, :fide_rating])
+    #
+    # Note that the column order in the serialised string is the same as it is in the SwissPerfect application.
+    # The order of column names in the _columns_ hash has no effect.
+    #
+    # The default, when you leave out the _columns_ option is equivalent to:
+    #
+    #   tournament.serialize('SPExport', :columns => [:id, :points])
     #
     # The order of players in the serialized output is always by player number and as a side effect of serialization,
     # the player numbers will be adjusted to ensure they range from 1 to the total number of players maintaining the
@@ -144,26 +177,59 @@ module ICU
       def serialize(t, arg={})
         t.validate!(:type => self)
 
-        # Ensure a nice set of numbers.
+        # Ensure a nice set of player numbers and get the number of rounds.
         t.renumber(:order)
-
-        # Widths for the rank, name and ID and the number of rounds.
-        m1 = t.players.inject(2) { |l, p| p.num.to_s.length  > l ? p.num.to_s.length  : l }
-        m2 = t.players.inject(4) { |l, p| p.name.length      > l ? p.name.length      : l }
-        m3 = t.players.inject(6) { |l, p| p.id.to_s.length   > l ? p.id.to_s.length   : l }
         rounds = t.last_round
+        
+        # Optional columns.
+        optional = arg[:columns] if arg.instance_of?(Hash) && arg[:columns].instance_of?(Array)
+        optional = [:id, :points] unless optional
+        
+        # Columns identifiers in SwissPerfect order.
+        columns = Array.new
+        columns.push(:num)
+        columns.push(:name)
+        [:fed, :fide, :id, :fide_rating, :rating, :title, :points].each { |x| columns.push(x) if optional.include?(x) }
+        
+        # SwissPerfect headers for each column (other than the rounds, which are treated separately).
+        header = Hash.new
+        columns.each do |col|
+          header[col] = case col
+          when :num         then "No"
+          when :name        then "Name"
+          when :fed         then "Feder"
+          when :fide        then "Intl Id"
+          when :id          then "Loc Id"
+          when :fide_rating then "Rtg"
+          when :rating      then "Loc"
+          when :title       then "Title"
+          when :points      then "Total"
+          end
+        end
+        
+        # Widths and formats for each column.
+        width = Hash.new
+        format = Hash.new
+        columns.each do |col|
+          width[col] = t.players.inject(header[col].length) { |l, p| p.send(col).to_s.length  > l ? p.send(col).to_s.length  : l }
+          format[col] = "%-#{width[col]}s"
+        end
 
         # The header, followed by a blank line.
-        formats = ["%-#{m1}s", "%-#{m2}s", "%-#{m3}s", "%-5s"]
-        (1..rounds).each { |r| formats << "%#{m1}d  " % r }
-        sp = formats.join("\t") % ['No', 'Name', 'Loc Id', 'Total']
+        formats = columns.map{ |col| format[col] }
+        (1..rounds).each { |r| formats << "%#{width[:num]}d  " % r }
+        sp = formats.join("\t") % columns.map{ |col| header[col] }
         sp << "\r\n\r\n"
 
-        # Adjust the rounds part of the formats for players results.
-        (1..rounds).each { |r| formats[r+3] = "%#{m1+2}s" }
+        # The round formats for players are slightly different to those for the header.
+        formats.pop(rounds)
+        (1..rounds).each{ |r| formats << "%#{2+width[:num]}s" }
+        
+        # Serialize the formats already.
+        formats = formats.join("\t") + "\r\n"
 
         # Now add a line for each player.
-        t.players.each { |p| sp << p.to_sp_text(rounds, "#{formats.join(%Q{\t})}\r\n") }
+        t.players.each { |p| sp << p.to_sp_text(rounds, columns, formats) }
 
         # And return the whole lot.
         sp
@@ -298,13 +364,17 @@ module ICU
 
   class Player
     # Format a player's record as it would appear in an SP export file.
-    def to_sp_text(rounds, format)
-      attrs = [num.to_s, name, id.to_s, ('%.1f' % points).sub(/\.0/, '')]
+    def to_sp_text(rounds, columns, formats)
+      values = columns.inject([]) do |vals,col|
+        val = send(col).to_s
+        val.sub!(/\.0/, '') if col == :points
+        vals << val
+      end
       (1..rounds).each do |r|
         result = find_result(r)
-        attrs << (result ? result.to_sp_text : " : ")
+        values << (result ? result.to_sp_text : " : ")
       end
-      format % attrs
+      formats % values
     end
   end
 
