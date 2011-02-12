@@ -24,5 +24,8 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency("rubyzip", "~> 0.9.4")    # for zipped-up SwissPerfect files
   s.add_runtime_dependency("icu_name", ">=0.1.0")    # for name canonicalisation
 
-  s.add_development_dependency("rspec", "~> 2.4")
+  s.add_development_dependency("rspec", "~> 2.5")
+  s.add_development_dependency("ZenTest", "~> 4.4.2")
+  s.add_development_dependency("autotest-growl", "~> 0.2.9")
+  s.add_development_dependency("autotest-fsevent", "~> 0.2.4")
 end

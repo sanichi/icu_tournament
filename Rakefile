@@ -28,23 +28,11 @@ task :push do
   system "git push origin master"
 end
 
-RSpec::Core::RakeTask.new do |t|
-  t.rspec_opts = ['--colour --format nested']
-end
-
-RSpec::Core::RakeTask.new(:fcsv) do |t|
-  t.pattern    = 'spec/tournament_fcsv_spec.rb'
-  t.rspec_opts = ['--colour --format nested']
-end
-
-RSpec::Core::RakeTask.new(:krs) do |t|
-  t.pattern = 'spec/tournament_krause_spec.rb'
-  t.rspec_opts = ['--colour --format nested']
-end
-
-RSpec::Core::RakeTask.new(:sp) do |t|
-  t.pattern = 'spec/tournament_sp_spec.rb'
-  t.rspec_opts = ['--colour --format nested']
+[:spec, :fcsv, :krause, :sp, :spx].each do |spec|
+  RSpec::Core::RakeTask.new(spec) do |t|
+    t.pattern    = "spec/tournament_#{spec}_spec.rb" unless spec == :spec
+    t.rspec_opts = ['--colour --format nested']
+  end
 end
 
 Rake::RDocTask.new(:rdoc) do |t|
