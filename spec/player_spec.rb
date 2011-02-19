@@ -18,6 +18,7 @@ module ICU
         p = Player.new('Mark', 'Orr', 1)
         p.first_name.should == 'Mark'
         p.last_name.should == 'Orr'
+        p.original_name.should == 'Orr, Mark'
       end
 
       it "should be resettable via accessors" do
@@ -26,6 +27,7 @@ module ICU
         p.last_name= 'Kasparov'
         p.first_name.should == 'Gary'
         p.last_name.should == 'Kasparov'
+        p.original_name.should == 'Orr, Mark'
       end
 
       it "should not contain invalid characters" do
@@ -33,7 +35,7 @@ module ICU
         lambda { Player.new('Mark', '*!', 1) }.should raise_error(/invalid last name/)
       end
 
-      it "should not have empty last name" do
+      it "should not have empty last name or first name" do
         lambda { Player.new('Mark', '', 1) }.should raise_error(/invalid last name/)
         lambda { Player.new('', 'Orr', 1) }.should raise_error(/invalid first name/)
       end
@@ -50,6 +52,16 @@ module ICU
         p.name.should == 'Orr, Z.'
         p.last_name = "  o   meFiSto  "
         p.name.should == "O'Mefisto, Z."
+        p.original_name.should == 'ORR, maRk J l'
+      end
+
+      it "the original name is resetable" do
+        p = Player.new('Mark', 'Orr', 1)
+        p.name.should == 'Orr, Mark'
+        p.original_name.should == 'Orr, Mark'
+        p.original_name = 'Cronin, April'
+        p.name.should == 'Orr, Mark'
+        p.original_name.should == 'Cronin, April'
       end
     end
 

@@ -186,7 +186,7 @@ EXPORT
         end
       end
 
-      context "invisible bonuses extreme example" do
+      context "extreme invisible bonuses example" do
         before(:each) do
           @x = <<EXPORT
 No	Name          	Total	1  	2  	3
@@ -203,6 +203,32 @@ EXPORT
           @t.player(1).spx_signature2.should == '123|WWD|FFF'
           @t.player(2).spx_signature2.should == '123|WDD|FFF'
           @t.player(3).spx_signature2.should == '123|DDL|FFF'
+        end
+      end
+
+      context "preservation of original names" do
+        before(:each) do
+          @x = <<EXPORT
+No	Name          	Total	1  	2  	3
+
+1 	daffy  duck    	2.0  	0: 	3:W	2:D
+2 	MOUSE,  minerva	1.5  	3:D	0: 	1:D
+3 	mouse,  MICKEY 	1.0  	2:D	1:L	0:D
+EXPORT
+          @p = ICU::Tournament::SPExport.new
+          @t = @p.parse!(@x, :name => "Mickey Mouse Masters", :start => "2012-01-01")
+        end
+
+        it "players should have canonicalised names" do
+          @t.player(1).name.should == 'Duck, Daffy'
+          @t.player(2).name.should == 'Mouse, Minerva'
+          @t.player(3).name.should == 'Mouse, Mickey'
+        end
+
+        it "players should have original names" do
+          @t.player(1).original_name.should == 'daffy duck'
+          @t.player(2).original_name.should == 'MOUSE, minerva'
+          @t.player(3).original_name.should == 'mouse, MICKEY'
         end
       end
 

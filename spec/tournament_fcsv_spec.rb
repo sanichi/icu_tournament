@@ -237,6 +237,12 @@ CSV
           check_player(2, 'Gary',      'Kasparov',     1, 0, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
           check_player(3, 'Mark',      'Orr',          1, 0, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
         end
+        
+        it "should still have original names" do
+          @t.player(1).original_name.should == "ui Laighleis, gearoidin"
+          @t.player(2).original_name.should == "kasparov, gary"
+          @t.player(3).original_name.should == "Orr, Mark"
+        end
       end
 
       context "#parse" do

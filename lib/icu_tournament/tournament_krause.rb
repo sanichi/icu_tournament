@@ -261,7 +261,9 @@ module ICU
 
         # Player details.
         num = @data[0, 4]
-        nam = Name.new(@data[10, 32])
+        nam = @data[10, 32]
+        nams = nam.split(/,/)
+        raise "missing comma in name #{nam.trim}" unless nams.size > 1
         opt =
         {
           :gender => @data[5, 1],
@@ -272,7 +274,7 @@ module ICU
         }
         opt[arg[:fide] ? :fide_id : :id] = @data[53, 11]
         opt[arg[:fide] ? :fide_rating : :rating] = @data[44, 4]
-        player = Player.new(nam.first, nam.last, num, opt)
+        player = Player.new(nams.last, nams.first, num, opt)
         @tournament.add_player(player)
 
         # Results.

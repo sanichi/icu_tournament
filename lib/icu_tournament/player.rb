@@ -3,12 +3,27 @@ module ICU
   # A player in a tournament must have a first name, a last name and a number
   # which is unique in the tournament but otherwise arbitary.
   #
-  #   bobby = ICU::Player.new('robert j', 'fischer', 17)
+  #   bobby = ICU::Player.new(' robert  j ', 'fischer', 17)
   #
   # Names are automatically cannonicalised (tidied up).
   #
   #   bobby.first_name                 # => 'Robert J.'
   #   bobby.last_name                  # => 'Fischer'
+  #
+  # But the original untidied (other than white space cleanup and the addition of a comma
+  # to separate last name from first name) is avaiable from the _original_name_ method:
+  #
+  #   bobby.original_name              # => "fischer, robert j"
+  #
+  # This original name, set via the constructor, is unchanged by subsequent calls to
+  # the setter methods _first_name_ or _last_name.
+  #
+  #   booby.first_name = 'Robert James'
+  #   bobby.original_name              # => "fischer, robert j"
+  #
+  #  You can reset _orignal_name_, if necessary, and this does not affect either _first_name_ or _last_name_.
+  #
+  #   bobby.original_name = "Fischer, Robert James"
   #
   # In addition, players have a number of optional attributes which can be specified
   # via setters or in constructor hash options: _id_ (local or national ID), _fide_
@@ -87,12 +102,13 @@ module ICU
     attr_positive_or_nil :id, :fide_id, :rating, :fide_rating, :rank
     attr_date_or_nil :dob
 
-    attr_reader :results, :first_name, :last_name, :fed, :title, :gender
+    attr_reader :results, :first_name, :last_name, :original_name, :fed, :title, :gender
 
     # Constructor. Must supply both names and a unique number for the tournament.
     def initialize(first_name, last_name, num, opt={})
       self.first_name = first_name
       self.last_name  = last_name
+      @original_name  = Name.new(first_name, last_name).original
       self.num        = num
       [:id, :fide_id, :fed, :title, :rating, :fide_rating, :rank, :dob, :gender].each do |atr|
         self.send("#{atr}=", opt[atr]) unless opt[atr].nil?
@@ -112,6 +128,11 @@ module ICU
       name = Name.new('First', last_name)
       raise "invalid last name" unless name.last.length > 0 && name.first.length > 0
       @last_name = name.last
+    end
+
+    # Reset the original name.
+    def original_name=(original_name)
+      @original_name = ICU::Util.to_utf8(original_name)
     end
 
     # Return the full name, last name first.

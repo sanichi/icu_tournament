@@ -296,6 +296,7 @@ module ICU
 
         # Create the player and add it to the tournament.
         player = Player.new(name.first, name.last, num, opt)
+        player.original_name = name.original
         @tournament.add_player(player)
 
         # Save the results for later processing.

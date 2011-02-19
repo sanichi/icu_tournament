@@ -441,6 +441,29 @@ KRAUSE
           @t.name.should == "Läs Végas National Opeñ"
         end
       end
+      
+      context "preserving original names" do
+        before(:all) do
+          @k = <<KRAUSE
+012 Las Vegas National Open
+042 2008-06-07
+001    1 w    ui   laighleis,GEAROIDIN                                           1.0          2 b 0     3 w 1
+001    2 m  m ORR, mark                                                          2.0          1 w 1               3 b 1
+001    3 m  g BOLOGAN,VIKTOR                                                     0.0                    1 b 0     2 w 0
+KRAUSE
+          @p = ICU::Tournament::Krause.new
+        end
+
+        it "should canonicalise names but also preserve originals" do
+          @t = @p.parse!(@k)
+          check_player(1, 'Gearoidin', 'Ui Laighleis')
+          check_player(2, 'Mark', 'Orr')
+          check_player(3, 'Viktor', 'Bologan')
+          @t.player(1).original_name.should == "ui laighleis, GEAROIDIN"
+          @t.player(2).original_name.should == "ORR, mark"
+          @t.player(3).original_name.should == "BOLOGAN, VIKTOR"
+        end
+      end
 
       context "parsing files" do
         before(:each) do

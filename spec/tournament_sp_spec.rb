@@ -44,6 +44,11 @@ module ICU
           @t.player(56).sp_signature.should == "McDonnell, Cathal|||498||0.0|54|1|L|-|F"                          # last
         end
 
+        it "original names should be preserved" do
+          @t.player(2).original_name.should == "MULLOOLY, neil m"
+          @t.player(4).original_name.should == "Gallagher, Mark"
+        end
+
         it "should have consistent ranks" do
           @t.players.map{ |p| p.rank }.sort.join('').should == (1..@t.players.size).to_a.join('')
         end
