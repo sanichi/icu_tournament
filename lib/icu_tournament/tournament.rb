@@ -105,17 +105,7 @@ module ICU
   #   t.tie_breaks = [:buchholz, :neustadtl, :blacks, :wins]
   #   t.tie_breaks = []  # reset to the default
   #
-  # The full list of supported methods is:
-  #
-  # * _Buchholz_: sum of opponents' scores
-  # * _Harkness_ (or _median_): like Buchholz except the highest and lowest opponents' scores are discarded (or two highest and lowest if 9 rounds or more)
-  # * _modified_median_: same as Harkness except only lowest (or highest) score(s) are discarded for players with more (or less) than 50%
-  # * _Neustadtl_ (or _Sonneborn-Berger_): sum of scores of players defeated plus half sum of scores of players drawn against
-  # * _progressive_ (or _cumulative_): sum of running score for each round
-  # * _ratings_: sum of opponents ratings (FIDE ratings are used in preference to local ratings if available)
-  # * _blacks_: number of blacks
-  # * _wins_: number of wins
-  # * _name_: alphabetical by name (if _tie_breaks_ is set to an empty array, as it is initially, then this will be used as the back-up tie breaker)
+  # See ICU::TieBreak for the full list of supported tie break methods.
   #
   # The return value from _rerank_ is the tournament object itself, to allow chaining, for example:
   #
@@ -226,28 +216,14 @@ module ICU
       @teams.find{ |t| t.matches(name) }
     end
 
-    # Set the tie break methods.
+    # Canonicalise the names in the tie break array.
     def tie_breaks=(tie_breaks)
       raise "argument error - always set tie breaks to an array" unless tie_breaks.class == Array
-      # Canonicalise the tie break method names.
-      tie_breaks.map! do |m|
-        m = m.to_s if m.class == Symbol
-        m = m.downcase.gsub(/[-\s]/, '_') if m.class == String
-        case m
-          when true                then 'name'
-          when 'sonneborn_berger'  then 'neustadtl'
-          when 'modified_median'   then 'modified'
-          when 'median'            then 'harkness'
-          when 'cumulative'        then 'progressive'
-          else m
-        end
+      @tie_breaks = tie_breaks.map do |str|
+        tb = ICU::TieBreak.identify(str)
+        raise "invalid tie break method '#{str}'" unless tb
+        tb.id
       end
-
-      # Check they're all valid.
-      tie_breaks.each { |m| raise "invalid tie break method '#{m}'" unless m.to_s.match(/^(blacks|buchholz|harkness|modified|name|neustadtl|progressive|ratings|wins)$/) }
-
-      # Finally set them.
-      @tie_breaks = tie_breaks;
     end
 
     # Add a new player to the tournament. Must have a unique player number.
@@ -508,7 +484,7 @@ module ICU
       end
     end
 
-    # Return an array of tie break methods and an array of tie break orders (+1 for asc, -1 for desc).
+    # Return an array of tie break rules and an array of tie break orders (+1 for asc, -1 for desc).
     # The first and most important method is always "score", the last and least important is always "name".
     def tie_break_data
 
@@ -516,19 +492,19 @@ module ICU
       methods, order, data = Array.new, Hash.new, Hash.new
 
       # Score is always the most important.
-      methods << 'score'
-      order['score'] = -1
+      methods << :score
+      order[:score] = -1
 
       # Add the configured methods.
       tie_breaks.each do |m|
         methods << m
-        order[m] = m == 'name' ? 1 : -1
+        order[m] = m == :name ? 1 : -1
       end
 
       # Name is included as the last and least important tie breaker unless it's already been added.
-      unless methods.include?('name')
-        methods << 'name'
-        order['name'] = 1
+      unless methods.include?(:name)
+        methods << :name
+        order[:name] = 1
       end
 
       # We'll need the number of rounds.
@@ -537,7 +513,7 @@ module ICU
       # Pre-calculate some scores that are not in themselves tie break scores
       # but are needed in the calculation of some of the actual tie-break scores.
       pre_calculated = Array.new
-      pre_calculated << 'opp-score'  # sum scores where a non-played games counts 0.5
+      pre_calculated << :opp_score  # sum scores where a non-played games counts 0.5
       pre_calculated.each do |m|
         data[m] = Hash.new
         @player.values.each { |p| data[m][p.num] = tie_break_score(data, m, p, rounds) }
@@ -557,20 +533,20 @@ module ICU
     # Return a tie break score for a given player and a given tie break method.
     def tie_break_score(hash, method, player, rounds)
       case method
-        when 'score'       then player.points
-        when 'wins'        then player.results.inject(0)   { |t,r| t + (r.opponent && r.score  == 'W' ? 1 : 0) }
-        when 'blacks'      then player.results.inject(0)   { |t,r| t + (r.opponent && r.colour == 'B' ? 1 : 0) }
-        when 'buchholz'    then player.results.inject(0.0) { |t,r| t + (r.opponent ? hash['opp-score'][r.opponent] : 0.0) }
-        when 'neustadtl'   then player.results.inject(0.0) { |t,r| t + (r.opponent ? hash['opp-score'][r.opponent] * r.points : 0.0) }
-        when 'opp-score'   then player.results.inject(0.0) { |t,r| t + (r.opponent ? r.points : 0.5) } + (rounds - player.results.size) * 0.5
-        when 'progressive' then (1..rounds).inject(0.0)    { |t,n| r = player.find_result(n); s = r ? r.points : 0.0; t + s * (rounds + 1 - n) }
-        when 'ratings'     then player.results.inject(0)   { |t,r| t + (r.opponent && (@player[r.opponent].fide_rating || @player[r.opponent].rating) ? (@player[r.opponent].fide_rating || @player[r.opponent].rating) : 0) }
-        when 'harkness', 'modified'
-          scores = player.results.map{ |r| r.opponent ? hash['opp-score'][r.opponent] : 0.0 }.sort
+        when :score       then player.points
+        when :wins        then player.results.inject(0)   { |t,r| t + (r.opponent && r.score  == 'W' ? 1 : 0) }
+        when :blacks      then player.results.inject(0)   { |t,r| t + (r.opponent && r.colour == 'B' ? 1 : 0) }
+        when :buchholz    then player.results.inject(0.0) { |t,r| t + (r.opponent ? hash[:opp_score][r.opponent] : 0.0) }
+        when :neustadtl   then player.results.inject(0.0) { |t,r| t + (r.opponent ? hash[:opp_score][r.opponent] * r.points : 0.0) }
+        when :opp_score   then player.results.inject(0.0) { |t,r| t + (r.opponent ? r.points : 0.5) } + (rounds - player.results.size) * 0.5
+        when :progressive then (1..rounds).inject(0.0)    { |t,n| r = player.find_result(n); s = r ? r.points : 0.0; t + s * (rounds + 1 - n) }
+        when :ratings     then player.results.inject(0)   { |t,r| t + (r.opponent && (@player[r.opponent].fide_rating || @player[r.opponent].rating) ? (@player[r.opponent].fide_rating || @player[r.opponent].rating) : 0) }
+        when :harkness, :modified_median
+          scores = player.results.map{ |r| r.opponent ? hash[:opp_score][r.opponent] : 0.0 }.sort
           1.upto(rounds - player.results.size) { scores << 0.0 }
           half = rounds / 2.0
           times = rounds >= 9 ? 2 : 1
-          if method == 'harkness' || player.points == half
+          if method == :harkness || player.points == half
             1.upto(times) { scores.shift; scores.pop }
           else
             1.upto(times) { scores.send(player.points > half ? :shift : :pop) }

@@ -100,7 +100,7 @@ module ICU
     #
     # You may wish set the tie-break rules before ranking:
     #
-    #   tournament.tie_breaks = [:buchholz, ::neustadtl]
+    #   tournament.tie_breaks = [:buchholz, :neustadtl]
     #   spexport = tournament.rerank.renumber.serialize('SwissPerfect')
     #
     # See ICU::Tournament for more about tie-breaks.
