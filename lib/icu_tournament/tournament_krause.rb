@@ -109,6 +109,67 @@ module ICU
     # [122 Time control]            Get or set with _time_control_. Free text.
     # [132 Round dates]             Get an array of dates using _round_dates_ or one specific round date by calling _round_date_ with a round number.
     #
+    # == Parser Strictness
+    #
+    # In practice, Krause formatted files encontered in the wild can be produced in a variety of different ways and not always according to
+    # FIDE's standard, which itself is rather loose. This Ruby gem deals with that situation by not raising parsing errors when data is encountered
+    # where it is clear what is meant, even if it doesn't conform to the standards, such as they are. However, on output (serialisation) a strict
+    # interpretation of FIDE's standard is adhered to.
+    #
+    # For example in input data if a player's gender is given as "F" it's clear this means female, even though the specification calls for a lower
+    # case "w" (for woman) in this case. Similarly, for titles where, for example, both "GM" and FIDE's "g" are recognised as meaning Grand Master.
+    #
+    # When it comes to dates, the specification recommends the YYYY/MM/DD format for birth dates and YY/MM/DD for round dates but quotes an example where
+    # the start and finish dates are in the opposite order (DD.MM.YYYY) with a different separator. In practice, the author has encountered Krause files
+    # with US style date formatting (MM-DD-YYYY) and other bizarre formats (YY.DD.MM) which suffer from ambiguity when the day is 12 or less.
+    # It's not the separator ("/", "=", ".") that causes a problem but the year, month and day order. The solution adopted here is for all serialized
+    # dates to be in YYYY-MM-DD format (or YY-MM-DD for round dates which must fit in 8 characters), which is a recognised international standard
+    # (ISO 8601). However, for parsing, a much wider variation is permitted and there is some ability to detect and correct ambiguous dates. For example
+    # the following dates would all be interpreted as 2011-03-30:
+    #
+    # * 30th March 2011
+    # * 30.03.2011
+    # * 03/30/2011
+    #
+    # Where no additional information is available to resolve an ambiguity, the month is assumed to come in the middle, so 04/03/2011 is interpreted
+    # as 2011.03.04 and not 2011.04.03.
+    #
+    # Some Krause files that the author has encountered in the wild have 3-letter player federation codes that are not federations at all but something
+    # completely different (for example the first 3 letters of the player's club). This is a clear violation of the specification and raises a parsing
+    # exception. However in practice it's often necessary to deal with such files so the parser has two options to help in these cases. If the _fed_ option
+    # is set to "ignore" then all player federation codes will be ignored, even if valid. While when set to "skip" then invalid codes will be ignored but
+    # valid ones retained.
+    #
+    #   tournament = parser.parse_file('tournament.tab', :fed => "ignore")
+    #   tournament = parser.parse_file('tournament.tab', :fed => "skip")
+    #
+    # Similar options are available for parsing SwissPerfect files (see ICU::Tournament::SwissPerfect) which can suffer from the same problem.
+    #
+    # == Automatic Total Correction
+    #
+    # Another problem encountered with Krause files in practice is a mismatch between the declared total points for a player and the sum of their points
+    # from each round. Normally this just raises a parsing exception. However, there is one set of circumstances when such mismatches can be repaired:
+    #
+    # * the declared total score is higher than the sum of scores,
+    # * the player has at least one bye which isn't a full point bye or at least one round where no result is recorded,
+    # * the number of byes or missing results is enough to account for the difference in total score.
+    #
+    # If all these conditions are met then just enough bye scores are incremented, or new byes created, to make the sum match the total, and the
+    # data will parse without raising an exception.
+    #
+    #   012 Mismatched Totals
+    #   042 2011.03.04
+    #   001    1      Mouse,Minerva                                                      1.0    2     2 b 0  0000 - =
+    #   001    2      Mouse,Mickey                                                       1.5    1     1 w 1
+    #
+    # In this example both totals are underestimates. However, player 1 has a half-point bye which can be upgraded to a full-point and player 2
+    # has no result in round 2 which leaves room for the creation of a new half-point bye. So this data parses without error and serializes to:
+    #
+    #   012 Mismatched Totals
+    #   042 2011-03-04
+    #   001    1      Mouse,Minerva                                                      1.0    2     2 b 0  0000 - +
+    #   001    2      Mouse,Mickey                                                       1.5    1     1 w 1  0000 - =
+    #
     class Krause
       attr_reader :error, :comments
 
@@ -120,18 +181,18 @@ module ICU
         @comments = ''
         @results = Array.new
         krs = ICU::Util.to_utf8(krs) unless arg[:is_utf8]
+        lines = get_lines(krs)
 
         # Process all lines.
-        krs.each_line do |line|
-          @lineno += 1         # increment line number
-          line.strip!          # remove leading and trailing white space
-          next if line == ''   # skip blank lines
-          @line = line         # remember this line for later
+        lines.each do |line|
+          @lineno += 1                 # increment line number
+          next if line.match(/^\s*$/)  # skip blank lines
+          @line = line                 # remember this line for later
 
           # Does it have a DIN or is it just a comment?
           if @line.match(/^(\d{3}) (.*)$/)
-            din = $1           # data identification number (DIN)
-            @data = $2         # the data after the DIN
+            din = $1             # data identification number (DIN)
+            @data = $2           # the data after the DIN
           else
             add_comment
             next
@@ -210,7 +271,7 @@ module ICU
         end
       end
 
-      # Serialise a tournament back into Krause format.
+      # Serialize a tournament back into Krause format.
       def serialize(t, arg={})
         t.validate!(:type => self)
         krause = ''
@@ -255,11 +316,30 @@ module ICU
         @tournament.start = @data
         @start_set = true
       end
+      
+      # Split text into lines but also pad the player lines (those beginning "001 ").
+      def get_lines(text)
+        lines = text.split(/\s*\n/)
+        max = 99  # length up to the end of round 1 result, including DIN
+        lines.each do |line|
+          next unless line.match(/^001 /)
+          next unless line.length > max
+          max+= 10 * (1 + (line.length - max - 1) / 10)  # increase by multiples of 10, the length of 1 result (including 2-space prefix)
+        end
+        lines.each_index do |i|
+          line = lines[i]
+          next unless line.match(/^001 /)
+          next unless line.length < max
+          line+= ' ' * (max - line.length)
+          lines[i] = line
+        end
+        lines
+      end
 
       def add_player(arg={})
         raise "player record less than minimum length" if @line.length < 99
 
-        # Player details.
+        # Prepare player details.
         num = @data[0, 4]
         nam = @data[10, 32]
         nams = nam.split(/,/)
@@ -272,27 +352,50 @@ module ICU
           :dob    => @data[65, 10],
           :rank   => @data[81, 4],
         }
-        opt[arg[:fide] ? :fide_id : :id] = @data[53, 11]
-        opt[arg[:fide] ? :fide_rating : :rating] = @data[44, 4]
+        
+        # The IDs and ratings can be local or international.
+        itype = arg[:fide] ? :fide_id : :id
+        rtype = arg[:fide] ? :fide_rating : :rating
+        opt[itype] = @data[53, 11]
+        opt[rtype] = @data[44, 4]
+        
+        # Remove obviously bad data.
+        opt.delete(itype) if opt.has_key?(itype) && opt[itype].to_i == 0
+        opt.delete(rtype) if opt.has_key?(rtype) && opt[rtype].to_i == 0
+        
+        # Options to remove other bad data.
+        opt.delete(:fed) if arg[:fed].to_s == 'ignore'
+        opt.delete(:fed) if arg[:fed].to_s == 'skip' && !ICU::Federation.find(opt[:fed])
+
+        # Create the player.
         player = Player.new(nams.last, nams.first, num, opt)
         @tournament.add_player(player)
 
         # Results.
-        points = @data[77, 4].strip
-        points = points == '' ? nil : points.to_f
-        index  = 87
-        round  = 1
-        total  = 0.0
-        while @data.length >= index + 8
-          total+= add_result(round, player.num, @data[index, 8])
+        total = @data[77, 4].strip
+        total = total == '' ? nil : total.to_f
+        index = 87
+        round = 1
+        sum = 0.0
+        full_byes = []
+        half_byes = []
+        while @data.length > index
+          sum+= add_result(round, player.num, @data[index, 8], full_byes, half_byes)
           index+= 10
           round+= 1
         end
-        raise "declared points total (#{points}) does not agree with total from summed results (#{total})" if points && points != total
+        if total
+          sum = total if total != sum && fix_sum(player.num, full_byes, half_byes, total, sum)
+          raise "declared points total (#{total}) does not agree with summed scores (#{sum})" if total != sum
+        end
       end
 
-      def add_result(round, player, data)
-        return 0.0 if data.strip! == ''  # no result for this round
+      def add_result(round, player, data, full_byes, half_byes)
+        data.strip!
+        if data.match(/^-?$/)
+          full_byes << round
+          return 0.0
+        end
         raise "invalid result '#{data}'" unless data.match(/^(0{1,4}|[1-9]\d{0,3}) (w|b|-) (1|0|=|\+|-)$/)
         opponent = $1.to_i
         colour   = $2
@@ -303,7 +406,40 @@ module ICU
         options[:rateable] = false    unless score.match(/^(1|0|=)$/)
         result   = Result.new(round, player, score, options)
         @results << [@lineno, player, data, result]
+        if opponent == 0
+          case score
+          when '-' then full_byes << result
+          when '=' then half_byes << result
+          end
+        end
         result.points
+      end
+      
+      # See if byes can be used to make the sum of scores match the declared total.
+      def fix_sum(player, full_byes, half_byes, total, sum)
+        return false unless total > sum
+        return false unless total <= sum + full_byes.size * 1.0 + half_byes.size * 0.5
+        full_byes.each_index do |i|
+          bye = full_byes[i]
+          if bye.class == Fixnum
+            # Round number - create a half-point bye in that round.
+            result = Result.new(bye, player, '=')
+            @results << ['none', player, "extra bye for player #{player} in round #{bye}", result]
+            full_byes[i] = result
+          else
+            # Zero point bye - upgrade to a half point.
+            bye.score = 'D'
+          end
+          sum += 0.5
+          return true if total == sum
+        end
+        (half_byes + full_byes).each do |bye|
+          # Upgrade to full point.
+          bye.score = 'W'
+          sum += 0.5
+          return true if total == sum
+        end
+        return false
       end
 
       def add_team
@@ -319,9 +455,17 @@ module ICU
 
       def add_round_dates
         raise "round dates record less than minimum length" if @line.length < 99
-        index  = 87
+        index = 87
+        american = nil
         while @data.length >= index + 8
           date = @data[index, 8].strip
+          # Cope with heinous date formats like yy.dd.mm.
+          if date.match((/^(\d{2}).(\d{2}).(\d{2})$/))
+            if american.nil?
+              american = $2.to_i > 12 || (@tournament.start[5,2] == $3 && @tournament.start[8,2] != $2)
+            end
+            date = "#{$1}.#{$3}.#{$2}" if american
+          end
           @tournament.add_round_date("20#{date}") unless date == ''
           index+= 10
         end

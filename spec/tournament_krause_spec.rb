@@ -397,7 +397,7 @@ KRAUSE
         end
 
         it "inconsistent totals should cause an error" do
-           @k.sub!('4.0', '4.5')
+           @k.sub!('3.5', '4.0')
            lambda { @p.parse!(@k) }.should raise_error(/total/)
         end
 
@@ -511,6 +511,138 @@ KRAUSE
           check_player(2, 'Mârk', 'Örr')
           check_player(3, 'Viktor', 'Bologan')
           @t.name.should == "Läs Végas National Opeñ"
+        end
+      end
+
+      context "automatic repairing of totals" do
+        before(:each) do
+          @p = ICU::Tournament::Krause.new
+        end
+
+        it "cannot repair mismatched totals if there are no byes" do
+          @k = <<KRAUSE
+012 Las Vegas National Open
+042 2008-06-07
+001    1      Ui Laighleis,Gearoidin                                             0.5          2 b 0     2 w 0
+001    2      Or,Mark                                                            2.0          1 w 1     1 b 1
+KRAUSE
+          lambda { @p.parse!(@k) }.should raise_error(/total/)
+        end
+
+        it "cannot repair mismatched totals if totals are underestimated" do
+          @k = <<KRAUSE
+012 Las Vegas National Open
+042 2008-06-07
+001    1      Ui Laighleis,Gearoidin                                             0.0          2 b 0  0000 - -
+001    2      Orr,Mark                                                           1.5          1 w 1  0000 - +
+KRAUSE
+          lambda { @p.parse!(@k) }.should raise_error(/total/)
+        end
+
+        it "cannot repair overestimated totals if there are not enough byes" do
+          @k = <<KRAUSE
+012 Las Vegas National Open
+042 2008-06-07
+001    1      Ui Laighleis,Gearoidin                                             1.5          2 b 0  0000 - -
+001    2      Orr,Mark                                                           2.0          1 w 1  0000 - +
+KRAUSE
+          lambda { @p.parse!(@k) }.should raise_error(/total/)
+        end
+
+        it "can repair overestimated totals if there are enough byes" do
+          @k = <<KRAUSE
+012 Las Vegas National Open
+042 2008-06-07
+001    1      Ui Laighleis,Gearoidin                                             1.0          2 b 0  0000 - -
+001    2      ORR,Mark                                                           2.0          1 w 1  0000 - +
+KRAUSE
+          @t = @p.parse!(@k)
+          @t.should_not be_nil
+          check_results(1, 2, 1.0)
+          @t.player(1).find_result(2).score.should == 'W'
+        end
+
+        it "extreme example" do
+          @k = <<KRAUSE
+012 Las Vegas National Open
+042 2008-06-07
+001    1      Ui Laighleis,Gearoidin                                             2.0          2 b 0  0000 - -  0000 - =
+001    2      Orr,Mark                                                           2.5          1 w 1  0000 - +
+001    3      Brady,Stephen                                                      1.0       0000 - -     4 b 0  0000 - =
+001    4      Knox,Angela                                                        2.5       0000 - -     3 w 1  0000 - -
+KRAUSE
+          @t = @p.parse!(@k)
+          @t.should_not be_nil
+          @t.player(1).results.map(&:score).join('').should == 'LWW'
+          @t.player(2).results.map(&:score).join('').should == 'WWD'
+          @t.player(3).results.map(&:score).join('').should == 'DLD'
+          @t.player(4).results.map(&:score).join('').should == 'WWD'
+        end
+
+        it "should work on the documentation example" do
+          @k = <<KRAUSE
+012 Mismatched Totals
+042 2011-03-04
+001    1      Mouse,Minerva                                                      1.0    2     2 b 0  0000 - =
+001    2      Mouse,Mickey                                                       1.5    1     1 w 1
+KRAUSE
+          @t = @p.parse!(@k)
+          output = <<KRAUSE
+012 Mismatched Totals
+042 2011-03-04
+001    1      Mouse,Minerva                                                      1.0    2     2 b 0  0000 - +
+001    2      Mouse,Mickey                                                       1.5    1     1 w 1  0000 - =
+KRAUSE
+          @t.serialize('Krause').should == output
+        end
+      end
+
+      context "parsing variations on strict Krause" do
+        before(:each) do
+          @p = ICU::Tournament::Krause.new
+          @s = File.dirname(__FILE__) + '/samples/krause'
+        end
+
+        it "should handle Bunratty Masters 2011" do
+          file = "#{@s}/bunratty_masters_2011.tab"
+          @t = @p.parse_file(file, :fed => :skip, :fide => true)
+          @t.should_not be_nil
+          @t.start.should == "2011-02-25"
+          @t.finish.should == "2011-02-27"
+          check_player(1, 'Nigel', 'Short', :gender => 'M', :fide_rating => 2658, :fed => 'ENG', :rating => nil, :rank => 5, :title => 'GM')
+          check_results(1, 6, 4.0)
+          check_player(16, 'Jonathan', "O'Connor", :gender => 'M', :fide_rating => 2111, :fed => nil, :rating => nil, :rank => 25, :title => nil)
+          check_results(16, 6, 2.5)
+          @t.player(16).results.map(&:score).join('').should == 'DWLDDL'
+          check_player(24, 'David', 'Murray', :gender => 'M', :fide_rating => 2023, :fed => nil, :rating => nil, :rank => 34, :title => nil)
+          check_results(24, 2, 0.5)
+          @t.player(24).results.map(&:score).join('').should == 'LD'
+          check_player(26, 'Alexandra', 'Wilson', :gender => 'F', :fide_rating => 2020, :fed => 'ENG', :rating => nil, :rank => 29, :title => 'WFM')
+          check_results(26, 6, 2.0)
+        end
+
+        it "should handle Bunratty Major 2011" do
+          file = "#{@s}/bunratty_major_2011.tab"
+          @t = @p.parse_file(file, :fed => :ignore)
+          @t.should_not be_nil
+          @t.start.should == "2011-02-25"
+          @t.finish.should == "2011-02-27"
+          check_player(1, 'Dan', 'Clancy', :gender => 'M', :fide_rating => nil, :fed => nil, :id => 204, :rating => nil, :rank => 12)
+          check_results(1, 6, 4)
+          check_player(10, 'Phillip', 'Foenander', :gender => 'M', :fide_rating => nil, :fed => nil, :id => 7168, :rating => nil, :rank => 18)
+          check_results(10, 6, 3.5)
+          check_player(40, 'Ron', 'Cummins', :gender => 'M', :fide_rating => nil, :fed => nil, :id => 4610, :rating => nil, :rank => 56)
+          check_results(40, 1, 0.0)
+        end
+
+        it "should handle bunratty_minor_2011.tab" do
+          file = "#{@s}/bunratty_minor_2011.tab"
+          lambda { @p.parse_file!(file, :fed => :ignore) }.should_not raise_error
+        end
+
+        it "should handle Bunratty Challengers 2011" do
+          file = "#{@s}/bunratty_challengers_2011.tab"
+          lambda { @p.parse_file!(file, :fed => :ignore) }.should_not raise_error
         end
       end
     end
