@@ -43,7 +43,7 @@ module ICU
     #
     #   tournament = parser.parse_file('ncc', :start => '2010-05-08')
     #   tournament.player(2).id          # =>  12379 (ICU ID)
-    #   tournament.player(2).fide        # =>  1205064 (FIDE ID)
+    #   tournament.player(2).fide_id     # =>  1205064 (FIDE ID)
     #   tournament.player(2).rating      # =>  2556 (ICU rating)
     #   tournament.player(2).fide_rating # =>  2530 (FIDE rating)
     #
