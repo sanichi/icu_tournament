@@ -131,9 +131,9 @@ KRAUSE
 
         it "should have players and their details" do
           @t.should have(3).players
-          check_player(1, 'Minerva', 'Mouse', :gender => 'F', :rating => 1900, :fed => 'USA', :id => 1234567, :dob => '1928-05-15', :rank => 2)
-          check_player(2, 'Daffy',   'Duck',  :gender => 'M', :rating => 2200, :fed => 'IRL', :id => 7654321, :dob => '1937-04-17', :rank => 1, :title => 'IM')
-          check_player(3, 'Mickey',  'Mouse', :gender => 'M', :rating => 2600, :fed => 'USA', :id => 1726354, :dob => '1928-05-15', :rank => 3, :title => 'GM')
+          check_player(1, 'Minerva', 'Mouse', :gender => 'F', :rating => 1900, :fed => 'USA', :fide_id => 1234567, :dob => '1928-05-15', :rank => 2)
+          check_player(2, 'Daffy',   'Duck',  :gender => 'M', :rating => 2200, :fed => 'IRL', :fide_id => 7654321, :dob => '1937-04-17', :rank => 1, :title => 'IM')
+          check_player(3, 'Mickey',  'Mouse', :gender => 'M', :rating => 2600, :fed => 'USA', :fide_id => 1726354, :dob => '1928-05-15', :rank => 3, :title => 'GM')
         end
 
         it "should have correct results for each player" do
@@ -193,13 +193,13 @@ KRAUSE
         end
 
         it "should serialize back to the original if the input is fully canonicalised" do
-          t = @p.parse!(@krause)
-          ICU::Tournament::Krause.new.serialize(t).should == @krause
+          t = @p.parse!(@krause, :fide => true)
+          ICU::Tournament::Krause.new.serialize(t, :fide => true).should == @krause
         end
 
         it "should serialize using the convenience method of the tournament object" do
-          t = @p.parse!(@krause)
-          t.serialize('Krause').should == @krause
+          t = @p.parse!(@krause, :fide => true)
+          t.serialize('Krause', :fide => true).should == @krause
         end
 
         it "should serialize only if :fide option is used correctly" do
@@ -208,16 +208,10 @@ KRAUSE
           t.serialize('Krause').should_not == @krause
         end
 
-        it "should not serialize coorectly if mixed ID types are used" do
+        it "should not serialize correctly if mixed rating types are used" do
           t = @p.parse!(@krause, :fide => true)
           t.serialize('Krause').should_not == @krause
         end
-
-        it "should serialize coorectly if FIDE IDs are used consistently" do
-          t = @p.parse!(@krause, :fide => true)
-          t.serialize('Krause', :fide => true).should == @krause
-        end
-
       end
 
       context "auto-ranking" do
@@ -240,30 +234,39 @@ KRAUSE
         end
       end
 
-      context "local or FIDE IDs" do
+      context "local or FIDE ratings and IDs" do
         before(:each) do
           @krause = <<KRAUSE
 012 Las Vegas National Open
 042 2008-06-07
 001    1 w    Ui Laighleis,Gearoidin            1985 IRL     2501171 1964-06-10  1.0          2 b 0     3 w 1
-001    2 m  m Orr,Mark                          2258 IRL     2500035 1955-11-09  2.0          1 w 1               3 b 1
+001    2 m  m Orr,Mark                          2258 IRL        1350 1955-11-09  2.0          1 w 1               3 b 1
 001    3 m  g Bologan,Viktor                    2663 MDA             1971-01-01  0.0                    1 b 0     2 w 0
 KRAUSE
           @p = ICU::Tournament::Krause.new
         end
 
-        it "should have local IDs by default" do
+        it "should have local ratings by default" do
           @t = @p.parse(@krause)
-          check_player(1, 'Gearoidin', 'Ui Laighleis', :id => 2501171, :fide_id => nil)
-          check_player(2, 'Mark',      'Orr',          :id => 2500035, :fide_id => nil)
-          check_player(3, 'Viktor',    'Bologan',      :id => nil,     :fide_id => nil)
+          check_player(1, 'Gearoidin', 'Ui Laighleis', :rating => 1985, :fide_rating => nil)
+          check_player(2, 'Mark',      'Orr',          :rating => 2258, :fide_rating => nil)
+          check_player(3, 'Viktor',    'Bologan',      :rating => 2663, :fide_rating => nil)
         end
 
-        it "should have FIDE IDs if option is used" do
+        it "should have FIDE ratings if option is specified" do
           @t = @p.parse(@krause, :fide => true)
-          check_player(1, 'Gearoidin', 'Ui Laighleis', :fide => 2501171, :id => nil)
-          check_player(2, 'Mark',      'Orr',          :fide => 2500035, :id => nil)
-          check_player(3, 'Viktor',    'Bologan',      :fide => nil,     :id => nil)
+          check_player(1, 'Gearoidin', 'Ui Laighleis', :rating => nil, :fide_rating => 1985)
+          check_player(2, 'Mark',      'Orr',          :rating => nil, :fide_rating => 2258)
+          check_player(3, 'Viktor',    'Bologan',      :rating => nil, :fide_rating => 2663)
+        end
+        
+        it "should auto-detect FIDE or ICU IDs based on size, the option has no effect" do
+          @t = @p.parse(@krause)
+          check_player(1, 'Gearoidin', 'Ui Laighleis', :id => nil,  :fide_id => 2501171)
+          check_player(2, 'Mark',      'Orr',          :id => 1350, :fide_id => nil)
+          @t = @p.parse(@krause, :fide => true)
+          check_player(1, 'Gearoidin', 'Ui Laighleis', :id => nil,  :fide_id => 2501171)
+          check_player(2, 'Mark',      'Orr',          :id => 1350, :fide_id => nil)
         end
       end
 

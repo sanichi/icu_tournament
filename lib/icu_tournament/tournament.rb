@@ -94,20 +94,25 @@ module ICU
   #
   #   t.validate(:rerank => true)
   #
-  # Ranking is inconsistent if some but not all players have a rank or if all players
-  # but at least one pair of players exist where one has a higher score but a lower rank.
+  # Ranking is inconsistent if not all players have a rank or at least one pair of players exist
+  # where one has a higher score but a lower rank.
   #
-  # To rank the players requires a tie break method to be specified to order players on the same score.
-  # The default is alphabetical (by last name then first name). Other methods can be specified by supplying
-  # an array of methods (strings or symbols) in order of precedence to the _tie_breaks_ setter. Examples:
+  # To rank the players requires one or more tie break methods for ordering players on the same score.
+  # Methods can be specified by supplying an array of methods names (strings or symbols) in order of
+  # precedence to the _tie_breaks_ setter. Examples:
   #
   #   t.tie_breaks = ['Sonneborn-Berger']
   #   t.tie_breaks = [:buchholz, :neustadtl, :blacks, :wins]
-  #   t.tie_breaks = []  # reset to the default
+  #   t.tie_breaks = []  # use the default - see below
   #
-  # See ICU::TieBreak for the full list of supported tie break methods.
+  # If the first method fails to differentiate two tied players, the second is tried, and then the
+  # third and so on. See ICU::TieBreak for the full list of supported tie break methods.
   #
-  # The return value from _rerank_ is the tournament object itself, to allow chaining, for example:
+  # Unless explicity specified, the _name_ tie break (which orders alphabetically by last name
+  # then first name) is implicitly used as a method of last resort. Thus, in the absence of any
+  # tie break methods being specified at all, alphabetical ordering is the default.
+  #
+  # The return value from _rerank_ is the tournament object itself, to allow method chaining, for example:
   #
   #   t.rerank.renumber
   #

@@ -43,23 +43,25 @@ module ICU
     #   daffy = tournament.player(2)
     #   daffy.title                       # => "IM"
     #   daffy.rating                      # => 2200
+    #   daffy.fide_rating                 # => nil
     #   daffy.fed                         # => "IRL"
-    #   daffy.id                          # => 7654321
-    #   daffy.fide                        # => nil
+    #   daffy.id                          # => nil
+    #   daffy.fide_id                     # => 7654321
     #   daffy.dob                         # => "1937-04-17"
     #
-    # By default, ID numbers and ratings in the input are interpreted as local IDs and ratings. If, instead, they should be interpreted as
-    # FIDE IDs and ratings, add the following option:
+    # By default, ratings are interpreted as ICU. If, instead, they should be interpreted as
+    # FIDE ratings, add the _fide_ option:
     #
-    #   tournament = parser.parse_file('tournament.tab', :fide_id => true)
+    #   tournament = parser.parse_file('tournament.tab', :fide => true)
     #   daffy = tournament.player(2)
-    #   daffy.id                          # => nil
-    #   daffy.fide                        # => 7654321
     #   daffy.rating                      # => nil
     #   daffy.fide_rating                 # => 2200
     #
+    # ID numbers, on the other hand, are automatically classified as either FIDE or ICU on the basis of size,
+    # since all FIDE IDs are greater than 100000 whereas ICU IDs are much smaller.
+    #
     # If the ranking numbers are missing from the file or inconsistent (e.g. player A is ranked above player B
-    # but has less points than player B) they are recalculated as a side effect of the parse.
+    # but has less points) they are recalculated as a side effect of the parse.
     #
     #   daffy.rank                        # => 1
     #   minnie.rank                       # => 2
@@ -87,8 +89,8 @@ module ICU
     # By default, local (ICU) IDs and ratings are used for the serialization, but both methods accept an option that
     # causes FIDE IDs and ratings to be used instead:
     #
-    #   krause = parser.serialize(tournament, :fide_id => true)
-    #   krause = tournament.serialize('Krause', :fide_id => true)
+    #   krause = parser.serialize(tournament, :fide => true)
+    #   krause = tournament.serialize('Krause', :fide => true)
     #
     # The following lists Krause data identification numbers, their description and, where available, their corresponding
     # attributes in an ICU::Tournament instance.
@@ -316,7 +318,7 @@ module ICU
         @tournament.start = @data
         @start_set = true
       end
-      
+
       # Split text into lines but also pad the player lines (those beginning "001 ").
       def get_lines(text)
         lines = text.split(/\s*\n/)
@@ -352,17 +354,15 @@ module ICU
           :dob    => @data[65, 10],
           :rank   => @data[81, 4],
         }
-        
-        # The IDs and ratings can be local or international.
-        itype = arg[:fide] ? :fide_id : :id
-        rtype = arg[:fide] ? :fide_rating : :rating
-        opt[itype] = @data[53, 11]
-        opt[rtype] = @data[44, 4]
-        
-        # Remove obviously bad data.
-        opt.delete(itype) if opt.has_key?(itype) && opt[itype].to_i == 0
-        opt.delete(rtype) if opt.has_key?(rtype) && opt[rtype].to_i == 0
-        
+
+        # Ratings are assumed to be local unless otherwise specified.
+        rating = @data[44, 4].to_i
+        opt[arg[:fide] ? :fide_rating : :rating] = rating if rating > 0 && rating < 4000
+
+        # IDs can be determined to be FIDE or ICU on the basis of their size.
+        id = @data[53, 11].to_i
+        opt[id >= 100000 ? :fide_id : :id] = id if id > 0
+
         # Options to remove other bad data.
         opt.delete(:fed) if arg[:fed].to_s == 'ignore'
         opt.delete(:fed) if arg[:fed].to_s == 'skip' && !ICU::Federation.find(opt[:fed])
@@ -414,7 +414,7 @@ module ICU
         end
         result.points
       end
-      
+
       # See if byes can be used to make the sum of scores match the declared total.
       def fix_sum(player, full_byes, half_byes, total, sum)
         return false unless total > sum
