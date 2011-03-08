@@ -70,7 +70,7 @@ module ICU
     #   tournament.serialize('SPExport', :columns => [])
     #
     #   No  Name                  1     2     3
-    #                            
+    #
     #   1   Griffiths, Ryan-Rhys 4:W   2:W   3:W
     #   2   Flynn, Jamie         3:W   1:L   4:W
     #   3   Hulleman, Leon       2:L   4:W   1:L
@@ -107,8 +107,21 @@ module ICU
     #
     class SPExport
       attr_reader :error
-      
-      EXPORT_OPTIONS = [:fed, :fide_id, :id, :fide_rating, :rating, :title, :points]
+
+      COLUMNS =
+      [
+        [:num,          "No"],
+        [:name,       "Name"],
+        [:fed,       "Feder"],
+        [:fide_id, "Intl Id"],
+        [:id,       "Loc Id"],
+        [:fide_rating, "Rtg"],
+        [:rating,      "Loc"],
+        [:title,     "Title"],
+        [:points,    "Total"],
+      ]
+      KEY2NAM = COLUMNS.inject({}) { |h,c| h[c.first] = c.last; h }
+      NAM2KEY = COLUMNS.inject({}) { |h,c| h[c.last] = c.first; h }
 
       # Parse SwissPerfect export data returning a Tournament on success or raising an exception on error.
       def parse!(spx, arg={})
@@ -182,51 +195,35 @@ module ICU
         # Ensure a nice set of player numbers and get the number of rounds.
         t.renumber(:order)
         rounds = t.last_round
-        
+
         # Optional columns.
         optional = arg[:columns] if arg.instance_of?(Hash) && arg[:columns].instance_of?(Array)
         optional = [:id, :points] unless optional
-        
+
         # Columns identifiers in SwissPerfect order.
         columns = Array.new
         columns.push(:num)
         columns.push(:name)
-        EXPORT_OPTIONS.each { |x| columns.push(x) if optional.include?(x) }
-        
-        # SwissPerfect headers for each column (other than the rounds, which are treated separately).
-        header = Hash.new
-        columns.each do |col|
-          header[col] = case col
-          when :num         then "No"
-          when :name        then "Name"
-          when :fed         then "Feder"
-          when :fide_id     then "Intl Id"
-          when :id          then "Loc Id"
-          when :fide_rating then "Rtg"
-          when :rating      then "Loc"
-          when :title       then "Title"
-          when :points      then "Total"
-          end
-        end
-        
+        COLUMNS.map(&:first).each { |x| columns.push(x) if optional.include?(x) && x != :num && x != :name }
+
         # Widths and formats for each column.
         width = Hash.new
         format = Hash.new
         columns.each do |col|
-          width[col] = t.players.inject(header[col].length) { |l, p| p.send(col).to_s.length  > l ? p.send(col).to_s.length  : l }
+          width[col] = t.players.inject(KEY2NAM[col].length) { |l, p| p.send(col).to_s.length  > l ? p.send(col).to_s.length  : l }
           format[col] = "%-#{width[col]}s"
         end
 
         # The header, followed by a blank line.
         formats = columns.map{ |col| format[col] }
         (1..rounds).each { |r| formats << "%#{width[:num]}d  " % r }
-        sp = formats.join("\t") % columns.map{ |col| header[col] }
+        sp = formats.join("\t") % columns.map{ |col| KEY2NAM[col] }
         sp << "\r\n\r\n"
 
         # The round formats for players are slightly different to those for the header.
         formats.pop(rounds)
         (1..rounds).each{ |r| formats << "%#{2+width[:num]}s" }
-        
+
         # Serialize the formats already.
         formats = formats.join("\t") + "\r\n"
 
@@ -258,21 +255,11 @@ module ICU
         @header = Hash.new
         @rounds = 1
         items.each_with_index do |item, i|
-          key = case item
-          when 'No'      then :num
-          when 'Name'    then :name
-          when 'Feder'   then :fed
-          when 'Intl Id' then :fide_id
-          when 'Loc Id'  then :id
-          when 'Rtg'     then :fide_rating
-          when 'Loc'     then :rating
-          when 'Title'   then :title
-          when 'Total'   then :points
-          when /^[1-9]\d*$/
-            round   = item.to_i
-            @rounds = round if round > @rounds
-            round
-          else nil
+          if item.match(/^[1-9]\d*$/)
+            key = item.to_i
+            @rounds = key if key > @rounds
+          else
+            key = NAM2KEY[item]
           end
           @header[key] = i if key
         end
