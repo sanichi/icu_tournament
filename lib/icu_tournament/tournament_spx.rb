@@ -58,9 +58,9 @@ module ICU
     # The optional attribute names, together with their column header names in SwissPerfect, are as follows:
     #
     # * _fed_: Feder
-    # * _fide_: Intl Id
+    # * _fide_id_: Intl Id
     # * _id_: Loc Id
-    # * _fide_: ting_ (Rtg
+    # * _fide_rating_: Rtg
     # * _rating_: Loc
     # * _title_: Title
     # * _points_: Total
@@ -107,6 +107,8 @@ module ICU
     #
     class SPExport
       attr_reader :error
+      
+      EXPORT_OPTIONS = [:fed, :fide_id, :id, :fide_rating, :rating, :title, :points]
 
       # Parse SwissPerfect export data returning a Tournament on success or raising an exception on error.
       def parse!(spx, arg={})
@@ -189,7 +191,7 @@ module ICU
         columns = Array.new
         columns.push(:num)
         columns.push(:name)
-        [:fed, :fide_id, :id, :fide_rating, :rating, :title, :points].each { |x| columns.push(x) if optional.include?(x) }
+        EXPORT_OPTIONS.each { |x| columns.push(x) if optional.include?(x) }
         
         # SwissPerfect headers for each column (other than the rounds, which are treated separately).
         header = Hash.new
