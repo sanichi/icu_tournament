@@ -51,13 +51,7 @@ module ICU
   #   tluser.colour       # => 'B'
   #   tluser.round        # => 2
   #
-  # The reversed result copies the _rateable_ attribute of the original unless an
-  # explicit override is supplied.
-  #
-  #   result.rateable                 # => true
-  #   result.reverse.rateable         # => true (copied from original)
-  #   result.reverse(false).rateable  # => false (overriden)
-  #
+  # The _rateable_ attribute is the same in a result and it's reverse.
   # A result which has no opponent is not reversible (the _reverse_ method returns _nil_).
   #
   # The return value from the _score_ method is always one of _W_, _L_ or _D_. However,
@@ -145,13 +139,13 @@ module ICU
     end
 
     # Return a reversed version (from the opponent's perspective) of a result.
-    def reverse(rateable=nil)
+    def reverse
       return unless @opponent
       r = Result.new(@round, @opponent, @score == 'W' ? 'L' : (@score == 'L' ? 'W' : 'D'))
       r.opponent = @player
       r.colour = 'W' if @colour == 'B'
       r.colour = 'B' if @colour == 'W'
-      r.rateable = rateable || @rateable
+      r.rateable = @rateable
       r
     end
 
@@ -166,6 +160,11 @@ module ICU
         self.rateable = old_rateable  # because setting the opponent has a side-effect which is undesirable in this context
       end
       self
+    end
+    
+    # Short descrition mainly for debugging.
+    def inspect
+      "R#{@round}P#{@player}O#{@opponent || '-'}#{@score}#{@colour || '-'}#{@rateable ? 'R' : 'U'}"
     end
 
     # Loose equality. True if the round, player and opponent numbers, colour and score all match.

@@ -333,13 +333,10 @@ EOS
         @boby.points.should == 0.5
       end
 
-      it "can be added symmetrically or asymmetrically with respect to rateability" do
+      it "asymmetric results cannot be added" do
         @t.add_result(Result.new(1, 1, 'W', :opponent => 2))
-        @mark.results[0].rateable.should be_true
-        @gary.results[0].rateable.should be_true
-        @t.add_result(Result.new(2, 1, 'W', :opponent => 3), false)
-        @mark.results[1].rateable.should be_true
-        @boby.results[0].rateable.should be_false
+        lambda { @t.add_result(Result.new(1, 2, 'D', :opponent => 1)) }.should raise_error(/result.*match/)
+        lambda { @t.add_result(Result.new(1, 2, 'L', :opponent => 1, :rateable => false)) }.should raise_error(/result.*match/)
       end
 
       it "should have a defined player" do

@@ -227,7 +227,7 @@ module ICU
         player = Player.new('Mark', 'Orr', 3)
         player.add_result(Result.new(1, 3, 'W', :opponent => 1))
         player.add_result(Result.new(2, 3, 'D', :opponent => 2))
-        lambda { player.add_result(Result.new(2, 3, 'L', :opponent => 4)) }.should raise_error(/round number .* unique/)
+        lambda { player.add_result(Result.new(2, 3, 'L', :opponent => 4)) }.should raise_error(/does not match/)
       end
     end
 

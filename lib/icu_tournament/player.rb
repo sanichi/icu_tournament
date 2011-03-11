@@ -169,10 +169,10 @@ module ICU
     # Add a result. Don't use this method directly - use ICU::Tournament#add_result instead.
     def add_result(result)
       raise "invalid result" unless result.class == ICU::Result
-      raise "player number (#{@num}) is not matched to result player number (#{result.player})" unless @num == result.player
+      raise "player number (#{@num}) is not matched to result player number (#{result.inspect})" unless @num == result.player
       already = @results.find_all { |r| r.round == result.round }
       return if already.size == 1 && already[0].eql?(result)
-      raise "round number (#{result.round}) of new result is not unique and new result is not the same as existing one" unless already.size == 0
+      raise "player #{@num} already has a result in round #{result.round} (#{already[0].inspect}) which does not match the one being added (#{result.inspect})" unless already.size == 0
       if @results.size == 0 || @results.last.round <= result.round
         @results << result
       else

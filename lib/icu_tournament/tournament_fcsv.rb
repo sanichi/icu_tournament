@@ -36,17 +36,17 @@ module ICU
     #   tournament.rounds                                   # => 9
     #   tournament.website                                  # => "http://www.bcmchess.co.uk/monarch2007/"
     #
-    # The main player (the player whose results are being reported for rating) played 9 rounds
+    # The main player (the ICU player whose results are being reported for rating) played 9 rounds
     # but only 8 other players (he had a bye in round 6), so the total number of players is 9.
     #
     #   tournament.players.size                             # => 9
     #
-    # Each player has a unique number for the tournament. The main player always occurs first in this type of file, so his number is 1.
+    # Each player has a unique number for the tournament, starting at 1 for the first ICU player.
     #
     #   player = tournament.player(1)
     #   player.name                                         # => "Fox, Anthony"
     #
-    # This player has 4 points from 9 rounds but only 8 of his results are are rateable (because of the bye).
+    # In the example, this player has 4 points from 9 rounds but only 8 of his results are are rateable (because of the bye).
     #
     #   player.points                                       # => 4.0
     #   player.results.size                                 # => 9
@@ -60,13 +60,6 @@ module ICU
     #
     #   opponents.size                                      # => 8
     #   opponents.find_all{ |o| o.results.size == 1 }.size  # => 8
-    #
-    # However, none of the opponents' results are rateable because they are foreign to the domestic rating list
-    # to which the main player belongs. For example:
-    #
-    #   opponent = tournament.players(2)
-    #   opponent.name                                       # => "Taylor, Peter P."
-    #   opponent.results[0].rateable                        # => false
     #
     # If the file contains errors, then the return value from <em>parse_file</em> is <em>nil</em> and
     # an error message is returned by the <em>error</em> method of the parser object. The method
@@ -85,10 +78,11 @@ module ICU
     # Extra condtions, over and above the normal validation rules, apply before any tournament validates or can be serialized in this format.
     #
     # * the tournament must have a _site_ attribute
-    # * there must be at least one player with an _id_ (interpreted as an ICU ID number)
+    # * there must be at least one player with an _id_ (ICU ID number)
     # * all foreign players (those without an ICU ID) must have a _fed_ attribute (federation)
     # * all ICU players must have a result in every round (even if it is just bye or is unrateable)
-    # * the opponents of all ICU players must have a federation (this could include other ICU players)
+    # * all the opponents of each ICU player must have a federation (this could include other ICU players with federation _IRL_)
+    # * at least one of each ICU player's opponents must have a rating
     #
     # If any of these are not satisfied, then the following method calls will all raise an exception:
     #
@@ -98,7 +92,7 @@ module ICU
     #
     # You can also build the tournament object from scratch using your own data and then serialize it.
     # For example, here are the commands to reproduce the example above. Note that in this format
-    # opponents' ratings are FIDE while players' IDs are ICU.
+    # opponents' ratings are FIDE.
     #
     #   t = ICU::Tournament.new("Isle of Man Masters, 2007", '2007-09-22', :rounds => 9)
     #   t.site = 'http://www.bcmchess.co.uk/monarch2007/'
@@ -217,7 +211,7 @@ module ICU
               data << n
               r = p.find_result(n)
               data << case r.score; when 'W' then '1'; when 'L' then '0'; else '='; end
-              if r.rateable
+              if r.opponent
                 data << r.colour
                 o = t.player(r.opponent)
                 data << o.last_name
@@ -243,11 +237,14 @@ module ICU
         foreign = t.players.find_all { |p| !p.id }
         raise "all foreign players must have a federation" if foreign.detect { |f| !f.fed }
         icu.each do |p|
+          rated = 0
           (1..t.rounds).each do |r|
             result = p.find_result(r)
             raise "ICU players must have a result in every round" unless result
             raise "all opponents of ICU players must have a federation" if result.opponent && !t.player(result.opponent).fed
+            rated += 1 if result.opponent && t.player(result.opponent).fide_rating
           end
+          raise "player #{p.num} (#{p.name}) has no rated opponents" if rated == 0
         end
       end
 
@@ -320,17 +317,16 @@ module ICU
               old_player.merge(opponent)
               old_result = @player.find_result(@round)
               raise "missing result for player (#{@player.name}) in round #{@round}" unless old_result
-              raise "mismatched results for player (#{old_player.name}) in round #{@round}" unless result == old_result
-              old_result.rateable = true
+              raise "mismatched results for player (#{old_player.name}): #{result.inspect} #{old_result.inspect}" unless result.eql?(old_result)
             else
               old_result = old_player.find_result(@round)
               raise "a player (#{old_player.name}) has more than one game in the same round (#{@round})" if old_result
-              @tournament.add_result(result, false)
+              @tournament.add_result(result)
             end
           else
             @tournament.add_player(opponent)
             result.opponent = opponent.num
-            @tournament.add_result(result, false)
+            @tournament.add_result(result)
           end
         end
         @state = 6 if @round == @tournament.rounds

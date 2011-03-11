@@ -58,9 +58,13 @@ CSV
 
         it "should have correct player details" do
           check_player(1, 'Gearoidin', 'Ui Laighleis', 4, 3, 2.0, :id => 3364)
-          check_player(2, 'April',     'Cronin',       1, 0, 1.0, :fide_rating => 2005, :fed => 'IRL')
-          check_player(3, 'Suzanne',   'Connolly',     1, 0, 0.5, :fide_rating => 1950, :fed => 'IRL')
-          check_player(4, 'Linda',     'Powell',       1, 0, 0.0, :fide_rating => 1850, :fed => 'WLS')
+          check_player(2, 'April',     'Cronin',       1, 1, 1.0, :fide_rating => 2005, :fed => 'IRL')
+          check_player(3, 'Suzanne',   'Connolly',     1, 1, 0.5, :fide_rating => 1950, :fed => 'IRL')
+          check_player(4, 'Linda',     'Powell',       1, 1, 0.0, :fide_rating => 1850, :fed => 'WLS')
+        end
+        
+        it "should be valid" do
+          @t.invalid.should be_false
         end
       end
 
@@ -114,7 +118,7 @@ CSV
           @o.size.should == 8
           @o.find_all{ |o| o.results.size == 1}.size.should == 8
           @r.name.should == "Taylor, Peter P."
-          @r.results[0].rateable.should be_false
+          @r.results[0].rateable.should be_true
         end
       end
 
@@ -154,9 +158,9 @@ CSV
         it "should have correct player details" do
           check_player(1, 'Gearoidin', 'Ui Laighleis', 2, 2, 1.0, :id => 3364)
           check_player(4, 'Mark',      'Orr',          2, 2, 1.5, :id => 1350)
-          check_player(2, 'Gary',      'Kasparov',     1, 0, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
-          check_player(3, 'April',     'Cronin',       2, 0, 1.0, :fide_rating => 2005, :fed => 'IRL')
-          check_player(5, 'Bobby',     'Fischer',      1, 0, 0.0, :fide_rating => 2700, :fed => 'USA', :title => 'GM')
+          check_player(2, 'Gary',      'Kasparov',     1, 1, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
+          check_player(3, 'April',     'Cronin',       2, 2, 1.0, :fide_rating => 2005, :fed => 'IRL')
+          check_player(5, 'Bobby',     'Fischer',      1, 1, 0.0, :fide_rating => 2700, :fed => 'USA', :title => 'GM')
         end
       end
 
@@ -196,8 +200,8 @@ CSV
         it "should have correct player details" do
           check_player(1, 'Gearoidin', 'Ui Laighleis', 2, 2, 1.0, :fide_rating => 1800, :fed => 'IRL', :id => 3364)
           check_player(3, 'Mark',      'Orr',          2, 2, 1.0, :fide_rating => 2100, :fed => 'IRL', :id => 1350, :title => 'IM')
-          check_player(2, 'Gary',      'Kasparov',     1, 0, 0.5, :fide_rating => 2800, :fed => 'RUS')
-          check_player(4, 'April',     'Cronin',       1, 0, 0.5, :fide_rating => 2005, :fed => 'IRL')
+          check_player(2, 'Gary',      'Kasparov',     1, 1, 0.5, :fide_rating => 2800, :fed => 'RUS')
+          check_player(4, 'April',     'Cronin',       1, 1, 0.5, :fide_rating => 2005, :fed => 'IRL')
         end
       end
 
@@ -234,8 +238,8 @@ CSV
 
         it "should have correct player details" do
           check_player(1, 'Gearoidin', 'Ui Laighleis', 2, 2, 1.0, :id => 3364)
-          check_player(2, 'Gary',      'Kasparov',     1, 0, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
-          check_player(3, 'Mark',      'Orr',          1, 0, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
+          check_player(2, 'Gary',      'Kasparov',     1, 1, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
+          check_player(3, 'Mark',      'Orr',          1, 1, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
         end
         
         it "should still have original names" do
@@ -565,8 +569,8 @@ CSV
         it "should parse UTF-8" do
           lambda { @t = @f.parse!(@csv) }.should_not raise_error
           check_player(1, 'Gearoìdin', 'Uì Laighlèis', 2, 2, 1.0, :id => 3364)
-          check_player(2, 'Gary', 'Kasparov', 1, 0, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
-          check_player(3, 'Mârk', 'Örr', 1, 0, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
+          check_player(2, 'Gary', 'Kasparov', 1, 1, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
+          check_player(3, 'Mârk', 'Örr', 1, 1, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
           @t.name.should == "Brätto Open, 2001"
         end
 
@@ -574,8 +578,8 @@ CSV
           @csv = @csv.encode("ISO-8859-1")
           lambda { @t = @f.parse!(@csv) }.should_not raise_error
           check_player(1, 'Gearoìdin', 'Uì Laighlèis', 2, 2, 1.0, :id => 3364)
-          check_player(2, 'Gary', 'Kasparov', 1, 0, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
-          check_player(3, 'Mârk', 'Örr', 1, 0, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
+          check_player(2, 'Gary', 'Kasparov', 1, 1, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
+          check_player(3, 'Mârk', 'Örr', 1, 1, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
           @t.name.should == "Brätto Open, 2001"
         end
       end
@@ -614,8 +618,8 @@ CSV
           file = "#{@s}/utf-8.csv"
           lambda { @t = @p.parse_file!(file) }.should_not raise_error
           check_player(1, 'Gearoìdin', 'Uì Laighlèis', 2, 2, 1.0, :id => 3364)
-          check_player(2, 'Gary', 'Kasparov', 1, 0, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
-          check_player(3, 'Mârk', 'Örr', 1, 0, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
+          check_player(2, 'Gary', 'Kasparov', 1, 1, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
+          check_player(3, 'Mârk', 'Örr', 1, 1, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
           @t.name.should == "Brätto Open, 2001"
         end
 
@@ -623,8 +627,8 @@ CSV
           file = "#{@s}/latin-1.csv"
           lambda { @t = @p.parse_file!(file) }.should_not raise_error
           check_player(1, 'Gearoìdin', 'Uì Laighlèis', 2, 2, 1.0, :id => 3364)
-          check_player(2, 'Gary', 'Kasparov', 1, 0, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
-          check_player(3, 'Mârk', 'Örr', 1, 0, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
+          check_player(2, 'Gary', 'Kasparov', 1, 1, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
+          check_player(3, 'Mârk', 'Örr', 1, 1, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
           @t.name.should == "Brätto Open, 2001"
         end
       end
