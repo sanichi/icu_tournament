@@ -71,22 +71,28 @@ module ICU
   # * the result round numbers are consistent (no more than one game per player per round)
   # * the tournament dates (start, finish, round dates), if there are any, are consistent
   # * the player ranks are consistent with their scores
+  # * there are no players with duplicate ICU IDs or duplicate FIDE IDs
   #
   # Side effects of calling <em>validate!</em> or _invalid_ include:
   #
   # * the number of rounds will be set if not set already
   # * the finish date will be set if not set already and if there are round dates
   #
-  # Optionally, additional validation checks can be performed given a tournament
-  # parser/serializer. For example:
+  # Optionally, additional validation checks, appropriate for a given
+  # serializer, may be performed. For example:
   #
   #   t.validate!(:type => ICU::Tournament.ForeignCSV.new)
   #
-  # Or equivalently:
+  # or equivalently,
   #
   #   t.validate!(:type => 'ForeignCSV')
   #
-  # Such additional validation is always performed before a tournament is serialized.
+  # which, amongst other tests, checks that there is at least one player with an ICU number and
+  # that all such players have a least one game against a FIDE rated opponent. This is an example
+  # of a specialized check that is only appropriate for a particular serializer. If it raises an
+  # exception then the tournament cannot be serialized that way.
+  #
+  # Validation is automatically performed just before a tournament is serialized.
   # For example, the following are equivalent and will throw an exception if
   # the tournament is invalid according to either the general rules or the rules
   # specific for the type used:
@@ -401,7 +407,17 @@ module ICU
     # Check players.
     def check_players
       raise "the number of players (#{@player.size}) must be at least 2" if @player.size < 2
+      ids = Hash.new
+      fide_ids = Hash.new
       @player.each do |num, p|
+        if p.id
+          raise "duplicate ICU IDs, players #{p.num} and #{ids[p.id]}" if ids[p.id]
+          ids[p.id] = num
+        end
+        if p.fide_id
+          raise "duplicate FIDE IDs, players #{p.num} and #{fide_ids[p.fide_id]}" if fide_ids[p.fide_id]
+          fide_ids[p.fide_id] = num
+        end
         raise "player #{num} has no results" if p.results.size == 0
         p.results.each do |r|
           next unless r.opponent

@@ -162,11 +162,11 @@ module ICU
         end
 
         it "should have correct details for selection of players who got bonuses (in MEMO)" do
-          @t.player(23).sp_signature.should == "Long, Killian|10293|2|1506||2.5|33|123456|WDLLWL|WWBWBB|TFTTTT"
-          @t.player(26).sp_signature.should == "Bradley, Michael|6756|27|1413||3.0|26|123456|DDLWWL|BWWBWW|TFTTTT"
-          @t.player(15).sp_signature.should == "Twomey, Pat|1637|22|1656||4.5|7|123456|WDLWWW|WWWBWB|FFTTTT"
+          @t.player(23).sp_signature.should == "Long, Killian|10293||1506||2.5|33|123456|WDLLWL|WWBWBB|TFTTTT"
+          @t.player(26).sp_signature.should == "Bradley, Michael|6756||1413||3.0|26|123456|DDLWWL|BWWBWW|TFTTTT"
+          @t.player(15).sp_signature.should == "Twomey, Pat|1637||1656||4.5|7|123456|WDLWWW|WWWBWB|FFTTTT"
           @t.player(46).sp_signature.should == "O'Riordan, Pat|10696||900||2.0|42|123456|LDDLDD|BWBWWB|TTTTFT"
-          @t.player(38).sp_signature.should == "Gill, Craig I.|10637|28|1081||2.0|43|123456|LLWDDL|BWBWWB|TTTTFT"
+          @t.player(38).sp_signature.should == "Gill, Craig I.|10637||1081||2.0|43|123456|LLWDDL|BWBWWB|TTTTFT"
         end
 
         it "should have consistent ranks" do

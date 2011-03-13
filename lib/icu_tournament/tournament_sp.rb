@@ -248,8 +248,8 @@ module ICU
           case pair[0]
           when :fed         then val = val && val.match(/^[A-Z]{3}$/i) ? val.upcase : nil
           when :gender      then val = val.to_i > 0 ? %w(M F)[val.to_i-1] : nil
-          when :id          then val = val.to_i > 0 ? val : nil
-          when :fide_id     then val = val.to_i > 0 ? val : nil
+          when :id          then val = val.match(/^\s*([1-9]\d*)\s*$/) ? $1 : nil
+          when :fide_id     then val = val.match(/^\s*([1-9]\d*)\s*$/) ? $1 : nil
           when :rating      then val = val.to_i > 0 ? val : nil
           when :fide_rating then val = val.to_i > 0 ? val : nil
           when :title       then val = val.to_i > 0 ? %w(GM WGM IM WIM FM WFM)[val.to_i-1] : nil

@@ -489,6 +489,12 @@ EOS
         team1.add_member(2)
         @t.invalid.should match(/already.*member/)
       end
+
+      it "should not be valid if two players share the same ICU or FIDE ID" do
+        @t.player(1).id = 1350
+        @t.player(2).id = 1350
+        @t.invalid.should match(/duplicate.*ICU/)
+      end
     end
 
     context "renumbering" do
