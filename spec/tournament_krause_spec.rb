@@ -515,6 +515,11 @@ KRAUSE
           check_player(3, 'Viktor', 'Bologan')
           @t.name.should == "Läs Végas National Opeñ"
         end
+
+        it "should parse a large file with total scores as much as 10.0" do
+          file = "#{@s}/armstrong_2011.tab"
+          lambda { @t = @p.parse_file!(file) }.should_not raise_error
+        end
       end
 
       context "automatic repairing of totals" do

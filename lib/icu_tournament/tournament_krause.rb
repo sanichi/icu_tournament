@@ -372,7 +372,7 @@ module ICU
         @tournament.add_player(player)
 
         # Results.
-        total = @data[77, 4].strip
+        total = @data[76, 4].strip
         total = total == '' ? nil : total.to_f
         index = 87
         round = 1
