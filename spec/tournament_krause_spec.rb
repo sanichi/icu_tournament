@@ -321,6 +321,120 @@ KRAUSE
         end
       end
 
+      context "customised serialisation with ICU IDs" do
+        before(:all) do
+          @k = <<KRAUSE
+012 Las Vegas National Open
+042 2008-06-07
+0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+001    1 w    Ui Laighleis,Gearoidin            1985 IRL        3364 1964-06-10  1.0    2     2 b 0     3 w 1          
+001    2    m Orr,Mark                          2258 IRL        1350 1955-11-09  2.0    1     1 w 1               3 b 1
+001    3    g Svidler,Peter                     2663 RUS       16790 1971-01-01  0.0    3               1 b 0     2 w 0
+KRAUSE
+          @p = ICU::Tournament::Krause.new
+          @t = @p.parse(@k)
+        end
+
+        it "should include all data without any explict cusromisation" do
+          text = @t.serialize('Krause')
+          text.should match(/001    1 w    Ui Laighleis,Gearoidin            1985 IRL        3364 1964-06-10  1.0    2/)
+          text.should match(/001    2    m Orr,Mark                          2258 IRL        1350 1955-11-09  2.0    1/)
+          text.should match(/001    3    g Svidler,Peter                     2663 RUS       16790 1971-01-01  0.0    3/)
+        end
+
+        it "should omitt ratings and IDs if FIDE option is chosen" do
+          text = @t.serialize('Krause', :fide => true)
+          text.should match(/001    1 w    Ui Laighleis,Gearoidin                 IRL             1964-06-10  1.0    2/)
+          text.should match(/001    2    m Orr,Mark                               IRL             1955-11-09  2.0    1/)
+          text.should match(/001    3    g Svidler,Peter                          RUS             1971-01-01  0.0    3/)
+        end
+
+        it "should omitt all optional data if columns option is an empty hash" do
+          text = @t.serialize('Krause', :columns => [])
+          text.should match(/001    1      Ui Laighleis,Gearoidin                                             1.0     /)
+          text.should match(/001    2      Orr,Mark                                                           2.0     /)
+          text.should match(/001    3      Svidler,Peter                                                      0.0     /)
+        end
+
+        it "should should be able to include a subset of attributes, test 1" do
+          text = @t.serialize('Krause', :columns => [:gender, "dob", :id, "rubbish"])
+          text.should match(/001    1 w    Ui Laighleis,Gearoidin                            3364 1964-06-10  1.0     /)
+          text.should match(/001    2      Orr,Mark                                          1350 1955-11-09  2.0     /)
+          text.should match(/001    3      Svidler,Peter                                    16790 1971-01-01  0.0     /)
+        end
+
+        it "should should be able to include a subset of attributes, test 2" do
+          text = @t.serialize('Krause', :columns => [:rank, "title", :fed, "rating"])
+          text.should match(/001    1      Ui Laighleis,Gearoidin            1985 IRL                         1.0    2/)
+          text.should match(/001    2    m Orr,Mark                          2258 IRL                         2.0    1/)
+          text.should match(/001    3    g Svidler,Peter                     2663 RUS                         0.0    3/)
+        end
+
+        it "should should be able to include all attributes" do
+          text = @t.serialize('Krause', :columns => [:gender, :title, :rating, :fed, :id, :dob, :rank])
+          text.should match(/001    1 w    Ui Laighleis,Gearoidin            1985 IRL        3364 1964-06-10  1.0    2/)
+          text.should match(/001    2    m Orr,Mark                          2258 IRL        1350 1955-11-09  2.0    1/)
+          text.should match(/001    3    g Svidler,Peter                     2663 RUS       16790 1971-01-01  0.0    3/)
+        end
+      end
+
+      context "customised serialisation with FIDE IDs" do
+        before(:all) do
+          @k = <<KRAUSE
+012 Las Vegas National Open
+042 2008-06-07
+0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+001    1 w    Ui Laighleis,Gearoidin            1985 IRL     2501171 1964-06-10  1.0    2     2 b 0     3 w 1          
+001    2    m Orr,Mark                          2258 IRL     2500035 1955-11-09  2.0    1     1 w 1               3 b 1
+001    3    g Svidler,Peter                     2663 RUS     4102142 1971-01-01  0.0    3               1 b 0     2 w 0
+KRAUSE
+          @p = ICU::Tournament::Krause.new
+          @t = @p.parse(@k, :fide => true)
+        end
+
+        it "should include all data without any explict cusromisation" do
+          text = @t.serialize('Krause', :fide => true)
+          text.should match(/001    1 w    Ui Laighleis,Gearoidin            1985 IRL     2501171 1964-06-10  1.0    2/)
+          text.should match(/001    2    m Orr,Mark                          2258 IRL     2500035 1955-11-09  2.0    1/)
+          text.should match(/001    3    g Svidler,Peter                     2663 RUS     4102142 1971-01-01  0.0    3/)
+        end
+
+        it "should omitt ratings and IDs if FIDE option is not chosen" do
+          text = @t.serialize('Krause')
+          text.should match(/001    1 w    Ui Laighleis,Gearoidin                 IRL             1964-06-10  1.0    2/)
+          text.should match(/001    2    m Orr,Mark                               IRL             1955-11-09  2.0    1/)
+          text.should match(/001    3    g Svidler,Peter                          RUS             1971-01-01  0.0    3/)
+        end
+
+        it "should omitt all optional data if columns option is an empty hash" do
+          text = @t.serialize('Krause', :columns => [])
+          text.should match(/001    1      Ui Laighleis,Gearoidin                                             1.0     /)
+          text.should match(/001    2      Orr,Mark                                                           2.0     /)
+          text.should match(/001    3      Svidler,Peter                                                      0.0     /)
+        end
+
+        it "should should be able to include a subset of attributes, test 1" do
+          text = @t.serialize('Krause', :columns => [:gender, "dob", :id], :fide => true)
+          text.should match(/001    1 w    Ui Laighleis,Gearoidin                         2501171 1964-06-10  1.0     /)
+          text.should match(/001    2      Orr,Mark                                       2500035 1955-11-09  2.0     /)
+          text.should match(/001    3      Svidler,Peter                                  4102142 1971-01-01  0.0     /)
+        end
+
+        it "should should be able to include a subset of attributes, test 2" do
+          text = @t.serialize('Krause', :columns => [:rank, "title", :fed, "rating", :rubbish], :fide => true)
+          text.should match(/001    1      Ui Laighleis,Gearoidin            1985 IRL                         1.0    2/)
+          text.should match(/001    2    m Orr,Mark                          2258 IRL                         2.0    1/)
+          text.should match(/001    3    g Svidler,Peter                     2663 RUS                         0.0    3/)
+        end
+
+        it "should should be able to include all attributes" do
+          text = @t.serialize('Krause', :columns => [:gender, :title, :rating, :fed, :id, :dob, :rank], :fide => true)
+          text.should match(/001    1 w    Ui Laighleis,Gearoidin            1985 IRL     2501171 1964-06-10  1.0    2/)
+          text.should match(/001    2    m Orr,Mark                          2258 IRL     2500035 1955-11-09  2.0    1/)
+          text.should match(/001    3    g Svidler,Peter                     2663 RUS     4102142 1971-01-01  0.0    3/)
+        end
+      end
+
       context "errors" do
         before(:each) do
           @k = <<KRAUSE

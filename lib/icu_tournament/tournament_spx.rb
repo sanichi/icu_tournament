@@ -197,8 +197,9 @@ module ICU
         rounds = t.last_round
 
         # Optional columns.
-        optional = arg[:columns] if arg.instance_of?(Hash) && arg[:columns].instance_of?(Array)
+        optional = arg[:columns] if arg[:columns].instance_of?(Array)
         optional = [:id, :points] unless optional
+        optional.map!(&:to_s).map!(&:to_sym)
 
         # Columns identifiers in SwissPerfect order.
         columns = Array.new

@@ -57,8 +57,8 @@ module ICU
     #   daffy.rating                      # => nil
     #   daffy.fide_rating                 # => 2200
     #
-    # ID numbers, on the other hand, are automatically classified as either FIDE or ICU on the basis of size,
-    # since all FIDE IDs are greater than 100000 whereas ICU IDs are much smaller.
+    # ID numbers, on the other hand, are automatically classified as either FIDE or ICU on the basis of size.
+    # IDs larger than 100000 are assumed to be FIDE IDs, while smaller numbers are treated as ICU IDs.
     #
     # If the ranking numbers are missing from the file or inconsistent (e.g. player A is ranked above player B
     # but has less points) they are recalculated as a side effect of the parse.
@@ -78,6 +78,8 @@ module ICU
     # <em>parse_file!</em> is similar except that it raises errors, and the methods <em>parse</em>
     # and <em>parse!</em> are similar except their inputs are strings rather than file names.
     #
+    # == Serialization
+    #
     # A tournament can be serialized back to Krause format (the reverse of parsing) with the _serialize_ method of the parser.
     #
     #   krause = parser.serialize(tournament)
@@ -92,24 +94,20 @@ module ICU
     #   krause = parser.serialize(tournament, :fide => true)
     #   krause = tournament.serialize('Krause', :fide => true)
     #
-    # The following lists Krause data identification numbers, their description and, where available, their corresponding
-    # attributes in an ICU::Tournament instance.
+    # By default all available information is output for each player, however, this is customizable. The player number,
+    # name, total points and results are always output but any of the remaining data (_gender_, _title_, _rating_ or _fide_rating_,
+    # _fed_, _id_ or _fide_id_, _dob_ and _rank_) can be omitted, if desired, by specifying an array of columns to include.
+    # To omitt all the optional data, supply an empty array:
     #
-    # [001 Player record]           Use _players_ to get all players or _player_ with a player number to get a single instance.
-    # [012 Name]                    Get or set with _name_. Free text. A tounament name is mandatory.
-    # [013 Teams]                   Create an ICU::Team, add player numbers to it, use _add_team_ to add to tournament, _get_team_/_teams_ to retrive it/them.
-    # [022 City]                    Get or set with _city_. Free text.
-    # [032 Federation]              Get or set with _fed_. Getter returns either _nil_ or a three letter code. Setter can take various formats (see ICU::Federation).
-    # [042 Start date]              Get or set with _start_. Getter returns <em>yyyy-mm-dd</em> format, but setter can use any reasonable date format. Start date is mandadory.
-    # [052 End date]                Get or set with _finish_. Returns either <em>yyyy-mm-dd</em> format or _nil_ if not set. Like _start_, can be set with various date formats.
-    # [062 Number of players]       Not used. Treated as comment in parsed files. Can be determined from the size of the _players_ array.
-    # [072 Number of rated players] Not used. Treated as comment in parsed files. Can be determined by analysing the array returned by _players_.
-    # [082 Number of teams]         Not used. Treated as comment in parsed files.
-    # [092 Type of tournament]      Get or set with _type_. Free text.
-    # [102 Arbiter(s)]              Get or set with -arbiter_. Free text.
-    # [112 Deputy(ies)]             Get or set with _deputy_. Free text.
-    # [122 Time control]            Get or set with _time_control_. Free text.
-    # [132 Round dates]             Get an array of dates using _round_dates_ or one specific round date by calling _round_date_ with a round number.
+    #   krause = tournament.serialize('Krause', :columns => [])
+    #
+    # To omitt, for example, just federation and rating, include all columns but those two:
+    #
+    #   krause = tournament.serialize('Krause', :columns => [:gender, :title, :id, :dob, :rank])
+    #
+    # To output FIDE IDs and ratings use the _fide_ option in conjunctions with the _id_ and _rating_ columns:
+    #
+    #   krause = tournament.serialize('Krause', :columns => [:id, :rating], :fide => true)
     #
     # == Parser Strictness
     #
@@ -171,6 +169,27 @@ module ICU
     #   042 2011-03-04
     #   001    1      Mouse,Minerva                                                      1.0    2     2 b 0  0000 - +
     #   001    2      Mouse,Mickey                                                       1.5    1     1 w 1  0000 - =
+    #
+    # == Tournament Attributes
+    #
+    # The following lists Krause data identification numbers, their description and, where available, their corresponding
+    # attributes in an ICU::Tournament instance.
+    #
+    # [001 Player record]           Use _players_ to get all players or _player_ with a player number to get a single instance.
+    # [012 Name]                    Get or set with _name_. Free text. A tounament name is mandatory.
+    # [013 Teams]                   Create an ICU::Team, add player numbers to it, use _add_team_ to add to tournament, _get_team_/_teams_ to retrive it/them.
+    # [022 City]                    Get or set with _city_. Free text.
+    # [032 Federation]              Get or set with _fed_. Getter returns either _nil_ or a three letter code. Setter can take various formats (see ICU::Federation).
+    # [042 Start date]              Get or set with _start_. Getter returns <em>yyyy-mm-dd</em> format, but setter can use any reasonable date format. Start date is mandadory.
+    # [052 End date]                Get or set with _finish_. Returns either <em>yyyy-mm-dd</em> format or _nil_ if not set. Like _start_, can be set with various date formats.
+    # [062 Number of players]       Not used. Treated as comment in parsed files. Can be determined from the size of the _players_ array.
+    # [072 Number of rated players] Not used. Treated as comment in parsed files. Can be determined by analysing the array returned by _players_.
+    # [082 Number of teams]         Not used. Treated as comment in parsed files.
+    # [092 Type of tournament]      Get or set with _type_. Free text.
+    # [102 Arbiter(s)]              Get or set with -arbiter_. Free text.
+    # [112 Deputy(ies)]             Get or set with _deputy_. Free text.
+    # [122 Time control]            Get or set with _time_control_. Free text.
+    # [132 Round dates]             Get an array of dates using _round_dates_ or one specific round date by calling _round_date_ with a round number.
     #
     class Krause
       attr_reader :error, :comments
@@ -481,17 +500,40 @@ module ICU
   class Player
     # Format a player's 001 record as it would appear in a Krause formatted file (including the final newline).
     def to_krause(rounds, arg)
+      default = [:gender, :title, :rating, :fed, :id, :dob, :rank]
+
+      # Optional columns.
+      optional = arg[:columns] if arg[:columns].instance_of?(Array)
+      optional.map!(&:to_s).map!(&:to_sym) if optional
+      optional = default.dup unless optional
+      optional = optional.inject({}) { |m, a| m[a] = true; m }
+
+      # Get the values to use.
+      val = default.inject({}) do |m, a|
+        if optional[a]
+          if arg[:fide] && (a == :rating || a == :id)
+            m[a] = send("fide_#{a}")
+          else
+            m[a] = send(a)
+          end
+        end
+        m
+      end
+      
+      # Output the mandatory and optional values.
       krause = '001'
       krause << sprintf(' %4d', @num)
-      krause << sprintf(' %1s', case @gender; when 'M' then 'm'; when 'F' then 'w'; else ''; end)
-      krause << sprintf(' %2s', case @title; when nil then ''; when 'IM' then 'm'; when 'WIM' then 'wm'; else @title[0, @title.length-1].downcase; end)
+      krause << sprintf(' %1s', case val[:gender]; when 'M' then 'm'; when 'F' then 'w'; else ''; end)
+      krause << sprintf(' %2s', case val[:title]; when nil then ''; when 'IM' then 'm'; when 'WIM' then 'wm'; else val[:title][0, val[:title].length-1].downcase; end)
       krause << sprintf(' %-33s', "#{@last_name},#{@first_name}")
-      krause << sprintf(' %4s', arg[:fide] ? @fide_rating : @rating)
-      krause << sprintf(' %3s', @fed)
-      krause << sprintf(' %11s', arg[:fide] ? @fide_id : @id)
-      krause << sprintf(' %10s', @dob)
+      krause << sprintf(' %4s', val[:rating])
+      krause << sprintf(' %3s', val[:fed])
+      krause << sprintf(' %11s', val[:id])
+      krause << sprintf(' %10s', val[:dob])
       krause << sprintf(' %4.1f', points)
-      krause << sprintf(' %4s', @rank)
+      krause << sprintf(' %4s', val[:rank])
+      
+      # And finally the round scores.
       (1..rounds).each do |r|
         result = find_result(r)
         krause << sprintf('  %8s', result ? result.to_krause : '')
