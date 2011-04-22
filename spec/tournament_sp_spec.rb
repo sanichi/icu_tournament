@@ -58,7 +58,7 @@ module ICU
         end
 
         it "should serialize to the text export format" do
-          @t.serialize('SPExport').should == @s
+          @t.serialize('SPExport', :only => [:id, :points]).should == @s
         end
       end
 
@@ -90,7 +90,7 @@ module ICU
         end
 
         it "should serialize to the text export format" do
-          @t.rerank.renumber.serialize('SPExport').should == @s
+          @t.rerank.renumber.serialize('SPExport', :only => [:id, :points]).should == @s
         end
       end
 

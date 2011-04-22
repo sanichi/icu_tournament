@@ -142,27 +142,36 @@ EXPORT
           @r.player(3).spx_signature.should == "Orr, Mark|1350|0.5|123|DLL|---|TTF"
         end
 
-        it "should have default columns" do
-          @x.should match(/^No\s*Name\s*Loc Id\s*Total\s*1\s*2\s*3\s*/)
+        it "should show all columns by default" do
+          @x.should match(/^No\s*Name\s*Feder\s*Intl Id\s*Loc Id\s*Rtg\s*Loc\s*Title\s*Total\s*1\s*2\s*3\s*/)
           @x.should match(/1\s*Fischer,\s*Bobby\s*1\.5\s*3:D\s*0?:L?\s*2:W\s*/)
         end
 
         it "can have custom columns" do
-          @x = @t.serialize('SPExport', :columns => [])
+          @x = @t.serialize('SPExport', :only => [])
           @x.should match(/^No\s*Name\s*1\s*2\s*3\s*/)
-          @x = @t.serialize('SPExport', :columns => [:points])
+          @x = @t.serialize('SPExport', :only => [:points])
           @x.should match(/^No\s*Name\s*Total\s*1\s*2\s*3\s*/)
-          @x = @t.serialize('SPExport', :columns => [:points, :id])
+          @x = @t.serialize('SPExport', :only => [:points, :id])
           @x.should match(/^No\s*Name\s*Loc Id\s*Total\s*1\s*2\s*3\s*/)
-          @x = @t.serialize('SPExport', :columns => [:points, :id, :fed])
+          @x = @t.serialize('SPExport', :only => [:points, :id, :fed])
           @x.should match(/^No\s*Name\s*Feder\s*Loc Id\s*Total\s*1\s*2\s*3\s*/)
-          @x = @t.serialize('SPExport', :columns => [:points, :id, :fed, "fed", :rubbish, :fide_id])
+          @x = @t.serialize('SPExport', :only => [:points, :id, :fed, "fed", :rubbish, "fide_id"])
           @x.should match(/^No\s*Name\s*Feder\s*Intl Id\s*Loc Id\s*Total\s*1\s*2\s*3\s*/)
-          @x = @t.serialize('SPExport', :columns => [:fed, "fide_id", :points, :id, :rating])
+          @x = @t.serialize('SPExport', :only => [:fed, "fide_id", :points, :id, :rating])
           @x.should match(/^No\s*Name\s*Feder\s*Intl Id\s*Loc Id\s*Loc\s*Total\s*1\s*2\s*3\s*/)
-          @x = @t.serialize('SPExport', :columns => [:fed, :fide_id, :fide_rating, :points, :id, :rating])
+          @x = @t.serialize('SPExport', :only => [:fed, :fide_id, "fide_rating", :points, :id, :rating])
           @x.should match(/^No\s*Name\s*Feder\s*Intl Id\s*Loc Id\s*Rtg\s*Loc\s*Total\s*1\s*2\s*3\s*/)
           @x.should match(/3\s*Orr,\s*Mark\s*IRL\s*2500035\s*1350\s*2250\s*2200\s*0.5\s*1:D\s*2:L\s*:\s*/)
+        end
+
+        it "the :only and :except options are logical opposites" do
+          @t.serialize('SPExport', :only => [:points, :id, "fed"]).should == @t.serialize('SPExport', :except => [:fide_id, :rating, "fide_rating", :title])
+          @t.serialize('SPExport', :only => ["points"]).should == @t.serialize('SPExport', :except => ["fide_id", :rating, :fide_rating, :title, :id, :fed])
+          @t.serialize('SPExport', :only => [:rating, :fide_rating, :title, :id, :fed, :points]).should == @t.serialize('SPExport', :except => [:fide_id])
+          @t.serialize('SPExport', :only => %w{rating fide_rating fide_id title id fed points}).should == @t.serialize('SPExport', :except => [])
+          @t.serialize('SPExport', :only => []).should == @t.serialize('SPExport', :except => [:rating, :fide_rating, :fide_id, :title, :id, :fed, :points])
+          @t.serialize('SPExport', :except => []).should == @t.serialize('SPExport')
         end
       end
 

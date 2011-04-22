@@ -96,18 +96,22 @@ module ICU
     #
     # By default all available information is output for each player, however, this is customizable. The player number,
     # name, total points and results are always output but any of the remaining data (_gender_, _title_, _rating_ or _fide_rating_,
-    # _fed_, _id_ or _fide_id_, _dob_ and _rank_) can be omitted, if desired, by specifying an array of columns to include.
-    # To omitt all the optional data, supply an empty array:
+    # _fed_, _id_ or _fide_id_, _dob_ and _rank_) can be omitted, if desired, by specifying an array of columns to include
+    # or exclude. To omitt all the optional data, supply an empty array:
     #
-    #   krause = tournament.serialize('Krause', :columns => [])
+    #   krause = tournament.serialize('Krause', :only => [])
     #
-    # To omitt, for example, just federation and rating, include all columns but those two:
+    # To omitt just federation and rating but include all others:
     #
-    #   krause = tournament.serialize('Krause', :columns => [:gender, :title, :id, :dob, :rank])
+    #   krause = tournament.serialize('Krause', :except => [:fed, :rating])
     #
-    # To output FIDE IDs and ratings use the _fide_ option in conjunctions with the _id_ and _rating_ columns:
+    # To include only date of birth and title:
     #
-    #   krause = tournament.serialize('Krause', :columns => [:id, :rating], :fide => true)
+    #   krause = tournament.serialize('Krause', :only => [:dob, :title])
+    #
+    # To output FIDE IDs and ratings use the _fide_ option in conjunctions with the _id_ and _rating_ options:
+    #
+    #   krause = tournament.serialize('Krause', :only => [:gender, :id, :rating], :fide => true)
     #
     # == Parser Strictness
     #
@@ -193,6 +197,17 @@ module ICU
     #
     class Krause
       attr_reader :error, :comments
+
+      OPTIONS =
+      [
+        [:gender,  "Gender"],
+        [:title,    "Title"],
+        [:rating,  "Rating"],
+        [:fed, "Federation"],
+        [:id,          "ID"],
+        [:dob,        "DOB"],
+        [:rank,      "Rank"],
+      ]
 
       # Parse Krause data returning a Tournament on success or raising an exception on error.
       def parse!(krs, arg={})
@@ -500,16 +515,21 @@ module ICU
   class Player
     # Format a player's 001 record as it would appear in a Krause formatted file (including the final newline).
     def to_krause(rounds, arg)
-      default = [:gender, :title, :rating, :fed, :id, :dob, :rank]
+      defaults = ICU::Tournament::Krause::OPTIONS.map(&:first)
 
       # Optional columns.
-      optional = arg[:columns] if arg[:columns].instance_of?(Array)
-      optional.map!(&:to_s).map!(&:to_sym) if optional
-      optional = default.dup unless optional
+      case
+      when arg[:except].instance_of?(Array)
+        optional = (Set.new(defaults) - arg[:except].map!(&:to_s).map!(&:to_sym)).to_a
+      when arg[:only].instance_of?(Array)
+        optional = arg[:only].map!(&:to_s).map!(&:to_sym)
+      else
+        optional = defaults
+      end
       optional = optional.inject({}) { |m, a| m[a] = true; m }
 
       # Get the values to use.
-      val = default.inject({}) do |m, a|
+      val = defaults.inject({}) do |m, a|
         if optional[a]
           if arg[:fide] && (a == :rating || a == :id)
             m[a] = send("fide_#{a}")
@@ -519,7 +539,7 @@ module ICU
         end
         m
       end
-      
+
       # Output the mandatory and optional values.
       krause = '001'
       krause << sprintf(' %4d', @num)
@@ -532,7 +552,7 @@ module ICU
       krause << sprintf(' %10s', val[:dob])
       krause << sprintf(' %4.1f', points)
       krause << sprintf(' %4s', val[:rank])
-      
+
       # And finally the round scores.
       (1..rounds).each do |r|
         result = find_result(r)

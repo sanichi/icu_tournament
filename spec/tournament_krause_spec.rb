@@ -349,32 +349,40 @@ KRAUSE
           text.should match(/001    3    g Svidler,Peter                          RUS             1971-01-01  0.0    3/)
         end
 
-        it "should omitt all optional data if columns option is an empty hash" do
-          text = @t.serialize('Krause', :columns => [])
+        it "should omitt all optional data if the :only option is an empty hash" do
+          text = @t.serialize('Krause', :only => [])
           text.should match(/001    1      Ui Laighleis,Gearoidin                                             1.0     /)
           text.should match(/001    2      Orr,Mark                                                           2.0     /)
           text.should match(/001    3      Svidler,Peter                                                      0.0     /)
         end
 
         it "should should be able to include a subset of attributes, test 1" do
-          text = @t.serialize('Krause', :columns => [:gender, "dob", :id, "rubbish"])
+          text = @t.serialize('Krause', :only => [:gender, "dob", :id, "rubbish"])
           text.should match(/001    1 w    Ui Laighleis,Gearoidin                            3364 1964-06-10  1.0     /)
           text.should match(/001    2      Orr,Mark                                          1350 1955-11-09  2.0     /)
           text.should match(/001    3      Svidler,Peter                                    16790 1971-01-01  0.0     /)
         end
 
         it "should should be able to include a subset of attributes, test 2" do
-          text = @t.serialize('Krause', :columns => [:rank, "title", :fed, "rating"])
+          text = @t.serialize('Krause', :only => [:rank, "title", :fed, "rating"])
           text.should match(/001    1      Ui Laighleis,Gearoidin            1985 IRL                         1.0    2/)
           text.should match(/001    2    m Orr,Mark                          2258 IRL                         2.0    1/)
           text.should match(/001    3    g Svidler,Peter                     2663 RUS                         0.0    3/)
         end
 
         it "should should be able to include all attributes" do
-          text = @t.serialize('Krause', :columns => [:gender, :title, :rating, :fed, :id, :dob, :rank])
+          text = @t.serialize('Krause', :only => [:gender, :title, :rating, :fed, :id, :dob, :rank])
           text.should match(/001    1 w    Ui Laighleis,Gearoidin            1985 IRL        3364 1964-06-10  1.0    2/)
           text.should match(/001    2    m Orr,Mark                          2258 IRL        1350 1955-11-09  2.0    1/)
           text.should match(/001    3    g Svidler,Peter                     2663 RUS       16790 1971-01-01  0.0    3/)
+        end
+        
+        it "the :only and :except options are logical opposites" do
+          @t.serialize('Krause', :only => [:gender, :title, :rating]).should == @t.serialize('Krause', :except => [:fed, :id, "dob", :rank])
+          @t.serialize('Krause', :only => [:gender]).should == @t.serialize('Krause', :except => [:fed, :id, :dob, :rank, :title, :rating])
+          @t.serialize('Krause', :only => [:gender, :title, "rating", :fed, :id, :dob]).should == @t.serialize('Krause', :except => [:rank])
+          @t.serialize('Krause', :only => [:gender, :title, :rating, :fed, "id", :dob, :rank]).should == @t.serialize('Krause', :except => [])
+          @t.serialize('Krause', :only => []).should == @t.serialize('Krause', :except => [:gender, :title, :rating, :fed, :id, :dob, :rank])
         end
       end
 
@@ -406,29 +414,29 @@ KRAUSE
           text.should match(/001    3    g Svidler,Peter                          RUS             1971-01-01  0.0    3/)
         end
 
-        it "should omitt all optional data if columns option is an empty hash" do
-          text = @t.serialize('Krause', :columns => [])
+        it "should omitt all optional data if the :only option is an empty hash" do
+          text = @t.serialize('Krause', :only => [])
           text.should match(/001    1      Ui Laighleis,Gearoidin                                             1.0     /)
           text.should match(/001    2      Orr,Mark                                                           2.0     /)
           text.should match(/001    3      Svidler,Peter                                                      0.0     /)
         end
 
         it "should should be able to include a subset of attributes, test 1" do
-          text = @t.serialize('Krause', :columns => [:gender, "dob", :id], :fide => true)
+          text = @t.serialize('Krause', :only => [:gender, "dob", :id], :fide => true)
           text.should match(/001    1 w    Ui Laighleis,Gearoidin                         2501171 1964-06-10  1.0     /)
           text.should match(/001    2      Orr,Mark                                       2500035 1955-11-09  2.0     /)
           text.should match(/001    3      Svidler,Peter                                  4102142 1971-01-01  0.0     /)
         end
 
         it "should should be able to include a subset of attributes, test 2" do
-          text = @t.serialize('Krause', :columns => [:rank, "title", :fed, "rating", :rubbish], :fide => true)
+          text = @t.serialize('Krause', :only => [:rank, "title", :fed, "rating", :rubbish], :fide => true)
           text.should match(/001    1      Ui Laighleis,Gearoidin            1985 IRL                         1.0    2/)
           text.should match(/001    2    m Orr,Mark                          2258 IRL                         2.0    1/)
           text.should match(/001    3    g Svidler,Peter                     2663 RUS                         0.0    3/)
         end
 
         it "should should be able to include all attributes" do
-          text = @t.serialize('Krause', :columns => [:gender, :title, :rating, :fed, :id, :dob, :rank], :fide => true)
+          text = @t.serialize('Krause', :only => [:gender, :title, :rating, :fed, :id, :dob, :rank], :fide => true)
           text.should match(/001    1 w    Ui Laighleis,Gearoidin            1985 IRL     2501171 1964-06-10  1.0    2/)
           text.should match(/001    2    m Orr,Mark                          2258 IRL     2500035 1955-11-09  2.0    1/)
           text.should match(/001    3    g Svidler,Peter                     2663 RUS     4102142 1971-01-01  0.0    3/)

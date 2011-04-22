@@ -44,8 +44,11 @@ module ICU
     #   spexport = tournament.serialize('SPExport')
     #
     # In either case the method returns a string representation of the tourament in SwissPerfect export
-    # format with tab separators, space padding and (by default) the local player ID and total score
-    # optional columns:
+    # format with tab separators, space padding and (by default) all the available information about the
+    # players. To customize what is displayed, use the _only_ option and supply an array of symbols or
+    # strings to specify which columns to include. For example:
+    #
+    #   spexport = tournament.serialize('SPExport', :only => [:id, :points])
     #
     #   No  Name                 Loc Id  Total    1     2     3
     #
@@ -54,20 +57,11 @@ module ICU
     #   3   Hulleman, Leon       6409    1       2:L   4:W   1:L
     #   4   Dunne, Thomas        10914   0       1:L   3:L   2:L
     #
-    # To change which optional columns are output, use the _columns_ option with an array of the column attribute names.
     # The optional attribute names, together with their column header names in SwissPerfect, are as follows:
+    # _fed_ (Feder), _fide_id_ (Intl Id), _id_ (Loc Id), _fide_rating_ (Rtg), _rating_ (Loc), _title_ (Title),
+    # _points_: (Total). To omitt the optional columns completely, supply an empty array of column names:
     #
-    # * _fed_: Feder
-    # * _fide_id_: Intl Id
-    # * _id_: Loc Id
-    # * _fide_rating_: Rtg
-    # * _rating_: Loc
-    # * _title_: Title
-    # * _points_: Total
-    #
-    # So, for example, to omitt the optional columns completely, supply an empty array of column names:
-    #
-    #   tournament.serialize('SPExport', :columns => [])
+    #   tournament.serialize('SPExport', :only => [])
     #
     #   No  Name                  1     2     3
     #
@@ -78,19 +72,24 @@ module ICU
     #
     # Or supply whatever columns you want, for example:
     #
-    #   tournament.serialize('SPExport', :columns => [:fide_id, :fide_rating])
+    #   tournament.serialize('SPExport', :only => %w{fide_id fide_rating})
+    #
+    # Or to omitt rather than include, use the logically opposite _except_ option:
+    #
+    #   tournament.serialize('SPExport', :except => [:fide_id, :fide_rating])
     #
     # Note that the column order in the serialised string is the same as it is in the SwissPerfect application.
-    # The order of column names in the _columns_ hash has no effect.
+    # The order of column names in the _only_ option has no effect.
     #
-    # The default, when you leave out the _columns_ option is equivalent to:
+    # The default, when you leave out the _only_ or _except_ options, is equivalent to both of the following:
     #
-    #   tournament.serialize('SPExport', :columns => [:id, :points])
+    #   tournament.serialize('SPExport', :only => %w{fed fide_id id fide_rating rating title points})
+    #   tournament.serialize('SPExport', :except => [])
     #
     # The order of players in the serialized output is always by player number and as a side effect of serialization,
-    # the player numbers will be adjusted to ensure they range from 1 to the total number of players maintaining the
-    # original order. If you would prefer rank-order instead, then you must first renumber the players by rank (the
-    # default renumbering method) before serializing. For example:
+    # the player numbers will be adjusted to ensure they range from 1 to the total number of players, maintaining the
+    # original order. If you would prefer rank-order instead, then you must first renumber the players by rank before
+    # serializing. For example:
     #
     #   spexport = tournament.renumber(:rank).serialize('SPExport')
     #
@@ -98,7 +97,7 @@ module ICU
     #
     #   spexport = tournament.renumber.serialize('SPExport')
     #
-    # You may wish set the tie-break rules before ranking:
+    # You may wish to set the tie-break rules before ranking:
     #
     #   tournament.tie_breaks = [:buchholz, :neustadtl]
     #   spexport = tournament.rerank.renumber.serialize('SwissPerfect')
@@ -197,15 +196,22 @@ module ICU
         rounds = t.last_round
 
         # Optional columns.
-        optional = arg[:columns] if arg[:columns].instance_of?(Array)
-        optional = [:id, :points] unless optional
-        optional.map!(&:to_s).map!(&:to_sym)
+        defaults = COLUMNS.map(&:first)
+        case
+        when arg[:except].instance_of?(Array)
+          optional = (Set.new(defaults) - arg[:except].map!(&:to_s).map!(&:to_sym)).to_a
+        when arg[:only].instance_of?(Array)
+          optional = arg[:only].map!(&:to_s).map!(&:to_sym)
+        else
+          optional = defaults
+        end
+        optional = optional.inject({}) { |m, a| m[a] = true; m }
 
         # Columns identifiers in SwissPerfect order.
         columns = Array.new
         columns.push(:num)
         columns.push(:name)
-        COLUMNS.map(&:first).each { |x| columns.push(x) if optional.include?(x) && x != :num && x != :name }
+        defaults.each { |x| columns.push(x) if optional[x] && x != :num && x != :name }
 
         # Widths and formats for each column.
         width = Hash.new
