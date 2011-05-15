@@ -219,6 +219,20 @@ module ICU
         end
       end
 
+      context "Limerick CC, 2010-11, which has no 'Tournament Info' section in the INI file" do
+        before(:each) do
+          @p = ICU::Tournament::SwissPerfect.new
+        end
+
+        it "should parse" do
+          @t = @p.parse_file(SAMPLES + 'limerick_cc_2011.zip', :start => "2010-10-15")
+          @p.error.should be_nil
+          @t.name.should == "Unspecified"
+          @t.rounds.should == 7
+          @t.arbiter.should be_nil
+        end
+      end
+
       context "Non-existant ZIP file" do
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
@@ -232,7 +246,6 @@ module ICU
       end
 
       context "Invalid ZIP file" do
-
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
           @t = @p.parse_file(SAMPLES + 'notazipfile.zip', :start => "2010-05-08")

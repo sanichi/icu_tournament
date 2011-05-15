@@ -122,7 +122,7 @@ module ICU
       # Parse CSV data returning a Tournament on success or raising an exception on error.
       def parse!(csv, arg={})
         @state, @line, @round, @sum, @error = 0, 0, nil, nil, nil
-        @tournament = Tournament.new('Dummy', '2000-01-01')
+        @tournament = Tournament.new('Unspecified', '2000-01-01')
         csv = ICU::Util.to_utf8(csv) unless arg[:is_utf8]
 
         CSV.parse(csv, :row_sep => :auto) do |r|

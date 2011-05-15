@@ -80,7 +80,7 @@ module ICU
 
       # Parse SP data returning a Tournament or raising an exception on error.
       def parse_file!(file, arg={})
-        @t = Tournament.new('Dummy', '2000-01-01')
+        @t = Tournament.new('Unspecified', '2000-01-01')
         @t.start = arg[:start] if arg[:start]
         @bonus = {}
         @start_no = {}
@@ -190,12 +190,14 @@ module ICU
           raise "non-existant INI file (#{file})"
         end
         raise "invalid INI file (no sections)" if ini.size == 0
-        %w(name arbiter rounds).each do |key|
-          val = (ini['Tournament Info'][key.capitalize] || '').squeeze(" ")
-          @t.send("#{key}=", val) if val.size > 0
+        if ini["Tournament Info"]
+          %w(name arbiter rounds).each do |key|
+            val = (ini["Tournament Info"][key.capitalize] || '').squeeze(" ")
+            @t.send("#{key}=", val) if val.size > 0
+          end
         end
-        if ini['Standings'] && ini['Standings']['Tie Breaks']
-          @t.tie_breaks = ini['Standings']['Tie Breaks'].to_s.split(/,/).map do |tbid|
+        if ini["Standings"] && ini["Standings"]["Tie Breaks"]
+          @t.tie_breaks = ini["Standings"]["Tie Breaks"].to_s.split(/,/).map do |tbid|
             case tbid.to_i              # tie break name in SwissPerfect
             when 1217 then :buchholz    # Buchholz
             when 1218 then :harkness    # Median Buchholz

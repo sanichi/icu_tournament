@@ -212,7 +212,7 @@ module ICU
       # Parse Krause data returning a Tournament on success or raising an exception on error.
       def parse!(krs, arg={})
         @lineno = 0
-        @tournament = Tournament.new('Dummy', '2000-01-01')
+        @tournament = Tournament.new('Unspecified', '2000-01-01')
         @name_set, @start_set = false, false
         @comments = ''
         @results = Array.new
