@@ -16,7 +16,6 @@ Gem::Specification.new do |s|
 
   s.extra_rdoc_files = %w(LICENCE README.rdoc)
   s.files = Dir.glob("lib/**/*.rb") + Dir.glob("spec/*.rb") + %w(LICENCE README.rdoc)
-  s.rdoc_options = ["--charset=utf-8"]
   s.require_paths = ["lib"]
   s.test_files = Dir.glob("spec/*.rb")
 
@@ -24,8 +23,13 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency("rubyzip", "~> 0.9.4")    # for zipped-up SwissPerfect files
   s.add_runtime_dependency("icu_name", ">=1.0.0")    # for name canonicalisation
 
-  s.add_development_dependency("rspec", "~> 2.5")
-  s.add_development_dependency("ZenTest", "~> 4.4.2")
-  s.add_development_dependency("autotest-growl", "~> 0.2.9")
-  s.add_development_dependency("autotest-fsevent", "~> 0.2.4")
+  s.add_development_dependency("bundler")
+  s.add_development_dependency("rake")
+  s.add_development_dependency("rspec")
+  s.add_development_dependency("guard-rspec")
+  s.add_development_dependency("rdoc")
+  if RUBY_PLATFORM =~ /darwin/i
+    s.add_development_dependency("rb-fsevent")
+    s.add_development_dependency("growl")
+  end
 end

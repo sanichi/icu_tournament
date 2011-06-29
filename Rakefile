@@ -1,5 +1,5 @@
 require 'rake'
-require 'rake/rdoctask'
+require 'rdoc/task'
 require 'rspec/core/rake_task'
 require File.expand_path(File.dirname(__FILE__) + '/lib/icu_tournament/version')
 
@@ -35,9 +35,8 @@ end
   end
 end
 
-Rake::RDocTask.new(:rdoc) do |t|
-  t.title    = "ICU Tournament #{version}"
-  t.rdoc_dir = 'rdoc'
-  t.options  = ["--charset=utf-8"]
-  t.rdoc_files.include('lib/**/*.rb', 'README.rdoc', 'LICENCE')
+RDoc::Task.new do |rdoc|
+  rdoc.title = "ICU Tournament #{version}"
+  rdoc.main  = "README.rdoc"
+  rdoc.rdoc_files.include("README.rdoc", "lib/**/*.rb")
 end
