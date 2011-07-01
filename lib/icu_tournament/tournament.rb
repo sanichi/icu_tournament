@@ -55,6 +55,22 @@ module ICU
   #   t.add_result(ICU::Result.new(3, 20, 'L', :opponent => 10, :colour => 'W'))
   #   t.add_result(ICU::Result.new(3, 10, 'D', :opponent => 20, :colour => 'B'))  # would raise an exception
   #
+  # == Asymmetric Scores
+  #
+  # There is one exception to the rule that two corresponding results must be consistent:
+  # if both results are unrateable then the two scores need not sum to 1. The commonest case
+  # this caters for is probably that of a double default. To create such asymmetric results
+  # you must add the result from both players' perspectives. For example:
+  #
+  #   t.add_result(ICU::Result.new(3, 20, 'L', :opponent => 10, :rateable => false))
+  #   t.add_result(ICU::Result.new(3, 10, 'L', :opponent => 20, :rateable => false))
+  #
+  # After the first _add_result_ the two results are, as usual, consistent (in particular, the loss for player 20
+  # is balanced by a win for player 10). However, the second _add_result_, which asserts player 10 lost, does not cause
+  # an exception. It would have done if the results had been rateable but, because they are not, the scores are
+  # allowed to add up to something other than 1.0 (in this case, zero) and the effect of the second call to _add_result_
+  # is merely to adjust the score of player 10 from a win to a loss (while maintaining the loss for player 20).
+  #
   # See ICU::Player and ICU::Result for more details about players and results.
   #
   # == Validation
@@ -67,11 +83,11 @@ module ICU
   # Validations checks that:
   #
   # * there are at least two players
-  # * every player has a least one result
-  # * the result round numbers are consistent (no more than one game per player per round)
+  # * result round numbers are consistent (no more than one game per player per round)
+  # * corresponding results are consistent (although they may have asymmetric scores if unrateable, as previously desribed)
   # * the tournament dates (start, finish, round dates), if there are any, are consistent
-  # * the player ranks are consistent with their scores
-  # * there are no players with duplicate ICU IDs or duplicate FIDE IDs
+  # * player ranks are consistent with their scores
+  # * there are no players with duplicate \ICU IDs or duplicate \FIDE IDs
   #
   # Side effects of calling <em>validate!</em> or _invalid_ include:
   #
@@ -87,7 +103,7 @@ module ICU
   #
   #   t.validate!(:type => 'ForeignCSV')
   #
-  # which, amongst other tests, checks that there is at least one player with an ICU number and
+  # which, amongst other tests, checks that there is at least one player with an \ICU number and
   # that all such players have a least one game against a FIDE rated opponent. This is an example
   # of a specialized check that is only appropriate for a particular serializer. If it raises an
   # exception then the tournament cannot be serialized that way.
@@ -278,6 +294,7 @@ module ICU
       raise "invalid result" unless result.class == ICU::Result
       raise "result round number (#{result.round}) inconsistent with number of tournament rounds" if @rounds && result.round > @rounds
       raise "player number (#{result.player}) does not exist" unless @player[result.player]
+      return if add_asymmetric_result?(result)
       @player[result.player].add_result(result)
       if result.opponent
         raise "opponent number (#{result.opponent}) does not exist" unless @player[result.opponent]
@@ -418,14 +435,15 @@ module ICU
           raise "duplicate FIDE IDs, players #{p.num} and #{fide_ids[p.fide_id]}" if fide_ids[p.fide_id]
           fide_ids[p.fide_id] = num
         end
-        raise "player #{num} has no results" if p.results.size == 0
+        return if p.results.size == 0
         p.results.each do |r|
           next unless r.opponent
           opponent = @player[r.opponent]
           raise "opponent #{r.opponent} of player #{num} is not in the tournament" unless opponent
           o = opponent.find_result(r.round)
           raise "opponent #{r.opponent} of player #{num} has no result in round #{r.round}" unless o
-          raise "opponent's result (#{o.inspect}) is not reverse of player's (#{r.inspect})" unless o.reverse.eql?(r)
+          score = r.rateable || o.rateable ? [] : [:score]
+          raise "opponent's result (#{o.inspect}) is not reverse of player's (#{r.inspect})" unless o.reverse.eql?(r, :except => score)
         end
       end
     end
@@ -586,6 +604,30 @@ module ICU
           scores.inject(0.0) { |t,s| t + s }
         else player.name
       end
+    end
+
+    # Detect when an asymmetric result is about to be added, make the appropriate adjustment and return true.
+    # The conditions for an asymric result are: the player's result already exists, the opponent's result
+    # already exists, both results are unrateable and the reverse of one result is equal to the other, apart
+    # from score. In this case all we do update score of the player's result, thus allowing two results whose
+    # total score does not add to 1.
+    def add_asymmetric_result?(result)
+      return false if result.rateable
+
+      plr = @player[result.player]
+      opp = @player[result.opponent]
+      return false unless plr && opp
+
+      plr_result = plr.find_result(result.round)
+      opp_result = opp.find_result(result.round)
+      return false unless plr_result && opp_result
+      return false if plr_result.rateable || opp_result.rateable
+      
+      reversed = plr_result.reverse
+      return false unless reversed && reversed.eql?(opp_result, :except => :score)
+
+      plr_result.score = result.score
+      true
     end
   end
 end

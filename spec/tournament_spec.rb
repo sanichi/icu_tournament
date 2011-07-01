@@ -32,8 +32,9 @@ module ICU
 042 2009-11-09
 001   10      Fischer,Bobby                                                      1.5    1    30 w =              20 b 1
 001   20      Kasparov,Garry                                                     1.0    2              30 b 1    10 w 0
-001   30      Orr,Mark                                                           0.5    3    10 b =    20 w 0          
+001   30      Orr,Mark                                                           0.5    3    10 b =    20 w 0          #
 EOS
+        @s.sub!(/#/, '')
       end
 
       it "should serialize to Krause" do
@@ -324,7 +325,7 @@ EOS
       it "can be added one at a time" do
         @t.add_result(Result.new(1, 1, 'W', :opponent => 2))
         @t.add_result(Result.new(2, 2, 'D', :opponent => 3))
-        @t.add_result(Result.new(3, 3, 'L', :opponent => 1))
+        @t.add_result(Result.new(3, 3, 'L', :opponent => 1, :rateable => false))
         @mark.results.size.should == 2
         @mark.points.should == 2.0
         @gary.results.size.should == 2
@@ -333,10 +334,11 @@ EOS
         @boby.points.should == 0.5
       end
 
-      it "asymmetric results cannot be added" do
+      it "results with asymmetric scores cannot be added unless both results are unrateable" do
         @t.add_result(Result.new(1, 1, 'W', :opponent => 2))
         lambda { @t.add_result(Result.new(1, 2, 'D', :opponent => 1)) }.should raise_error(/result.*match/)
         lambda { @t.add_result(Result.new(1, 2, 'L', :opponent => 1, :rateable => false)) }.should raise_error(/result.*match/)
+        lambda { @t.add_result(Result.new(3, 3, 'L', :opponent => 1, :rateable => false)) }.should_not raise_error
       end
 
       it "should have a defined player" do
@@ -349,6 +351,13 @@ EOS
 
       it "should be consistent with the tournament's number of rounds" do
         lambda { @t.add_result(Result.new(4, 1, 'W', :opponent => 2)) }.should raise_error(/round/)
+      end
+
+      it "documentation example should ne correct" do
+        @t.add_result(ICU::Result.new(3, 2, 'L', :opponent => 1, :rateable => false))
+        @t.add_result(ICU::Result.new(3, 1, 'L', :opponent => 2, :rateable => false))
+        @t.player(1).results.first.points.should == 0.0
+        @t.player(2).results.first.points.should == 0.0
       end
     end
 
@@ -494,6 +503,26 @@ EOS
         @t.player(1).id = 1350
         @t.player(2).id = 1350
         @t.invalid.should match(/duplicate.*ICU/)
+      end
+
+      it "should allow players to have no results" do
+        (1..3).each { |r| @t.player(1).remove_result(r) }
+        @t.invalid.should be_false
+      end
+
+      it "should not allow asymmetric scores for rateable results" do
+        @t.player(1).find_result(1).score = 'L'
+        @t.invalid.should match(/result.*reverse/)
+      end
+
+      it "should allow asymmetric scores for unrateable results" do
+        @t.player(1).find_result(1).score = 'L'
+        (1..2).each do |p|
+          r = @t.player(p).find_result(1)
+          r.rateable = false
+          r.score = 'L'
+        end
+        @t.invalid.should be_false
       end
     end
 

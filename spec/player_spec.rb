@@ -247,6 +247,22 @@ module ICU
       end
     end
 
+    context "removing a result" do
+      before(:all) do
+        @p = Player.new('Mark', 'Orr', 1)
+        @p.add_result(Result.new(1, 1, 'W', :opponent => 37, :score => 'W', :colour => 'W'))
+        @p.add_result(Result.new(2, 1, 'W', :opponent => 13, :score => 'W', :colour => 'B'))
+        @p.add_result(Result.new(3, 1, 'W', :opponent => 7,  :score => 'D', :colour => 'W'))
+      end
+
+      it "should find and remove a result by round number" do
+        result = @p.remove_result(1)
+        result.inspect.should == "R1P1O37WWR"
+        @p.results.size.should == 2
+        @p.results.map(&:round).join("|").should == "2|3"
+      end
+    end
+
     context "merge" do
       before(:each) do
         @p1 = Player.new('Mark', 'Orr', 1, :id => 1350)

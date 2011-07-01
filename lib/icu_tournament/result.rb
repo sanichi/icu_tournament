@@ -66,6 +66,19 @@ module ICU
   #
   # The _points_ read-only accessor always returns a floating point number: either 0.0, 0.5 or 1.0.
   #
+  # Two results are <em>eql?</em> if all there attributes are the same, unless exceptions are specified.
+  #
+  #   r  = ICU::Result.new(1, 1, 'W', :opponent => 2)
+  #   r1 = ICU::Result.new(1, 1, 'W', :opponent => 2)
+  #   r2 = ICU::Result.new(1, 1, 'W', :opponent => 2, :rateable => false)
+  #   r3 = ICU::Result.new(1, 1, 'L', :opponent => 2, :rateable => false)
+  #
+  #   r.eql?(r1)                                   # => true
+  #   r.eql?(r2)                                   # => false
+  #   r.eql?(r3)                                   # => false
+  #   r.eql?(r2, :except => :rateable)             # => true
+  #   r.eql?(r3, :except => [:rateable, :score])   # => true
+  #
   class Result
     extend ICU::Accessor
     attr_positive :round
@@ -167,20 +180,22 @@ module ICU
       "R#{@round}P#{@player}O#{@opponent || '-'}#{@score}#{@colour || '-'}#{@rateable ? 'R' : 'U'}"
     end
 
-    # Loose equality. True if the round, player and opponent numbers, colour and score all match.
-    def ==(other)
+    # Equality. True if all attributes equal, exceptions allowed.
+    def eql?(other, opt={})
+      return true if equal?(other)
       return unless other.is_a? Result
-      [:round, :player, :opponent, :colour, :score].each do |m|
-        return false unless self.send(m) == other.send(m)
+      except = Hash.new
+      if opt[:except]
+        if opt[:except].is_a?(Array)
+          opt[:except].each { |x| except[x.to_sym] = true }
+        else
+          except[opt[:except].to_sym] = true
+        end
+      end
+      [:round, :player, :opponent, :colour, :score, :rateable].each do |m|
+        return false unless except[m] || self.send(m) == other.send(m)
       end
       true
-    end
-
-    # Strict equality. True if the there's loose equality and also the rateablity is the same.
-    def eql?(other)
-      return true if equal?(other)
-      return false unless self == other
-      self.rateable == other.rateable
     end
   end
 end

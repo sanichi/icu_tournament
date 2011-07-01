@@ -181,9 +181,17 @@ module ICU
       end
     end
 
-    # Lookup a result by round number.
+    # Lookup a result by round number and return it (or nil if there is no such result).
     def find_result(round)
       @results.find { |r| r.round == round }
+    end
+
+    # Lookup a result by round number, remove it and return it (or return nil if there is no such result).
+    def remove_result(round)
+      result = find_result(round)
+      return unless result
+      @results.delete(result)
+      result
     end
 
     # Return the player's total points.
