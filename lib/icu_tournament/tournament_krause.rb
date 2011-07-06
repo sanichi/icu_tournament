@@ -392,6 +392,9 @@ module ICU
         # Ratings are assumed to be local unless otherwise specified.
         rating = @data[44, 4].to_i
         opt[arg[:fide] ? :fide_rating : :rating] = rating if rating > 0 && rating < 4000
+        
+        # Obviously wrong DOBs should just be ignored.
+        opt[:dob] = '' unless opt[:dob].match(/\d/);
 
         # IDs can be determined to be FIDE or ICU on the basis of their size.
         id = @data[53, 11].to_i
@@ -430,6 +433,7 @@ module ICU
           full_byes << round
           return 0.0
         end
+        data = "#{data} -" if data.match(/^\d+ (w|b|-)$/)
         raise "invalid result '#{data}'" unless data.match(/^(0{1,4}|[1-9]\d{0,3}) (w|b|-) (1|0|=|\+|-)$/)
         opponent = $1.to_i
         colour   = $2

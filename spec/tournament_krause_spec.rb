@@ -259,7 +259,7 @@ KRAUSE
           check_player(2, 'Mark',      'Orr',          :rating => nil, :fide_rating => 2258)
           check_player(3, 'Viktor',    'Bologan',      :rating => nil, :fide_rating => 2663)
         end
-        
+
         it "should auto-detect FIDE or ICU IDs based on size, the option has no effect" do
           @t = @p.parse(@krause)
           check_player(1, 'Gearoidin', 'Ui Laighleis', :id => nil,  :fide_id => 2501171)
@@ -285,9 +285,10 @@ KRAUSE
 012 Las Vegas National Open
 042 2008-06-07
 001    1 m  m Orr,Mark                          2258 IRL                         2.0    1     2 w 1               3 b 1
-001    2 w    Ui Laighleis,Gearoidin            1985 IRL                         1.0    2     1 b 0     3 w 1          
+001    2 w    Ui Laighleis,Gearoidin            1985 IRL                         1.0    2     1 b 0     3 w 1          #
 001    3 m  g Bologan,Viktor                    2663 MDA                         0.0    3               2 b 0     1 w 0
 REORDERED
+          @reordered.sub!('#', '')
         end
 
         it "should serialise correctly after renumbering by rank" do
@@ -301,10 +302,11 @@ REORDERED
           @krause = <<KRAUSE
 012 Las Vegas National Open
 042 2008-06-07
-001    1 w    Ui Laighleis,Gearoidin            1985 IRL     2501171 1964-06-10  1.0          2 b 0     3 w 1          
+001    1 w    Ui Laighleis,Gearoidin            1985 IRL     2501171 1964-06-10  1.0          2 b 0     3 w 1          #
 001    2    m Orr,Mark                          2258 IRL     2500035 1955-11-09  2.0          1 w 1               3 b 1
 001    3    g Bologan,Viktor                    2663 MDA    13900048 1971-01-01  0.0                    1 b 0     2 w 0
 KRAUSE
+          @krause.sub!('#', '')
           @p = ICU::Tournament::Krause.new
           @t = ICU::Tournament.new('Las Vegas National Open', '2008-06-07')
           @t.add_player(ICU::Player.new('Gearoidin', 'Ui Laighleis', 1, :rating => 1985, :id => 2501171,  :dob => '1964-06-10', :fed => 'IRL', :gender => 'f'))
@@ -327,10 +329,11 @@ KRAUSE
 012 Las Vegas National Open
 042 2008-06-07
 0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
-001    1 w    Ui Laighleis,Gearoidin            1985 IRL        3364 1964-06-10  1.0    2     2 b 0     3 w 1          
+001    1 w    Ui Laighleis,Gearoidin            1985 IRL        3364 1964-06-10  1.0    2     2 b 0     3 w 1          #
 001    2    m Orr,Mark                          2258 IRL        1350 1955-11-09  2.0    1     1 w 1               3 b 1
 001    3    g Svidler,Peter                     2663 RUS       16790 1971-01-01  0.0    3               1 b 0     2 w 0
 KRAUSE
+          @k.sub!('#', '')
           @p = ICU::Tournament::Krause.new
           @t = @p.parse(@k)
         end
@@ -376,7 +379,7 @@ KRAUSE
           text.should match(/001    2    m Orr,Mark                          2258 IRL        1350 1955-11-09  2.0    1/)
           text.should match(/001    3    g Svidler,Peter                     2663 RUS       16790 1971-01-01  0.0    3/)
         end
-        
+
         it "the :only and :except options are logical opposites" do
           @t.serialize('Krause', :only => [:gender, :title, :rating]).should == @t.serialize('Krause', :except => [:fed, :id, "dob", :rank])
           @t.serialize('Krause', :only => [:gender]).should == @t.serialize('Krause', :except => [:fed, :id, :dob, :rank, :title, :rating])
@@ -392,10 +395,11 @@ KRAUSE
 012 Las Vegas National Open
 042 2008-06-07
 0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
-001    1 w    Ui Laighleis,Gearoidin            1985 IRL     2501171 1964-06-10  1.0    2     2 b 0     3 w 1          
+001    1 w    Ui Laighleis,Gearoidin            1985 IRL     2501171 1964-06-10  1.0    2     2 b 0     3 w 1          #
 001    2    m Orr,Mark                          2258 IRL     2500035 1955-11-09  2.0    1     1 w 1               3 b 1
 001    3    g Svidler,Peter                     2663 RUS     4102142 1971-01-01  0.0    3               1 b 0     2 w 0
 KRAUSE
+          @k.gsub!('#', '')
           @p = ICU::Tournament::Krause.new
           @t = @p.parse(@k, :fide => true)
         end
@@ -566,7 +570,7 @@ KRAUSE
           @t.name.should == "Läs Végas National Opeñ"
         end
       end
-      
+
       context "preserving original names" do
         before(:all) do
           @k = <<KRAUSE
@@ -773,6 +777,16 @@ KRAUSE
         it "should handle Bunratty Challengers 2011" do
           file = "#{@s}/bunratty_challengers_2011.tab"
           lambda { @p.parse_file!(file, :fed => :ignore) }.should_not raise_error
+        end
+
+        it "should handle Irish Intermediate Championships 2011" do
+          file = "#{@s}/irish_intermediate_champs_2011.tab"
+          lambda { @p.parse_file!(file) }.should_not raise_error
+        end
+
+        it "should handle Irish Junior Championships 2011" do
+          file = "#{@s}/irish_junior_champs_2011.tab"
+          lambda { @p.parse_file!(file) }.should_not raise_error
         end
       end
     end
