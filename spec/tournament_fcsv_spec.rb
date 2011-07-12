@@ -631,6 +631,12 @@ CSV
           check_player(3, 'Mârk', 'Örr', 1, 1, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
           @t.name.should == "Brätto Open, 2001"
         end
+
+        it "should parse this practical example" do
+          file = "#{@s}/4ncl.csv"
+          lambda { @t = @p.parse_file!(file) }.should_not raise_error
+          check_player(1, 'Ryan-Rhys', 'Griffiths', 3, 3, 1.5, :id => 6897)
+        end
       end
 
       context "type validation" do

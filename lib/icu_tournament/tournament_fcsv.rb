@@ -300,7 +300,7 @@ module ICU
 
       def result
         @round+= 1
-        abort "round number #{round}",              0 unless @r[0].to_i == @round
+        abort "round number #{@round}",             0 unless @r[0].to_i == @round
         abort "a colour (W/B) or dash (for a bye)", 2 unless @r.size > 2 && @r[2].match(/^(W|B|-)/i)
         result = Result.new(@round, @player.num, @r[1])
         if @r[2] == '-'
