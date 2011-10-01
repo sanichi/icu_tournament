@@ -393,8 +393,8 @@ module ICU
         rating = @data[44, 4].to_i
         opt[arg[:fide] ? :fide_rating : :rating] = rating if rating > 0 && rating < 4000
         
-        # Obviously wrong DOBs should just be ignored.
-        opt[:dob] = '' unless opt[:dob].match(/\d/);
+        # Strings that can't possibly be DOBs should just be ignored.
+        opt[:dob] = '' unless opt[:dob].match(/^(\d{4}.\d\d.\d\d|\d\d.\d\d.\d{4})$/);
 
         # IDs can be determined to be FIDE or ICU on the basis of their size.
         id = @data[53, 11].to_i

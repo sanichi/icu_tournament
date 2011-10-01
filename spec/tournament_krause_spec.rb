@@ -459,7 +459,7 @@ KRAUSE
 092 Swiss
 102 Michael Germaine, mlgermaine@eircom.net
 122 120 minutes per player per game
-001    1      Griffiths,Ryan Rhys                    IRL     2502054             4.0    1  0000 - =     3 b 1     8 w 1     5 b =     7 w 1
+001    1      Griffiths,Ryan Rhys                    IRL     2502054 1993-12-20  4.0    1  0000 - =     3 b 1     8 w 1     5 b =     7 w 1
 001    2      Hotak,Marian                           SVK    14909677             3.5    2     3 w 0     6 b =    11 w 1     8 b 1     5 w 1
 001    3      Duffy,Seamus                           IRL                         3.0    3     2 b 1     1 w 0     4 w 1     6 b =     8 w =
 001    4      Cafolla,Peter                          IRL     2500884             3.0    4     7 b 1     5 w =     3 b 0    11 b +     6 w =
@@ -476,7 +476,7 @@ KRAUSE
         end
 
         it "the unaltered example is valid Krause" do
-          t = @p.parse(@k).should be_instance_of(ICU::Tournament)
+          lambda { @p.parse!(@k) }.should_not raise_error
         end
 
         it "removing the line on which the tournament name is specified should cause an error" do
@@ -530,9 +530,21 @@ KRAUSE
            lambda { @p.parse!(@k) }.should raise_error(/total/)
         end
 
-        it "invalid federations should cause an error" do
+        it "invalid federations should cause an error unless an option is used" do
            @k.sub!('SCO', 'XYZ')
            lambda { @p.parse!(@k) }.should raise_error(/federation/)
+           lambda { @t = @p.parse!(@k, :fed => "skip") }.should_not raise_error
+           @t.player(5).fed.should be_nil
+           @t.player(1).fed.should == "IRL"
+           lambda { @t = @p.parse!(@k, :fed => "ignore") }.should_not raise_error
+           @t.player(5).fed.should be_nil
+           @t.player(1).fed.should be_nil
+        end
+
+        it "an invalid DOB is silently ignored" do
+           @k.sub!(/1993-12-20/, '1993      ')
+           lambda { @t = @p.parse!(@k) }.should_not raise_error
+           @t.player(1).dob.should be_nil
         end
 
         it "removing any player that somebody else has played should cause an error" do
