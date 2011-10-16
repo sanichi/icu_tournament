@@ -176,7 +176,7 @@ KRAUSE
 022 Las Vegas
 032 USA
 042 2008-06-07
-052 2008-06-10
+052 2008-06-09
 092 All-Play-All
 102 Hans Scmidt
 112 Gerry Graham, Herbert Scarry
@@ -297,7 +297,7 @@ REORDERED
         end
       end
 
-      context "serialisation of a manually build tournament" do
+      context "serialisation of a manually built tournament" do
         before(:all) do
           @krause = <<KRAUSE
 012 Las Vegas National Open
@@ -453,12 +453,13 @@ KRAUSE
 012 Gonzaga Classic
 022 Dublin
 032 IRL
-042 2008-02-01
-052 2008-02-03
+042 2008-02-21
+052 2008-02-25
 062 12
 092 Swiss
 102 Michael Germaine, mlgermaine@eircom.net
 122 120 minutes per player per game
+132                                                                                        08.02.21  08.02.22  08.02.23  08.02.24  08.02.25
 001    1      Griffiths,Ryan Rhys                    IRL     2502054 1993-12-20  4.0    1  0000 - =     3 b 1     8 w 1     5 b =     7 w 1
 001    2      Hotak,Marian                           SVK    14909677             3.5    2     3 w 0     6 b =    11 w 1     8 b 1     5 w 1
 001    3      Duffy,Seamus                           IRL                         3.0    3     2 b 1     1 w 0     4 w 1     6 b =     8 w =
@@ -480,8 +481,7 @@ KRAUSE
         end
 
         it "removing the line on which the tournament name is specified should cause an error" do
-          @k.sub!('012 Gonzaga Classic', '')
-          lambda { @p.parse!(@k) }.should raise_error(/name missing/)
+          lambda { @p.parse!(@k.sub('012 Gonzaga Classic', '')) }.should raise_error(/name missing/)
         end
 
         it "blanking the tournament name should cause an error" do
@@ -489,45 +489,53 @@ KRAUSE
           lambda { @p.parse!(@k) }.should raise_error(/name missing/)
         end
 
-        it "blanking the start date should cause an error" do
-          @k.sub!('2008-02-01', '2008-02-04')
-          lambda { @p.parse!(@k) }.should raise_error(/start.*after.*end/)
+        it "the start cannot be later than the end date" do
+          lambda { @p.parse!(@k.sub('2008-02-21', '2008-03-21')) }.should raise_error(/start.*after.*end/)
         end
 
-        it "the start cannot be later than the end date" do
-          @k.sub!('2008-02-01', '')
-          lambda { @p.parse!(@k) }.should raise_error(/start date missing/)
+        it "blanking the start date should cause an error" do
+          lambda { @p.parse!(@k.sub('2008-02-21', '')) }.should raise_error(/start date missing/)
+        end
+
+        it "the first and last round dates should match the tournament start and end dates" do
+          lambda { @p.parse!(@k.sub('08.02.21', '08.02.20')) }.should raise_error(/first round.*not match.*start/)
+          lambda { @p.parse!(@k.sub('08.02.21', '08.02.22')) }.should raise_error(/first round.*not match.*start/)
+          lambda { @p.parse!(@k.sub('08.02.25', '08.02.24')) }.should raise_error(/last round.*not match.*end/)
+          lambda { @p.parse!(@k.sub('08.02.25', '08.02.26')) }.should raise_error(/last round.*not match.*end/)
+        end
+
+        it "the round dates should never decrease" do
+          lambda { @p.parse!(@k.sub('08.02.24', '08.02.22')) }.should raise_error(/round 3.*after.*round 4/)
+        end
+
+        it "bad round dates can be ignored" do
+          lambda { @p.parse!(@k.sub('08.02.21', '08.02.20'), :round_dates => "ignore") }.should_not raise_error
+          lambda { @p.parse!(@k.sub('08.02.24', '08.02.22'), :round_dates => "ignore") }.should_not raise_error
         end
 
         it "creating a duplicate player number should cause an error" do
-          @k.sub!('  2  ', '  1  ')
-          lambda { @p.parse!(@k) }.should raise_error(/player number/)
+          lambda { @p.parse!(@k.sub('  2  ', '  1  ')) }.should raise_error(/player number/)
         end
 
         it "creating a duplicate rank number should not cause an error becuse the tournament will be reranked" do
-          @k.sub!('4.0    1', '4.0    2')
-          t = @p.parse!(@k)
+          t = @p.parse!(@k.sub('4.0    1', '4.0    2'))
           t.player(1).rank.should == 1
         end
 
         it "referring to a non-existant player number should cause an error" do
-           @k.sub!(' 3 b 1', '33 b 1')
-           lambda { @p.parse!(@k) }.should raise_error(/opponent number/)
+           lambda { @p.parse!(@k.sub(' 3 b 1', '33 b 1')) }.should raise_error(/opponent number/)
         end
 
         it "inconsistent colours should cause an error" do
-           @k.sub!('3 b 1', '3 w 1')
-           lambda { @p.parse!(@k) }.should raise_error(/result/)
+           lambda { @p.parse!(@k.sub('3 b 1', '3 w 1')) }.should raise_error(/result/)
         end
 
         it "inconsistent scores should cause an error" do
-           @k.sub!('3 b 1', '3 b =')
-           lambda { @p.parse!(@k) }.should raise_error(/result/)
+           lambda { @p.parse!(@k.sub('3 b 1', '3 b =')) }.should raise_error(/result/)
         end
 
         it "inconsistent totals should cause an error" do
-           @k.sub!('3.5', '4.0')
-           lambda { @p.parse!(@k) }.should raise_error(/total/)
+           lambda { @p.parse!(@k.sub('3.5', '4.0')) }.should raise_error(/total/)
         end
 
         it "invalid federations should cause an error unless an option is used" do
@@ -542,14 +550,12 @@ KRAUSE
         end
 
         it "an invalid DOB is silently ignored" do
-           @k.sub!(/1993-12-20/, '1993      ')
-           lambda { @t = @p.parse!(@k) }.should_not raise_error
+           lambda { @t = @p.parse!(@k.sub(/1993-12-20/, '1993      ')) }.should_not raise_error
            @t.player(1).dob.should be_nil
         end
 
         it "removing any player that somebody else has played should cause an error" do
-           @k.sub!(/^001   12.*$/, '')
-           lambda { @p.parse!(@k) }.should raise_error(/opponent/)
+           lambda { @p.parse!(@k.sub(/^001   12.*$/, '')) }.should raise_error(/opponent/)
         end
       end
 

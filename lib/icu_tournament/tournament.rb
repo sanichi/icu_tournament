@@ -73,6 +73,20 @@ module ICU
   #
   # See ICU::Player and ICU::Result for more details about players and results.
   #
+  # == Tournament Dates
+  #
+  # A tournament start date is mandatory and supplied in the constructor. Finish and round dates are optional.
+  # To supply a finish date, supply it in constructor arguments or set it explicityly.
+  #
+  #   t = ICU::Tournament.new('Bangor Masters', '2009-11-09', :finish => '2009-11-11')
+  #   t.finish = '2009-11-11'
+  #
+  # To set round dates, add the correct number in the correct order one at a time.
+  #
+  #   t.add_round_date('2009-11-09')
+  #   t.add_round_date('2009-11-10')
+  #   t.add_round_date('2009-11-11')
+  #
   # == Validation
   #
   # A tournament can be validated with either the <em>validate!</em> or _invalid_ methods.
@@ -213,7 +227,6 @@ module ICU
       parsed_date = Util.parsedate(round_date)
       raise "invalid round date (#{round_date})" unless parsed_date
       @round_dates << parsed_date
-      @round_dates.sort!
     end
 
     # Return the date of a given round, or nil if unavailable.
@@ -472,8 +485,12 @@ module ICU
       raise "start date (#{start}) is after end date (#{finish})" if @start && @finish && @start > @finish
       if @round_dates.size > 0
         raise "the number of round dates (#{@round_dates.size}) does not match the number of rounds (#{@rounds})" unless @round_dates.size == @rounds
-        raise "the date of the first round (#{@round_dates[0]}) comes before the start (#{@start}) of the tournament" if @start && @start > @round_dates[0]
-        raise "the date of the last round (#{@round_dates[-1]}) comes after the end (#{@finish}) of the tournament" if @finish && @finish < @round_dates[-1]
+        raise "the date of the first round (#{@round_dates[0]}) does not match the start (#{@start}) of the tournament" if @start && @start != @round_dates[0]
+        raise "the date of the last round (#{@round_dates[-1]}) does not match the end (#{@finish}) of the tournament" if @finish && @finish != @round_dates[-1]
+        (2..@round_dates.size).to_a.each do |r|
+          #puts "#{@round_dates[r-2]} => #{@round_dates[r-1]}"
+          raise "the date of round #{r-1} (#{@round_dates[r-2]}) is after the date of round #{r} (#{@round_dates[r-1]}) of the tournament" if @round_dates[r-2] > @round_dates[r-1]
+        end
         @finish = @round_dates[-1] unless @finish
       end
     end

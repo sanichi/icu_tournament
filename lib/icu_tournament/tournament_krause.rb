@@ -251,7 +251,7 @@ module ICU
               when '102' then @tournament.arbiter = @data       # arbiter(s)
               when '112' then @tournament.deputy = @data        # deputy(ies)
               when '122' then @tournament.time_control = @data  # time control
-              when '132' then add_round_dates                   # round dates
+              when '132' then add_round_dates(arg)              # round dates
               else raise "invalid DIN #{din}"
             end
           rescue => err
@@ -372,7 +372,7 @@ module ICU
         lines
       end
 
-      def add_player(arg={})
+      def add_player(arg)
         raise "player record less than minimum length" if @line.length < 99
 
         # Prepare player details.
@@ -491,7 +491,8 @@ module ICU
         @tournament.add_team(team)
       end
 
-      def add_round_dates
+      def add_round_dates(arg)
+        return if arg[:round_dates].to_s == 'ignore'
         raise "round dates record less than minimum length" if @line.length < 99
         index = 87
         american = nil

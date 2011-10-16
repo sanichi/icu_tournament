@@ -202,10 +202,10 @@ EOS
         @t.round_dates.size.should == 0
       end
 
-      it "can be added one by one in any order" do
-        @t.add_round_date('2009-11-11')
+      it "should be added one by one in the correct order" do
         @t.add_round_date('09/11/2009')
         @t.add_round_date('10th November 2009')
+        @t.add_round_date('2009-11-11')
         @t.round_dates.join('|').should == '2009-11-09|2009-11-10|2009-11-11'
       end
     end
@@ -428,12 +428,12 @@ EOS
 
       it "should detect an inconsistent start date" do
         @t.start = '2009-11-10'
-        lambda { @t.validate! }.should raise_error(/first round.*before.*start/)
+        lambda { @t.validate! }.should raise_error(/first round.*not match.*start/)
       end
 
       it "should detect an inconsistent finish date" do
         @t.finish = '2009-11-10'
-        lambda { @t.validate! }.should raise_error(/last round.*after.*end/)
+        lambda { @t.validate! }.should raise_error(/last round.*not match.*end/)
       end
 
       it "should have side effect of setting missing finish date" do
