@@ -204,6 +204,7 @@ module ICU
           csv << ["Website", t.site]
           t.players.each do |p|
             next unless p.id
+            next unless p.results.size == t.rounds
             csv << []
             csv << ["Player", p.id, p.last_name, p.first_name]
             (1..t.rounds).each do |n|
@@ -236,16 +237,22 @@ module ICU
         raise "there must be at least one ICU player (with an ID number)" if icu.size == 0
         foreign = t.players.find_all { |p| !p.id }
         raise "all foreign players must have a federation" if foreign.detect { |f| !f.fed }
+        enough = false
         icu.each do |p|
           rated = 0
+          results = 0
           (1..t.rounds).each do |r|
             result = p.find_result(r)
-            raise "ICU players must have a result in every round" unless result
-            raise "all opponents of ICU players must have a federation" if result.opponent && !t.player(result.opponent).fed
-            rated += 1 if result.opponent && t.player(result.opponent).fide_rating
+            if result
+              results += 1
+              raise "all opponents of ICU players must have a federation" if result.opponent && !t.player(result.opponent).fed
+              rated += 1 if result.opponent && t.player(result.opponent).fide_rating
+            end
           end
           raise "player #{p.num} (#{p.name}) has no rated opponents" if rated == 0
+          enough = true if results == t.rounds
         end
+        raise "at least one ICU player (with an ID number) must have a result in every round" unless enough
       end
 
       # :enddoc:

@@ -677,11 +677,10 @@ CSV
           @t.invalid(:type => @p).to_s.should match(/federation/)
         end
 
-        it "should fail unless every ICU player has a result in every round" do
-          @t.add_player(ICU::Player.new('Mark', 'Orr', 3, :id => 1350))
-          @t.add_result(ICU::Result.new(1, 3, 'W', :opponent => 30, :colour => 'B'))
-          @t.invalid(:type => @p).to_s.should match(/result/)
-          @t.add_result(ICU::Result.new(2, 3, 'W', :opponent => 10, :colour => 'W'))
+        it "should fail unless at least one ICU player has a result in every round" do
+          @t.add_result(ICU::Result.new(3, 10, 'W', :opponent => 30, :colour => 'W'))
+          @t.invalid(:type => @p).to_s.should match(/at least one.*result.*every/)
+          @t.add_result(ICU::Result.new(3, 1, 'W', :opponent => 20, :colour => 'W'))
           @t.invalid(:type => @p).should be_false
         end
 
