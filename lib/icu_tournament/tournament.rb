@@ -406,8 +406,8 @@ module ICU
     # Convenience method to parse a file.
     def self.parse_file!(file, format, opts={})
       type = format.to_s
-      raise "Invalid format" unless type.match(/^(SwissPerfect|SPExport|Krause|ForeignCSV)$/);
-      parser = "ICU::Tournament::#{format}".constantize.new
+      raise "Invalid format" unless klass = factory(format) #type.match(/^(SwissPerfect|SPExport|Krause|ForeignCSV)$/);
+      parser = klass.new
       if type == 'ForeignCSV'
         # Doesn't take options.
         parser.parse_file!(file)
@@ -433,6 +433,17 @@ module ICU
 
     # :enddoc:
     private
+    
+    # Return a class given a format.
+    def self.factory(format)
+      case format
+      when "SwissPerfect" then ICU::Tournament::SwissPerfect
+      when "SPExport"     then ICU::Tournament::SPExport
+      when "Krause"       then ICU::Tournament::Krause
+      when "ForeignCSV"   then ICU::Tournament::ForeignCSV
+      else nil
+      end
+    end
 
     # Check players.
     def check_players
@@ -544,8 +555,8 @@ module ICU
     def check_type(type)
       if type.respond_to?(:validate!)
         type.validate!(self)
-      elsif type.to_s.match(/^(ForeignCSV|Krause|SwissPerfect|SPExport)$/)
-        "ICU::Tournament::#{type.to_s}".constantize.new.validate!(self)
+      elsif klass = self.class.factory(type.to_s)
+        klass.new.validate!(self)
       else
         raise "invalid type supplied for validation check"
       end
@@ -554,7 +565,6 @@ module ICU
     # Return an array of tie break rules and an array of tie break orders (+1 for asc, -1 for desc).
     # The first and most important method is always "score", the last and least important is always "name".
     def tie_break_data
-
       # Construct the arrays and hashes to be returned.
       methods, order, data = Array.new, Hash.new, Hash.new
 

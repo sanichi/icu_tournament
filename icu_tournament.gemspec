@@ -19,17 +19,12 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.test_files = Dir.glob("spec/*.rb")
 
-  s.add_runtime_dependency("dbf", "~> 1.2.5")        # for SwissPerfect trn/sco files
-  s.add_runtime_dependency("rubyzip", "~> 0.9.4")    # for zipped-up SwissPerfect files
-  s.add_runtime_dependency("icu_name", ">=1.0.0")    # for name canonicalisation
+  s.add_runtime_dependency("dbf")        # for SwissPerfect trn/sco files
+  s.add_runtime_dependency("rubyzip")    # for zipped-up SwissPerfect files
+  s.add_runtime_dependency("icu_name")    # for name canonicalisation
 
   s.add_development_dependency("bundler")
   s.add_development_dependency("rake")
   s.add_development_dependency("rspec")
-  s.add_development_dependency("guard-rspec")
   s.add_development_dependency("rdoc")
-  if RUBY_PLATFORM =~ /darwin/i
-    s.add_development_dependency("rb-fsevent")
-    s.add_development_dependency("growl")
-  end
 end
