@@ -1,5 +1,5 @@
 module ICU
-  class Util
+  module Util
 
     # Parse dates into yyyy-mm-dd format, preferring European over US convention. Returns nil on error.
     #
