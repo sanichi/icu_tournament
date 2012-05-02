@@ -26,7 +26,9 @@ module ICU
     def self.read_utf8(name)
       File.open(name, "r:ASCII-8BIT") do |f|
         data = f.read
-        to_utf8(data)
+        bom = "\xEF\xBB\xBF".force_encoding("ASCII-8BIT")
+        data.sub!(/^#{bom}/, "")  # get rid of a UTF-8 BOM
+        to_utf8(data)             # this function is defined in ICU::Util from icu_name
       end
     end
 

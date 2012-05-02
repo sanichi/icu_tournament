@@ -806,6 +806,11 @@ KRAUSE
           file = "#{@s}/irish_junior_champs_2011.tab"
           lambda { @p.parse_file!(file) }.should_not raise_error
         end
+
+        it "should handle a file with a BOM" do
+          file = "#{@s}/armstrong_2012_with_bom.tab"
+          lambda { @p.parse_file!(file) }.should_not raise_error
+        end
       end
     end
   end
