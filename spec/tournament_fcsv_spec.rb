@@ -22,6 +22,7 @@ module ICU
           @csv = <<CSV
 Event,"Bangor Open, 2003"
 Start,1st July 2003
+End,2003-07-03
 Rounds,4
 Website,http://www.icu.ie/tournaments/display.php?id=371
 
@@ -73,6 +74,7 @@ CSV
           @csv = <<CSV
 Event,"Isle of Man Masters, 2007"
 Start,2007-09-22
+End,2007-09-29
 Rounds,9
 Website,http://www.bcmchess.co.uk/monarch2007/
 
@@ -127,6 +129,7 @@ CSV
           @csv = <<CSV
 Event,"Edinburgh Masters, 2007"
 Start,3rd January 2007
+End,3rd January 2007
 Rounds,2
 Website,http://www.chesscenter.com/twic/twic.html
 
@@ -169,6 +172,7 @@ CSV
           @csv = <<CSV
 Event,"Bratto Open, 2001"
 Start,7th March 2001
+End,09/03/2001
 Rounds,2
 Website,http://www.federscacchi.it/
 
@@ -211,6 +215,7 @@ CSV
 
  Event," Bratto Open, 2001 "
 Start, 7th  March  2001
+  End  ,2001/03/   07
  Rounds, 2
   Website, http://www.federscacchi.it/
 Player ,3364 , ui Laighleis, gearoidin
@@ -258,6 +263,7 @@ CSV
           csv = <<CSV
 Event,"Bratto Open, 2001"
 Start,7th March 2001
+End,7th March 2001
 Rounds,2
 Website,http://www.federscacchi.it/
 
@@ -288,6 +294,7 @@ CSV
         it "the event should come first" do
           csv = <<CSV
 Start,7th March 2001
+End,7th March 2001
 Event,"Bratto Open, 2001"
 Rounds,2
 Website,http://www.federscacchi.it/
@@ -295,9 +302,10 @@ CSV
           lambda { @f.parse!(csv) }.should raise_error(/line 1.*event/i)
         end
 
-        it "the start should come second" do
+        it "the start should come next" do
           csv = <<CSV
 Event,"Bratto Open, 2001"
+End,7th March 2001
 Rounds,2
 Start,7th March 2001
 Website,http://www.federscacchi.it/
@@ -305,52 +313,69 @@ CSV
           lambda { @f.parse!(csv) }.should raise_error(/line 2.*start/i)
         end
 
-        it "the number of rounds should come third" do
+        it "the end should come next" do
           csv = <<CSV
 Event,"Bratto Open, 2001"
 Start,7th March 2001
+Rounds,2
+Start,7th March 2001
+Website,http://www.federscacchi.it/
+CSV
+          lambda { @f.parse!(csv) }.should raise_error(/line 3.*end/i)
+        end
+
+        it "the number of rounds should come next" do
+          csv = <<CSV
+Event,"Bratto Open, 2001"
+Start,7th March 2001
+End,7th March 2001
 Website,http://www.federscacchi.it/
 Rounds,2
 CSV
-          lambda { @f.parse!(csv) }.should raise_error(/line 3.*rounds/i)
+          lambda { @f.parse!(csv) }.should raise_error(/line 4.*rounds/i)
         end
 
         it "there should be a web site" do
           csv = <<CSV
 Event,"Bratto Open, 2001"
 Start,7th March 2001
+End,7th March 2001
 Rounds,2
 
 CSV
-          lambda { @f.parse!(csv) }.should raise_error(/line 4.*site/i)
+          lambda { @f.parse!(csv) }.should raise_error(/line 5.*site/i)
         end
 
         it "should have at least one player" do
           csv = <<CSV
 Event,"Bratto Open, 2001"
 Start,7th March 2001
+End,7th March 2001
 Rounds,2
 Website,http://www.federscacchi.it/
+
 CSV
-          lambda { @f.parse!(csv) }.should raise_error(/line 4.*no players/i)
+          lambda { @f.parse!(csv) }.should raise_error(/line 6.*no players/i)
         end
 
         it "the player needs to have a valid ID number" do
           csv = <<CSV
 Event,"Bratto Open, 2001"
 Start,7th March 2001
+End,7th March 2001
 Rounds,2
 Website,http://www.federscacchi.it/
 
 Player,0,Ui Laighleis,Gearoidin
 CSV
-          lambda { @f.parse!(csv) }.should raise_error(/line 6.*number/i)
+          lambda { @f.parse!(csv) }.should raise_error(/line 7.*number/i)
         end
 
         it "should have the right number of results for each player" do
           csv = <<CSV
 Event,"Bratto Open, 2001"
 Start,7th March 2001
+End,7th March 2001
 Rounds,2
 Website,http://www.federscacchi.it/
 
@@ -358,13 +383,14 @@ Player,3364,Ui Laighleis,Gearoidin
 1,=,W,Kasparov,Gary,2800,GM,RUS
 Total,0.5
 CSV
-          lambda { @f.parse!(csv) }.should raise_error(/line 8.*round/i)
+          lambda { @f.parse!(csv) }.should raise_error(/line 9.*round/i)
         end
 
         it "should have correct totals" do
           csv = <<CSV
 Event,"Bratto Open, 2001"
 Start,7th March 2001
+End,7th March 2001
 Rounds,2
 Website,http://www.federscacchi.it/
 
@@ -373,14 +399,14 @@ Player,3364,Ui Laighleis,Gearoidin
 2,=,B,Orr,Mark,2100,IM,IRL
 Total,1.5
 CSV
-          lambda { @f.parse!(csv) }.should raise_error(/line 9.*total/i)
+          lambda { @f.parse!(csv) }.should raise_error(/line 10.*total/i)
         end
-
 
         it "players who match by name and federation should match in all other details" do
           csv = <<CSV
 Event,"Bratto Open, 2001"
 Start,7th March 2001
+End,7th March 2001
 Rounds,2
 Website,http://www.federscacchi.it/
 
@@ -394,7 +420,7 @@ Player,1350,Orr,Mark
 2,=,B,Kasparov,Gary,2850,GM,RUS
 Total,1.0
 CSV
-          lambda { @f.parse!(csv) }.should raise_error(/line 13.*same name.*conflicting/i)
+          lambda { @f.parse!(csv) }.should raise_error(/line 14.*same name.*conflicting/i)
         end
       end
 
@@ -403,6 +429,7 @@ CSV
           @csv = <<CSV
 Event,"Edinburgh Masters, 2007"
 Start,2007-08-09
+End,2007-08-09
 Rounds,2
 Website,http://www.chesscenter.com/twic/twic.html
 
@@ -430,6 +457,7 @@ CSV
           @csv = <<CSV
 Event,"Isle of Man Masters, 2007"
 Start,2007-09-22
+End,2007-09-30
 Rounds,9
 Website,http://www.bcmchess.co.uk/monarch2007/
 
@@ -457,7 +485,8 @@ Player,159,Cafolla,Peter
 9,0,W,Grant,Alan,2223,,SCO
 Total,3.0
 CSV
-          @t = ICU::Tournament.new("Isle of Man Masters, 2007", '2007-09-22')
+          @t = ICU::Tournament.new('Isle of Man Masters, 2007', '2007-09-22')
+          @t.finish = '2007-09-30'
           @t.site = 'http://www.bcmchess.co.uk/monarch2007/'
           @t.rounds = 9
           @t.add_player(ICU::Player.new('Anthony', 'Fox', 1, :id => 456, :fide_rating => 2100, :fed => 'IRL'))
@@ -507,6 +536,7 @@ CSV
           @csv = <<CSV
 Event,"Isle of Man Masters, 2007"
 Start,2007-09-22
+End,2007-09-30
 Rounds,9
 Website,http://www.bcmchess.co.uk/monarch2007/
 
@@ -522,7 +552,8 @@ Player,456,Fox,Anthony
 9,=,W,Phillips,Roy,2271,,MAU
 Total,4.0
 CSV
-          @t = ICU::Tournament.new("Isle of Man Masters, 2007", '2007-09-22')
+          @t = ICU::Tournament.new('Isle of Man Masters, 2007', '2007-09-22')
+          @t.finish = '2007-09-30'
           @t.site = 'http://www.bcmchess.co.uk/monarch2007/'
           @t.add_player(ICU::Player.new('Anthony', 'Fox', 1, :id => 456, :fide_rating => 2100, :fed => 'IRL'))
           @t.add_player(ICU::Player.new('Peter P.', 'Taylor', 2, :fide_rating => 2209, :fed => 'ENG'))
@@ -555,6 +586,7 @@ CSV
           @csv = <<CSV
 Event,"Brätto Open, 2001"
 Start,7th March 2001
+End,9th March 2001
 Rounds,2
 Website,http://www.federscacchi.it/
 
@@ -643,6 +675,7 @@ CSV
         before(:each) do
           @p = ICU::Tournament::ForeignCSV.new
           @t = ICU::Tournament.new("Isle of Man Masters, 2007", '2007-09-22')
+          @t.finish = '2007-09-30'
           @t.site = 'http://www.bcmchess.co.uk/monarch2007/'
           @t.add_player(ICU::Player.new('Anthony', 'Fox', 1, :id => 456))
           @t.add_player(ICU::Player.new('Peter', 'Cafolla', 2, :id => 159))

@@ -8,6 +8,7 @@ module ICU
     #
     #   Event,"Isle of Man Masters, 2007"
     #   Start,2007-09-22
+    #   End,2007-09-30
     #   Rounds,9
     #   Website,http://www.bcmchess.co.uk/monarch2007/
     #
@@ -33,6 +34,7 @@ module ICU
     #
     #   tournament.name                                     # => "Isle of Man Masters, 2007"
     #   tournament.start                                    # => "2007-09-22"
+    #   tournament.finish                                   # => "2007-09-30"
     #   tournament.rounds                                   # => 9
     #   tournament.website                                  # => "http://www.bcmchess.co.uk/monarch2007/"
     #
@@ -77,7 +79,7 @@ module ICU
     #
     # Extra condtions, over and above the normal validation rules, apply before any tournament validates or can be serialized in this format.
     #
-    # * the tournament must have a _site_ attribute
+    # * the tournament must have a _site_ attribute and a _finish_ date
     # * there must be at least one player with an _id_ (ICU ID number)
     # * all foreign players (those without an ICU ID) must have a _fed_ attribute (federation)
     # * all ICU players must have a result in every round (even if it is just bye or is unrateable)
@@ -94,7 +96,7 @@ module ICU
     # For example, here are the commands to reproduce the example above. Note that in this format
     # opponents' ratings are FIDE.
     #
-    #   t = ICU::Tournament.new("Isle of Man Masters, 2007", '2007-09-22', :rounds => 9)
+    #   t = ICU::Tournament.new("Isle of Man Masters, 2007", '2007-09-22', :finish => '2007-09-30', :rounds => 9)
     #   t.site = 'http://www.bcmchess.co.uk/monarch2007/'
     #   t.add_player(ICU::Player.new('Anthony',  'Fox',      1, :fide_rating => 2100, :fed => 'IRL', :id => 456))
     #   t.add_player(ICU::Player.new('Peter P.', 'Taylor',   2, :fide_rating => 2209, :fed => 'ENG'))
@@ -136,11 +138,12 @@ module ICU
             case @state
               when 0 then event
               when 1 then start
-              when 2 then rounds
-              when 3 then website
-              when 4 then player
-              when 5 then result
-              when 6 then total
+              when 2 then finish
+              when 3 then rounds
+              when 4 then website
+              when 5 then player
+              when 6 then result
+              when 7 then total
               else raise "internal error - state #{@state} does not exist"
             end
           rescue => err
@@ -149,14 +152,15 @@ module ICU
           end
         end
 
-        unless @state == 4
+        unless @state == 5
           exp = case @state
                 when 0 then "the event name"
                 when 1 then "the start date"
-                when 2 then "the number of rounds"
-                when 3 then "the website address"
-                when 5 then "a result for round #{@round+1}"
-                when 6 then "a total score"
+                when 2 then "the end date"
+                when 3 then "the number of rounds"
+                when 4 then "the website address"
+                when 6 then "a result for round #{@round+1}"
+                when 7 then "a total score"
                 end
           raise "line #{@line}: premature termination - expected #{exp}"
         end
@@ -200,6 +204,7 @@ module ICU
         CSV.generate do |csv|
           csv << ["Event", t.name]
           csv << ["Start", t.start]
+          csv << ["End", t.finish]
           csv << ["Rounds", t.rounds]
           csv << ["Website", t.site]
           t.players.each do |p|
@@ -232,6 +237,7 @@ module ICU
 
       # Additional tournament validation rules for this specific type.
       def validate!(t)
+        raise "missing end date" unless t.finish
         raise "missing site" unless t.site.to_s.length > 0
         icu = t.players.find_all { |p| p.id }
         raise "there must be at least one ICU player (with an ID number)" if icu.size == 0
@@ -266,24 +272,31 @@ module ICU
       end
 
       def start
-        abort "the 'Start' keyword", 0 unless @r[0].match(/^(Start(\s+Date)?|Date)$/i)
+        abort "the 'Start' keyword", 0 unless @r[0].match(/^(Start(\s+Date)?)$/i)
         abort "the start date",      1 unless @r.size > 1 && @r[1] != ''
         @tournament.start = @r[1]
         @state = 2
+      end
+
+      def finish
+        abort "the 'End' keyword",   0 unless @r[0].match(/^(End(\s+Date)?)$/i)
+        abort "the end date",        1 unless @r.size > 1 && @r[1] != ''
+        @tournament.finish = @r[1]
+        @state = 3
       end
 
       def rounds
         abort "the 'Rounds' keyword", 0 unless @r[0].match(/(Number of )?Rounds$/)
         abort "the number of rounds", 1 unless @r.size > 1 && @r[1].match(/^[1-9]\d*/)
         @tournament.rounds = @r[1]
-        @state = 3
+        @state = 4
       end
 
       def website
         abort "the 'Website' keyword", 0 unless @r[0].match(/^(Web(\s?site)?|Site)$/i)
         abort "the event website",     1 unless @r.size > 1 && @r[1] != ''
         @tournament.site = @r[1]
-        @state = 4
+        @state = 5
       end
 
       def player
@@ -302,7 +315,7 @@ module ICU
           @tournament.add_player(@player)
         end
         @round = 0
-        @state = 5
+        @state = 6
       end
 
       def result
@@ -336,14 +349,14 @@ module ICU
             @tournament.add_result(result)
           end
         end
-        @state = 6 if @round == @tournament.rounds
+        @state = 7 if @round == @tournament.rounds
       end
 
       def total
         points = @player.points
         abort "the 'Total' keyword", 0 unless @r[0].match(/^Total$/i)
         abort "the player's (#{@player.object_id}, #{@player.results.size}) total points to be #{points}", 1 unless @r[1].to_f == points
-        @state = 4
+        @state = 5
       end
 
       def abort(expected, cell)
