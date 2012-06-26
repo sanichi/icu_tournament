@@ -379,7 +379,7 @@ module ICU
         num = @data[0, 4]
         nam = @data[10, 32]
         nams = nam.split(/,/)
-        raise "missing comma in name #{nam.trim}" unless nams.size > 1
+        raise "missing comma in name '#{nam.strip}'" unless nams.size > 1
         opt =
         {
           :gender => @data[5, 1],
