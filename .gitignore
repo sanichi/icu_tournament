@@ -1,6 +1,7 @@
 coverage
 html
 pkg
+doc
 tmp
 NOTES
 .DS_Store

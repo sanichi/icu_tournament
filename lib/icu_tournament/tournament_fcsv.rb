@@ -355,7 +355,7 @@ module ICU
       def total
         points = @player.points
         abort "the 'Total' keyword", 0 unless @r[0].match(/^Total$/i)
-        abort "the player's (#{@player.object_id}, #{@player.results.size}) total points to be #{points}", 1 unless @r[1].to_f == points
+        abort "the player's (#{@player.name}) total points to be #{points}", 1 unless @r[1].to_f == points
         @state = 5
       end
 
