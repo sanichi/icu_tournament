@@ -191,7 +191,7 @@ module ICU
         end
         raise "invalid INI file (no sections)" if ini.size == 0
         if ini["Tournament Info"]
-          %w(name arbiter rounds).each do |key|
+          %w(name arbiter).each do |key|
             val = (ini["Tournament Info"][key.capitalize] || '').squeeze(" ")
             @t.send("#{key}=", val) if val.size > 0
           end
@@ -285,9 +285,9 @@ module ICU
         fix_numbering
       end
 
+      # Since version 1.6.3 we no longer trust the number of rounds from the INI file.
       def fix_number_of_rounds
-        rounds = @t.last_round
-        @t.rounds = rounds
+        @t.rounds = @t.last_round
       end
 
       def fix_missing_results

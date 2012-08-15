@@ -233,6 +233,20 @@ module ICU
         end
       end
 
+      context "Phibsborough Intermediate CC, 2012, which has zero for the number of rounds in the INI file" do
+        before(:each) do
+          @p = ICU::Tournament::SwissPerfect.new
+        end
+
+        it "should parse" do
+          @t = @p.parse_file(SAMPLES + 'phibs_cc_inter_2012.zip', :start => "2012-04-16")
+          @p.error.should be_nil
+          @t.name.should == "Phibsboro Club Championship 2012 Inter"
+          @t.rounds.should == 5
+          @t.arbiter.should == "Michael Germaine"
+        end
+      end
+
       context "Non-existant ZIP file" do
         before(:all) do
           @p = ICU::Tournament::SwissPerfect.new
