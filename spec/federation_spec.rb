@@ -116,7 +116,7 @@ module ICU
 
     context "#menu" do
       before(:all) do
-        @total = 173
+        @total = 174
       end
 
       it "should return array of name-code pairs in order of name by default" do
@@ -175,7 +175,7 @@ module ICU
 
     context "#codes" do
       before(:all) do
-        @total = 173
+        @total = 174
       end
 
       it "should return array of codes ordered alphabetically" do

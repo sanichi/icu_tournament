@@ -270,6 +270,7 @@ module ICU
       ['SEN', 'Senegal'],
       ['SRB', 'Serbia'],
       ['SEY', 'Seychelles'],
+      ['SLE', 'Siera Leone'],
       ['SIN', 'Singapore'],
       ['SVK', 'Slovakia'],
       ['SLO', 'Slovenia'],
