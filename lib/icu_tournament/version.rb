@@ -2,6 +2,6 @@
 
 module ICU
   class Tournament
-    VERSION = "1.6.8"
+    VERSION = "1.6.9"
   end
 end
