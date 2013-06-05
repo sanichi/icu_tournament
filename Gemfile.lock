@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    icu_tournament (1.6.9)
+    icu_tournament (1.6.10)
       dbf
       icu_name
       rubyzip
