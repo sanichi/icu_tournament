@@ -20,9 +20,9 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.test_files = Dir.glob("spec/*.rb")
 
-  s.add_runtime_dependency("dbf")        # for SwissPerfect trn/sco files
-  s.add_runtime_dependency("rubyzip")    # for zipped-up SwissPerfect files
-  s.add_runtime_dependency("icu_name")    # for name canonicalisation
+  s.add_runtime_dependency("dbf")      # for SwissPerfect trn/sco files
+  s.add_runtime_dependency("rubyzip")  # for zipped-up SwissPerfect files
+  s.add_runtime_dependency("icu_name") # for name canonicalisation
 
   s.add_development_dependency("bundler")
   s.add_development_dependency("rake")

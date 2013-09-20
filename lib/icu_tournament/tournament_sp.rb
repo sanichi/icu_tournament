@@ -1,5 +1,5 @@
 require 'dbf'
-require 'zip/zipfilesystem'
+require 'zip'
 require 'tempfile'
 
 module ICU
@@ -157,7 +157,7 @@ module ICU
       def get_zip_files(file)
         temp = Hash.new
         begin
-          Zip::ZipFile.open(file) do |zf|
+          Zip::File.open(file) do |zf|
             raise "ZIP file should contain exactly 3 files (.ini, .trn and .sco)" unless zf.size == 3
             stem = Hash.new
             zf.entries.each do |e|
