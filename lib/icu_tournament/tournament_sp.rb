@@ -185,7 +185,7 @@ module ICU
 
       def parse_ini(file)
         begin
-          ini = ICU::Util.load_ini(file)
+          ini = ICU::Util::File.load_ini(file)
         rescue
           raise "non-existant INI file (#{file})"
         end

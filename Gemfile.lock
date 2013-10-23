@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    icu_tournament (1.7.3)
+    icu_tournament (1.8.0)
       dbf
       icu_name
       rubyzip (< 1.0.0)
@@ -13,7 +13,7 @@ GEM
       fastercsv (~> 1.5.4)
     diff-lcs (1.2.4)
     fastercsv (1.5.5)
-    icu_name (1.1.1)
+    icu_name (1.2.0)
     json (1.8.0)
     rake (10.1.0)
     rdoc (4.0.1)

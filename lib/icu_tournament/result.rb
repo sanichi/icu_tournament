@@ -80,7 +80,7 @@ module ICU
   #   r.eql?(r3, :except => [:rateable, :score])   # => true
   #
   class Result
-    extend ICU::Accessor
+    extend ICU::Util::Accessor
     attr_positive :round
     attr_integer :player
 

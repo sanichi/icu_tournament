@@ -193,7 +193,7 @@ module ICU
   # in which case any options supplied to this method will be silently ignored.
   #
   class Tournament
-    extend ICU::Accessor
+    extend ICU::Util::Accessor
     attr_date :start
     attr_date_or_nil :finish
     attr_positive_or_nil :rounds
@@ -224,7 +224,7 @@ module ICU
     # Add a round date.
     def add_round_date(round_date)
       round_date = round_date.to_s.strip
-      parsed_date = Util.parsedate(round_date)
+      parsed_date = Util::Date.parse(round_date)
       raise "invalid round date (#{round_date})" unless parsed_date
       @round_dates << parsed_date
     end

@@ -128,7 +128,7 @@ module ICU
         @lineno = 0
         @header = nil
         @results = Array.new
-        spx = ICU::Util.to_utf8(spx) unless arg[:is_utf8]
+        spx = ICU::Util::String.to_utf8(spx) unless arg[:is_utf8]
 
         # Process each line.
         spx.each_line do |line|
@@ -172,7 +172,7 @@ module ICU
 
       # Same as <em>parse!</em> except the input is a file name rather than file contents.
       def parse_file!(file, arg={})
-        spx = ICU::Util.read_utf8(file)
+        spx = ICU::Util::File.read_utf8(file)
         arg[:is_utf8] = true
         parse!(spx, arg)
       end

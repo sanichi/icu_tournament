@@ -125,7 +125,7 @@ module ICU
       def parse!(csv, arg={})
         @state, @line, @round, @sum, @error = 0, 0, nil, nil, nil
         @tournament = Tournament.new('Unspecified', '2000-01-01')
-        csv = ICU::Util.to_utf8(csv) unless arg[:is_utf8]
+        csv = ICU::Util::String.to_utf8(csv) unless arg[:is_utf8]
 
         CSV.parse(csv, :row_sep => :auto) do |r|
           @line += 1                            # increment line number
@@ -184,7 +184,7 @@ module ICU
 
       # Same as <em>parse!</em> except the input is a file name rather than file contents.
       def parse_file!(file)
-        csv = ICU::Util.read_utf8(file)
+        csv = ICU::Util::File.read_utf8(file)
         parse!(csv, :is_utf8 => true)
       end
 

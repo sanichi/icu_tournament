@@ -97,7 +97,7 @@ module ICU
   #   fox1.gender                      # => 'M'
   #
   class Player
-    extend ICU::Accessor
+    extend ICU::Util::Accessor
     attr_integer :num
     attr_positive_or_nil :id, :fide_id, :rating, :fide_rating, :rank
     attr_date_or_nil :dob
@@ -132,7 +132,7 @@ module ICU
 
     # Reset the original name.
     def original_name=(original_name)
-      @original_name = ICU::Util.to_utf8(original_name)
+      @original_name = ICU::Util::String.to_utf8(original_name)
     end
 
     # Return the full name, last name first.

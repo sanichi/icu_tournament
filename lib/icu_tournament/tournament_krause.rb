@@ -216,7 +216,7 @@ module ICU
         @name_set, @start_set = false, false
         @comments = ''
         @results = Array.new
-        krs = ICU::Util.to_utf8(krs) unless arg[:is_utf8]
+        krs = ICU::Util::String.to_utf8(krs) unless arg[:is_utf8]
         lines = get_lines(krs)
 
         # Process all lines.
@@ -292,7 +292,7 @@ module ICU
 
       # Same as <em>parse!</em> except the input is a file name rather than file contents.
       def parse_file!(file, arg={})
-        krause = ICU::Util.read_utf8(file)
+        krause = ICU::Util::File.read_utf8(file)
         arg[:is_utf8] = true
         parse!(krause, arg)
       end
