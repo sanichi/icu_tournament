@@ -110,6 +110,12 @@ module ICU
         Player.new('Mark', 'Orr', 3, :fed => ' Ireland ').fed.should == 'IRL'
         lambda { Player.new('Danny', 'Kopec', 3, :fed => 'US') }.should raise_error(/invalid federation/)
       end
+
+      it "should correct common code errors" do
+        Player.new('Ricardo', 'Calvo', 1, :fed => 'SPA').fed.should == 'ESP'
+        Player.new('Mark', 'Orr', 2, :fed => 'Icu').fed.should == 'IRL'
+        Player.new('Florin', 'Gheorghiu', 3, :fed => 'ROM').fed.should == 'ROU'
+      end
     end
 
     context "title" do
