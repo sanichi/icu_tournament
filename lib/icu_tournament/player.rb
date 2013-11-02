@@ -142,7 +142,7 @@ module ICU
 
     # Federation. Is either unknown (nil) or a string containing at least three letters.
     def fed=(fed)
-      obj = Federation.find(fed)
+      obj = ICU::Federation.find(fed)
       @fed = obj ? obj.code : nil
       raise "invalid federation (#{fed})" if @fed.nil? && fed.to_s.strip.length > 0
     end

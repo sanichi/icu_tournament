@@ -216,7 +216,7 @@ module ICU
 
     # Set the tournament federation. Can be _nil_.
     def fed=(fed)
-      obj = Federation.find(fed)
+      obj = ICU::Federation.find(fed)
       @fed = obj ? obj.code : nil
       raise "invalid tournament federation (#{fed})" if @fed.nil? && fed.to_s.strip.length > 0
     end
