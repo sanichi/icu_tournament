@@ -21,7 +21,7 @@ module ICU
     #   6,0,-
     #   7,=,W,Walton,Alan J.,2223,,ENG
     #   8,0,B,Bannink,Bernard,2271,FM,NED
-    #   9,=,W,Phillips,Roy,2271,,MAU
+    #   9,=,W,Phillips,Roy,2271,,MRI
     #   Total,4
     #
     # This file can be parsed as follows.
@@ -106,7 +106,7 @@ module ICU
     #   t.add_player(ICU::Player.new('Alan',     'Grant',    6, :fide_rating => 2223, :fed => 'SCO'))
     #   t.add_player(ICU::Player.new('Alan J.',  'Walton',   7, :fide_rating => 2223, :fed => 'ENG'))
     #   t.add_player(ICU::Player.new('Bernard',  'Bannink',  8, :fide_rating => 2271, :fed => 'NED', :title => 'FM'))
-    #   t.add_player(ICU::Player.new('Roy',      'Phillips', 9, :fide_rating => 2271, :fed => 'MAU'))
+    #   t.add_player(ICU::Player.new('Roy',      'Phillips', 9, :fide_rating => 2271, :fed => 'MRI'))
     #   t.add_result(ICU::Result.new(1, 1, 'L', :opponent => 2, :colour => 'B'))
     #   t.add_result(ICU::Result.new(2, 1, 'D', :opponent => 3, :colour => 'W'))
     #   t.add_result(ICU::Result.new(3, 1, 'D', :opponent => 4, :colour => 'B'))

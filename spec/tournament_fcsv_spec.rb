@@ -87,7 +87,7 @@ Player,456,Fox,Anthony
 6,0,-
 7,=,W,Walton,Alan J.,2223,,ENG
 8,0,B,Bannink,Bernard,2271,FM,NED
-9,=,W,Phillips,Roy,2271,,MAU
+9,=,W,Phillips,Roy,2271,,MRI
 Total,4
 CSV
           @f = ICU::Tournament::ForeignCSV.new
@@ -470,7 +470,7 @@ Player,456,Fox,Anthony
 6,0,-
 7,=,W,Walton,Alan J.,2223,,ENG
 8,0,B,Bannink,Bernard,2271,FM,NED
-9,=,W,Phillips,Roy,2271,,MAU
+9,=,W,Phillips,Roy,2271,,MRI
 Total,4.0
 
 Player,159,Cafolla,Peter
@@ -497,7 +497,7 @@ CSV
           @t.add_player(ICU::Player.new('Alan', 'Grant', 6, :fide_rating => 2223, :fed => 'SCO'))
           @t.add_player(ICU::Player.new('Alan J.', 'Walton', 7, :fide_rating => 2223, :fed => 'ENG'))
           @t.add_player(ICU::Player.new('Bernard', 'Bannink', 8, :fide_rating => 2271, :fed => 'NED', :title => 'FM'))
-          @t.add_player(ICU::Player.new('Roy', 'Phillips', 9, :fide_rating => 2271, :fed => 'MAU'))
+          @t.add_player(ICU::Player.new('Roy', 'Phillips', 9, :fide_rating => 2271, :fed => 'MRI'))
           @t.add_player(ICU::Player.new('Oliver A.', 'Jackson', 10, :fide_rating => 2198, :fed => 'ENG'))
           @t.add_player(ICU::Player.new('Van Den Berssalaar', 'Jeroen', 11, :fed => 'NED'))
           @t.add_player(ICU::Player.new('Sam E.', 'Collins', 12, :fide_rating => 2394, :fed => 'IRL', :title => 'IM'))
@@ -549,7 +549,7 @@ Player,456,Fox,Anthony
 6,0,-
 7,=,W,Walton,Alan J.,2223,,ENG
 8,0,B,Bannink,Bernard,2271,FM,NED
-9,=,W,Phillips,Roy,2271,,MAU
+9,=,W,Phillips,Roy,2271,,MRI
 Total,4.0
 CSV
           @t = ICU::Tournament.new('Isle of Man Masters, 2007', '2007-09-22')
@@ -563,7 +563,7 @@ CSV
           @t.add_player(ICU::Player.new('Alan', 'Grant', 6, :fide_rating => 2223, :fed => 'SCO'))
           @t.add_player(ICU::Player.new('Alan J.', 'Walton', 7, :fide_rating => 2223, :fed => 'ENG'))
           @t.add_player(ICU::Player.new('Bernard', 'Bannink', 8, :fide_rating => 2271, :fed => 'NED', :title => 'FM'))
-          @t.add_player(ICU::Player.new('Roy', 'Phillips', 9, :fide_rating => 2271, :fed => 'MAU'))
+          @t.add_player(ICU::Player.new('Roy', 'Phillips', 9, :fide_rating => 2271, :fed => 'MRI'))
           @t.add_result(ICU::Result.new(1, 1, 'L', :opponent => 2,  :colour => 'B'))
           @t.add_result(ICU::Result.new(2, 1, 'D', :opponent => 3,  :colour => 'W'))
           @t.add_result(ICU::Result.new(3, 1, 'D', :opponent => 4,  :colour => 'B'))
