@@ -31,7 +31,7 @@ end
 [:spec, :fcsv, :krause, :sp, :spx].each do |spec|
   RSpec::Core::RakeTask.new(spec) do |t|
     t.pattern    = "spec/tournament_#{spec}_spec.rb" unless spec == :spec
-    t.rspec_opts = ['--colour --format nested']
+    t.rspec_opts = ['--colour --format doc']
   end
 end
 

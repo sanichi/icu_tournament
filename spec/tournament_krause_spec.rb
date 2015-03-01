@@ -6,17 +6,17 @@ module ICU
     describe Krause do
       def check_player(num, first, last, other={})
         p = @t.player(num)
-        p.first_name.should == first
-        p.last_name.should  == last
+        expect(p.first_name).to eq(first)
+        expect(p.last_name).to  eq(last)
         [:gender, :title, :rating, :fide_rating, :fed, :id, :fide_id, :dob, :rank].each do |key|
-          p.send(key).should == other[key] if other.has_key?(key)
+          expect(p.send(key)).to eq(other[key]) if other.has_key?(key)
         end
       end
 
       def check_results(num, results, points)
         p = @t.player(num)
-        p.results.size.should == results
-        p.points.should == points
+        expect(p.results.size).to eq(results)
+        expect(p.points).to eq(points)
       end
 
       context "a typical tournament" do
@@ -47,30 +47,30 @@ KRAUSE
         end
 
         it "should have a name, city and federation" do
-          @t.name.should == 'Las Vegas National Open'
-          @t.city.should == 'Las Vegas'
-          @t.fed.should  == 'USA'
+          expect(@t.name).to eq('Las Vegas National Open')
+          expect(@t.city).to eq('Las Vegas')
+          expect(@t.fed).to  eq('USA')
         end
 
         it "should have start and end dates" do
-          @t.start.should  == '2008-06-07'
-          @t.finish.should == '2008-06-09'
+          expect(@t.start).to  eq('2008-06-07')
+          expect(@t.finish).to eq('2008-06-09')
         end
 
         it "should have a number of rounds, a type and a time control" do
-          @t.rounds.should       == 3
-          @t.last_round.should   == 3
-          @t.type.should         == 'All-Play-All'
-          @t.time_control.should == '60 in 2hr, 30 in 1hr, rest in 1hr'
+          expect(@t.rounds).to       eq(3)
+          expect(@t.last_round).to   eq(3)
+          expect(@t.type).to         eq('All-Play-All')
+          expect(@t.time_control).to eq('60 in 2hr, 30 in 1hr, rest in 1hr')
         end
 
         it "should have an arbiter and deputies" do
-          @t.arbiter.should == 'Hans Scmidt'
-          @t.deputy.should  == 'Gerry Graham, Herbert Scarry'
+          expect(@t.arbiter).to eq('Hans Scmidt')
+          expect(@t.deputy).to  eq('Gerry Graham, Herbert Scarry')
         end
 
         it "should have players and their details" do
-          @t.should have(3).players
+          expect(@t.players.size).to eq(3)
           check_player(1, 'Gearoidin', 'Ui Laighleis', :gender => 'F', :fide_rating => 1985, :fed => 'IRL', :fide_id =>  2501171, :dob => '1964-06-10', :rank => 2)
           check_player(2, 'Mark', 'Orr',               :gender => 'M', :fide_rating => 2258, :fed => 'IRL', :fide_id =>  2500035, :dob => '1955-11-09', :rank => 1, :title => 'IM')
           check_player(3, 'Viktor', 'Bologan',         :gender => 'M', :fide_rating => 2663, :fed => 'MDA', :fide_id => 13900048, :dob => '1971-01-01', :rank => 3, :title => 'GM')
@@ -83,7 +83,7 @@ KRAUSE
         end
 
         it "should have correct round dates" do
-          @t.round_dates.join('|').should == '2008-06-07|2008-06-08|2008-06-09'
+          expect(@t.round_dates.join('|')).to eq('2008-06-07|2008-06-08|2008-06-09')
         end
 
         it "the parser should retain comment lines" do
@@ -94,7 +94,7 @@ KRAUSE
 0         1         2         3         4         5         6         7         8         9         0         1         2
 0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
 COMMENTS
-          @p.comments.should == comments
+          expect(@p.comments).to eq(comments)
         end
       end
 
@@ -115,22 +115,22 @@ KRAUSE
         end
 
         it "should have a name and federation" do
-          @t.name.should == 'Fantasy Tournament'
-          @t.fed.should  == 'IRL'
+          expect(@t.name).to eq('Fantasy Tournament')
+          expect(@t.fed).to  eq('IRL')
         end
 
         it "should have a various dates" do
-          @t.start.should  == '2009-09-09'
-          @t.finish.should  == '2009-09-11'
-          @t.round_dates.join('|').should == '2009-09-09|2009-09-10|2009-09-11'
+          expect(@t.start).to  eq('2009-09-09')
+          expect(@t.finish).to  eq('2009-09-11')
+          expect(@t.round_dates.join('|')).to eq('2009-09-09|2009-09-10|2009-09-11')
         end
 
         it "should have a number of rounds" do
-          @t.rounds.should == 3
+          expect(@t.rounds).to eq(3)
         end
 
         it "should have players and their details" do
-          @t.should have(3).players
+          expect(@t.players.size).to eq(3)
           check_player(1, 'Minerva', 'Mouse', :gender => 'F', :rating => 1900, :fed => 'USA', :fide_id => 1234567, :dob => '1928-05-15', :rank => 2)
           check_player(2, 'Daffy',   'Duck',  :gender => 'M', :rating => 2200, :fed => 'IRL', :fide_id => 7654321, :dob => '1937-04-17', :rank => 1, :title => 'IM')
           check_player(3, 'Mickey',  'Mouse', :gender => 'M', :rating => 2600, :fed => 'USA', :fide_id => 1726354, :dob => '1928-05-15', :rank => 3, :title => 'GM')
@@ -143,7 +143,7 @@ KRAUSE
         end
 
         it "the parser should retain comment lines" do
-          @p.comments.should == "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n"
+          expect(@p.comments).to eq("0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n")
         end
       end
 
@@ -161,11 +161,11 @@ KRAUSE
         end
 
         it "should produce a valid tournament" do
-          @t.invalid.should be_false
+          expect(@t.invalid).to be_falsey
         end
 
         it "should produce output that looks reasonable" do
-          @k.should match(/Fischer,Robert J\./)
+          expect(@k).to match(/Fischer,Robert J\./)
         end
       end
 
@@ -194,23 +194,23 @@ KRAUSE
 
         it "should serialize back to the original if the input is fully canonicalised" do
           t = @p.parse!(@krause, :fide => true)
-          ICU::Tournament::Krause.new.serialize(t, :fide => true).should == @krause
+          expect(ICU::Tournament::Krause.new.serialize(t, :fide => true)).to eq(@krause)
         end
 
         it "should serialize using the convenience method of the tournament object" do
           t = @p.parse!(@krause, :fide => true)
-          t.serialize('Krause', :fide => true).should == @krause
+          expect(t.serialize('Krause', :fide => true)).to eq(@krause)
         end
 
         it "should serialize only if :fide option is used correctly" do
           t = @p.parse!(@krause, :fide => true)
-          t.serialize('Krause', :fide => true).should == @krause
-          t.serialize('Krause').should_not == @krause
+          expect(t.serialize('Krause', :fide => true)).to eq(@krause)
+          expect(t.serialize('Krause')).not_to eq(@krause)
         end
 
         it "should not serialize correctly if mixed rating types are used" do
           t = @p.parse!(@krause, :fide => true)
-          t.serialize('Krause').should_not == @krause
+          expect(t.serialize('Krause')).not_to eq(@krause)
         end
       end
 
@@ -228,9 +228,9 @@ KRAUSE
         end
 
         it "should have rankings automatically set" do
-          @t.player(1).rank.should == 2
-          @t.player(2).rank.should == 1
-          @t.player(3).rank.should == 3
+          expect(@t.player(1).rank).to eq(2)
+          expect(@t.player(2).rank).to eq(1)
+          expect(@t.player(3).rank).to eq(3)
         end
       end
 
@@ -293,7 +293,7 @@ REORDERED
 
         it "should serialise correctly after renumbering by rank" do
           @t.renumber
-          @p.serialize(@t).should == @reordered
+          expect(@p.serialize(@t)).to eq(@reordered)
         end
       end
 
@@ -319,7 +319,7 @@ KRAUSE
         end
 
         it "should serialise" do
-          @output.should == @krause
+          expect(@output).to eq(@krause)
         end
       end
 
@@ -340,52 +340,52 @@ KRAUSE
 
         it "should include all data without any explict cusromisation" do
           text = @t.serialize('Krause')
-          text.should match(/001    1 w    Ui Laighleis,Gearoidin            1985 IRL        3364 1964-06-10  1.0    2/)
-          text.should match(/001    2    m Orr,Mark                          2258 IRL        1350 1955-11-09  2.0    1/)
-          text.should match(/001    3    g Svidler,Peter                     2663 RUS       16790 1971-01-01  0.0    3/)
+          expect(text).to match(/001    1 w    Ui Laighleis,Gearoidin            1985 IRL        3364 1964-06-10  1.0    2/)
+          expect(text).to match(/001    2    m Orr,Mark                          2258 IRL        1350 1955-11-09  2.0    1/)
+          expect(text).to match(/001    3    g Svidler,Peter                     2663 RUS       16790 1971-01-01  0.0    3/)
         end
 
         it "should omitt ratings and IDs if FIDE option is chosen" do
           text = @t.serialize('Krause', :fide => true)
-          text.should match(/001    1 w    Ui Laighleis,Gearoidin                 IRL             1964-06-10  1.0    2/)
-          text.should match(/001    2    m Orr,Mark                               IRL             1955-11-09  2.0    1/)
-          text.should match(/001    3    g Svidler,Peter                          RUS             1971-01-01  0.0    3/)
+          expect(text).to match(/001    1 w    Ui Laighleis,Gearoidin                 IRL             1964-06-10  1.0    2/)
+          expect(text).to match(/001    2    m Orr,Mark                               IRL             1955-11-09  2.0    1/)
+          expect(text).to match(/001    3    g Svidler,Peter                          RUS             1971-01-01  0.0    3/)
         end
 
         it "should omitt all optional data if the :only option is an empty hash" do
           text = @t.serialize('Krause', :only => [])
-          text.should match(/001    1      Ui Laighleis,Gearoidin                                             1.0     /)
-          text.should match(/001    2      Orr,Mark                                                           2.0     /)
-          text.should match(/001    3      Svidler,Peter                                                      0.0     /)
+          expect(text).to match(/001    1      Ui Laighleis,Gearoidin                                             1.0     /)
+          expect(text).to match(/001    2      Orr,Mark                                                           2.0     /)
+          expect(text).to match(/001    3      Svidler,Peter                                                      0.0     /)
         end
 
         it "should should be able to include a subset of attributes, test 1" do
           text = @t.serialize('Krause', :only => [:gender, "dob", :id, "rubbish"])
-          text.should match(/001    1 w    Ui Laighleis,Gearoidin                            3364 1964-06-10  1.0     /)
-          text.should match(/001    2      Orr,Mark                                          1350 1955-11-09  2.0     /)
-          text.should match(/001    3      Svidler,Peter                                    16790 1971-01-01  0.0     /)
+          expect(text).to match(/001    1 w    Ui Laighleis,Gearoidin                            3364 1964-06-10  1.0     /)
+          expect(text).to match(/001    2      Orr,Mark                                          1350 1955-11-09  2.0     /)
+          expect(text).to match(/001    3      Svidler,Peter                                    16790 1971-01-01  0.0     /)
         end
 
         it "should should be able to include a subset of attributes, test 2" do
           text = @t.serialize('Krause', :only => [:rank, "title", :fed, "rating"])
-          text.should match(/001    1      Ui Laighleis,Gearoidin            1985 IRL                         1.0    2/)
-          text.should match(/001    2    m Orr,Mark                          2258 IRL                         2.0    1/)
-          text.should match(/001    3    g Svidler,Peter                     2663 RUS                         0.0    3/)
+          expect(text).to match(/001    1      Ui Laighleis,Gearoidin            1985 IRL                         1.0    2/)
+          expect(text).to match(/001    2    m Orr,Mark                          2258 IRL                         2.0    1/)
+          expect(text).to match(/001    3    g Svidler,Peter                     2663 RUS                         0.0    3/)
         end
 
         it "should should be able to include all attributes" do
           text = @t.serialize('Krause', :only => [:gender, :title, :rating, :fed, :id, :dob, :rank])
-          text.should match(/001    1 w    Ui Laighleis,Gearoidin            1985 IRL        3364 1964-06-10  1.0    2/)
-          text.should match(/001    2    m Orr,Mark                          2258 IRL        1350 1955-11-09  2.0    1/)
-          text.should match(/001    3    g Svidler,Peter                     2663 RUS       16790 1971-01-01  0.0    3/)
+          expect(text).to match(/001    1 w    Ui Laighleis,Gearoidin            1985 IRL        3364 1964-06-10  1.0    2/)
+          expect(text).to match(/001    2    m Orr,Mark                          2258 IRL        1350 1955-11-09  2.0    1/)
+          expect(text).to match(/001    3    g Svidler,Peter                     2663 RUS       16790 1971-01-01  0.0    3/)
         end
 
         it "the :only and :except options are logical opposites" do
-          @t.serialize('Krause', :only => [:gender, :title, :rating]).should == @t.serialize('Krause', :except => [:fed, :id, "dob", :rank])
-          @t.serialize('Krause', :only => [:gender]).should == @t.serialize('Krause', :except => [:fed, :id, :dob, :rank, :title, :rating])
-          @t.serialize('Krause', :only => [:gender, :title, "rating", :fed, :id, :dob]).should == @t.serialize('Krause', :except => [:rank])
-          @t.serialize('Krause', :only => [:gender, :title, :rating, :fed, "id", :dob, :rank]).should == @t.serialize('Krause', :except => [])
-          @t.serialize('Krause', :only => []).should == @t.serialize('Krause', :except => [:gender, :title, :rating, :fed, :id, :dob, :rank])
+          expect(@t.serialize('Krause', :only => [:gender, :title, :rating])).to eq(@t.serialize('Krause', :except => [:fed, :id, "dob", :rank]))
+          expect(@t.serialize('Krause', :only => [:gender])).to eq(@t.serialize('Krause', :except => [:fed, :id, :dob, :rank, :title, :rating]))
+          expect(@t.serialize('Krause', :only => [:gender, :title, "rating", :fed, :id, :dob])).to eq(@t.serialize('Krause', :except => [:rank]))
+          expect(@t.serialize('Krause', :only => [:gender, :title, :rating, :fed, "id", :dob, :rank])).to eq(@t.serialize('Krause', :except => []))
+          expect(@t.serialize('Krause', :only => [])).to eq(@t.serialize('Krause', :except => [:gender, :title, :rating, :fed, :id, :dob, :rank]))
         end
       end
 
@@ -406,44 +406,44 @@ KRAUSE
 
         it "should include all data without any explict cusromisation" do
           text = @t.serialize('Krause', :fide => true)
-          text.should match(/001    1 w    Ui Laighleis,Gearoidin            1985 IRL     2501171 1964-06-10  1.0    2/)
-          text.should match(/001    2    m Orr,Mark                          2258 IRL     2500035 1955-11-09  2.0    1/)
-          text.should match(/001    3    g Svidler,Peter                     2663 RUS     4102142 1971-01-01  0.0    3/)
+          expect(text).to match(/001    1 w    Ui Laighleis,Gearoidin            1985 IRL     2501171 1964-06-10  1.0    2/)
+          expect(text).to match(/001    2    m Orr,Mark                          2258 IRL     2500035 1955-11-09  2.0    1/)
+          expect(text).to match(/001    3    g Svidler,Peter                     2663 RUS     4102142 1971-01-01  0.0    3/)
         end
 
         it "should omitt ratings and IDs if FIDE option is not chosen" do
           text = @t.serialize('Krause')
-          text.should match(/001    1 w    Ui Laighleis,Gearoidin                 IRL             1964-06-10  1.0    2/)
-          text.should match(/001    2    m Orr,Mark                               IRL             1955-11-09  2.0    1/)
-          text.should match(/001    3    g Svidler,Peter                          RUS             1971-01-01  0.0    3/)
+          expect(text).to match(/001    1 w    Ui Laighleis,Gearoidin                 IRL             1964-06-10  1.0    2/)
+          expect(text).to match(/001    2    m Orr,Mark                               IRL             1955-11-09  2.0    1/)
+          expect(text).to match(/001    3    g Svidler,Peter                          RUS             1971-01-01  0.0    3/)
         end
 
         it "should omitt all optional data if the :only option is an empty hash" do
           text = @t.serialize('Krause', :only => [])
-          text.should match(/001    1      Ui Laighleis,Gearoidin                                             1.0     /)
-          text.should match(/001    2      Orr,Mark                                                           2.0     /)
-          text.should match(/001    3      Svidler,Peter                                                      0.0     /)
+          expect(text).to match(/001    1      Ui Laighleis,Gearoidin                                             1.0     /)
+          expect(text).to match(/001    2      Orr,Mark                                                           2.0     /)
+          expect(text).to match(/001    3      Svidler,Peter                                                      0.0     /)
         end
 
         it "should should be able to include a subset of attributes, test 1" do
           text = @t.serialize('Krause', :only => [:gender, "dob", :id], :fide => true)
-          text.should match(/001    1 w    Ui Laighleis,Gearoidin                         2501171 1964-06-10  1.0     /)
-          text.should match(/001    2      Orr,Mark                                       2500035 1955-11-09  2.0     /)
-          text.should match(/001    3      Svidler,Peter                                  4102142 1971-01-01  0.0     /)
+          expect(text).to match(/001    1 w    Ui Laighleis,Gearoidin                         2501171 1964-06-10  1.0     /)
+          expect(text).to match(/001    2      Orr,Mark                                       2500035 1955-11-09  2.0     /)
+          expect(text).to match(/001    3      Svidler,Peter                                  4102142 1971-01-01  0.0     /)
         end
 
         it "should should be able to include a subset of attributes, test 2" do
           text = @t.serialize('Krause', :only => [:rank, "title", :fed, "rating", :rubbish], :fide => true)
-          text.should match(/001    1      Ui Laighleis,Gearoidin            1985 IRL                         1.0    2/)
-          text.should match(/001    2    m Orr,Mark                          2258 IRL                         2.0    1/)
-          text.should match(/001    3    g Svidler,Peter                     2663 RUS                         0.0    3/)
+          expect(text).to match(/001    1      Ui Laighleis,Gearoidin            1985 IRL                         1.0    2/)
+          expect(text).to match(/001    2    m Orr,Mark                          2258 IRL                         2.0    1/)
+          expect(text).to match(/001    3    g Svidler,Peter                     2663 RUS                         0.0    3/)
         end
 
         it "should should be able to include all attributes" do
           text = @t.serialize('Krause', :only => [:gender, :title, :rating, :fed, :id, :dob, :rank], :fide => true)
-          text.should match(/001    1 w    Ui Laighleis,Gearoidin            1985 IRL     2501171 1964-06-10  1.0    2/)
-          text.should match(/001    2    m Orr,Mark                          2258 IRL     2500035 1955-11-09  2.0    1/)
-          text.should match(/001    3    g Svidler,Peter                     2663 RUS     4102142 1971-01-01  0.0    3/)
+          expect(text).to match(/001    1 w    Ui Laighleis,Gearoidin            1985 IRL     2501171 1964-06-10  1.0    2/)
+          expect(text).to match(/001    2    m Orr,Mark                          2258 IRL     2500035 1955-11-09  2.0    1/)
+          expect(text).to match(/001    3    g Svidler,Peter                     2663 RUS     4102142 1971-01-01  0.0    3/)
         end
       end
 
@@ -477,85 +477,85 @@ KRAUSE
         end
 
         it "the unaltered example is valid Krause" do
-          lambda { @p.parse!(@k) }.should_not raise_error
+          expect { @p.parse!(@k) }.not_to raise_error
         end
 
         it "removing the line on which the tournament name is specified should cause an error" do
-          lambda { @p.parse!(@k.sub('012 Gonzaga Classic', '')) }.should raise_error(/name missing/)
+          expect { @p.parse!(@k.sub('012 Gonzaga Classic', '')) }.to raise_error(/name missing/)
         end
 
         it "blanking the tournament name should cause an error" do
           @k.sub!('Gonzaga Classic', '')
-          lambda { @p.parse!(@k) }.should raise_error(/name missing/)
+          expect { @p.parse!(@k) }.to raise_error(/name missing/)
         end
 
         it "the start cannot be later than the end date" do
-          lambda { @p.parse!(@k.sub('2008-02-21', '2008-03-21')) }.should raise_error(/start.*after.*end/)
+          expect { @p.parse!(@k.sub('2008-02-21', '2008-03-21')) }.to raise_error(/start.*after.*end/)
         end
 
         it "blanking the start date should cause an error" do
-          lambda { @p.parse!(@k.sub('2008-02-21', '')) }.should raise_error(/start date missing/)
+          expect { @p.parse!(@k.sub('2008-02-21', '')) }.to raise_error(/start date missing/)
         end
 
         it "the first and last round dates should match the tournament start and end dates" do
-          lambda { @p.parse!(@k.sub('08.02.21', '08.02.20')) }.should raise_error(/first round.*not match.*start/)
-          lambda { @p.parse!(@k.sub('08.02.21', '08.02.22')) }.should raise_error(/first round.*not match.*start/)
-          lambda { @p.parse!(@k.sub('08.02.25', '08.02.24')) }.should raise_error(/last round.*not match.*end/)
-          lambda { @p.parse!(@k.sub('08.02.25', '08.02.26')) }.should raise_error(/last round.*not match.*end/)
+          expect { @p.parse!(@k.sub('08.02.21', '08.02.20')) }.to raise_error(/first round.*not match.*start/)
+          expect { @p.parse!(@k.sub('08.02.21', '08.02.22')) }.to raise_error(/first round.*not match.*start/)
+          expect { @p.parse!(@k.sub('08.02.25', '08.02.24')) }.to raise_error(/last round.*not match.*end/)
+          expect { @p.parse!(@k.sub('08.02.25', '08.02.26')) }.to raise_error(/last round.*not match.*end/)
         end
 
         it "the round dates should never decrease" do
-          lambda { @p.parse!(@k.sub('08.02.24', '08.02.22')) }.should raise_error(/round 3.*after.*round 4/)
+          expect { @p.parse!(@k.sub('08.02.24', '08.02.22')) }.to raise_error(/round 3.*after.*round 4/)
         end
 
         it "bad round dates can be ignored" do
-          lambda { @p.parse!(@k.sub('08.02.21', '08.02.20'), :round_dates => "ignore") }.should_not raise_error
-          lambda { @p.parse!(@k.sub('08.02.24', '08.02.22'), :round_dates => "ignore") }.should_not raise_error
+          expect { @p.parse!(@k.sub('08.02.21', '08.02.20'), :round_dates => "ignore") }.not_to raise_error
+          expect { @p.parse!(@k.sub('08.02.24', '08.02.22'), :round_dates => "ignore") }.not_to raise_error
         end
 
         it "creating a duplicate player number should cause an error" do
-          lambda { @p.parse!(@k.sub('  2  ', '  1  ')) }.should raise_error(/player number/)
+          expect { @p.parse!(@k.sub('  2  ', '  1  ')) }.to raise_error(/player number/)
         end
 
         it "creating a duplicate rank number should not cause an error becuse the tournament will be reranked" do
           t = @p.parse!(@k.sub('4.0    1', '4.0    2'))
-          t.player(1).rank.should == 1
+          expect(t.player(1).rank).to eq(1)
         end
 
         it "referring to a non-existant player number should cause an error" do
-           lambda { @p.parse!(@k.sub(' 3 b 1', '33 b 1')) }.should raise_error(/opponent number/)
+           expect { @p.parse!(@k.sub(' 3 b 1', '33 b 1')) }.to raise_error(/opponent number/)
         end
 
         it "inconsistent colours should cause an error" do
-           lambda { @p.parse!(@k.sub('3 b 1', '3 w 1')) }.should raise_error(/result/)
+           expect { @p.parse!(@k.sub('3 b 1', '3 w 1')) }.to raise_error(/result/)
         end
 
         it "inconsistent scores should cause an error" do
-           lambda { @p.parse!(@k.sub('3 b 1', '3 b =')) }.should raise_error(/result/)
+           expect { @p.parse!(@k.sub('3 b 1', '3 b =')) }.to raise_error(/result/)
         end
 
         it "inconsistent totals should cause an error" do
-           lambda { @p.parse!(@k.sub('3.5', '4.0')) }.should raise_error(/total/)
+           expect { @p.parse!(@k.sub('3.5', '4.0')) }.to raise_error(/total/)
         end
 
         it "invalid federations should cause an error unless an option is used" do
            @k.sub!('SCO', 'XYZ')
-           lambda { @p.parse!(@k) }.should raise_error(/federation/)
-           lambda { @t = @p.parse!(@k, :fed => "skip") }.should_not raise_error
-           @t.player(5).fed.should be_nil
-           @t.player(1).fed.should == "IRL"
-           lambda { @t = @p.parse!(@k, :fed => "ignore") }.should_not raise_error
-           @t.player(5).fed.should be_nil
-           @t.player(1).fed.should be_nil
+           expect { @p.parse!(@k) }.to raise_error(/federation/)
+           expect { @t = @p.parse!(@k, :fed => "skip") }.not_to raise_error
+           expect(@t.player(5).fed).to be_nil
+           expect(@t.player(1).fed).to eq("IRL")
+           expect { @t = @p.parse!(@k, :fed => "ignore") }.not_to raise_error
+           expect(@t.player(5).fed).to be_nil
+           expect(@t.player(1).fed).to be_nil
         end
 
         it "an invalid DOB is silently ignored" do
-           lambda { @t = @p.parse!(@k.sub(/1993-12-20/, '1993      ')) }.should_not raise_error
-           @t.player(1).dob.should be_nil
+           expect { @t = @p.parse!(@k.sub(/1993-12-20/, '1993      ')) }.not_to raise_error
+           expect(@t.player(1).dob).to be_nil
         end
 
         it "removing any player that somebody else has played should cause an error" do
-           lambda { @p.parse!(@k.sub(/^001   12.*$/, '')) }.should raise_error(/opponent/)
+           expect { @p.parse!(@k.sub(/^001   12.*$/, '')) }.to raise_error(/opponent/)
         end
       end
 
@@ -576,7 +576,7 @@ KRAUSE
           check_player(1, 'Gearoìdin', 'Uì Laighlèis')
           check_player(2, 'Mârk', 'Örr')
           check_player(3, 'Viktor', 'Bologan')
-          @t.name.should == "Läs Végas National Opeñ"
+          expect(@t.name).to eq("Läs Végas National Opeñ")
         end
 
         it "should handle Latin-1" do
@@ -585,7 +585,7 @@ KRAUSE
           check_player(1, 'Gearoìdin', 'Uì Laighlèis')
           check_player(2, 'Mârk', 'Örr')
           check_player(3, 'Viktor', 'Bologan')
-          @t.name.should == "Läs Végas National Opeñ"
+          expect(@t.name).to eq("Läs Végas National Opeñ")
         end
       end
 
@@ -606,9 +606,9 @@ KRAUSE
           check_player(1, 'Gearoidin', 'Ui Laighleis')
           check_player(2, 'Mark', 'Orr')
           check_player(3, 'Viktor', 'Bologan')
-          @t.player(1).original_name.should == "ui laighleis, GEAROIDIN"
-          @t.player(2).original_name.should == "ORR, mark"
-          @t.player(3).original_name.should == "BOLOGAN, VIKTOR"
+          expect(@t.player(1).original_name).to eq("ui laighleis, GEAROIDIN")
+          expect(@t.player(2).original_name).to eq("ORR, mark")
+          expect(@t.player(3).original_name).to eq("BOLOGAN, VIKTOR")
         end
       end
 
@@ -620,49 +620,49 @@ KRAUSE
 
         it "should error on a non-existant valid file" do
           file = "#{@s}/not_there.tab"
-          lambda { @p.parse_file!(file) }.should raise_error
+          expect { @p.parse_file!(file) }.to raise_error
           t = @p.parse_file(file)
-          t.should be_nil
-          @p.error.should match(/no such file/i)
+          expect(t).to be_nil
+          expect(@p.error).to match(/no such file/i)
         end
 
         it "should error on an invalid file" do
           file = "#{@s}/invalid.tab"
-          lambda { @p.parse_file!(file) }.should raise_error
+          expect { @p.parse_file!(file) }.to raise_error
           t = @p.parse_file(file)
-          t.should be_nil
-          @p.error.should match(/tournament name missing/i)
+          expect(t).to be_nil
+          expect(@p.error).to match(/tournament name missing/i)
         end
 
         it "should parse a valid file" do
           file = "#{@s}/valid.tab"
-          lambda { @p.parse_file!(file) }.should_not raise_error
+          expect { @p.parse_file!(file) }.not_to raise_error
           t = @p.parse_file(file)
-          t.should be_an_instance_of(ICU::Tournament)
-          t.players.size.should == 12
+          expect(t).to be_an_instance_of(ICU::Tournament)
+          expect(t.players.size).to eq(12)
         end
 
         it "should parse a file with UTF-8 encoding" do
           file = "#{@s}/utf-8.tab"
-          lambda { @t = @p.parse_file!(file) }.should_not raise_error
+          expect { @t = @p.parse_file!(file) }.not_to raise_error
           check_player(1, 'Gearoìdin', 'Uì Laighlèis')
           check_player(2, 'Mârk', 'Örr')
           check_player(3, 'Viktor', 'Bologan')
-          @t.name.should == "Läs Végas National Opeñ"
+          expect(@t.name).to eq("Läs Végas National Opeñ")
         end
 
         it "should parse a file with Latin-1 encoding" do
           file = "#{@s}/latin-1.tab"
-          lambda { @t = @p.parse_file!(file) }.should_not raise_error
+          expect { @t = @p.parse_file!(file) }.not_to raise_error
           check_player(1, 'Gearoìdin', 'Uì Laighlèis')
           check_player(2, 'Mârk', 'Örr')
           check_player(3, 'Viktor', 'Bologan')
-          @t.name.should == "Läs Végas National Opeñ"
+          expect(@t.name).to eq("Läs Végas National Opeñ")
         end
 
         it "should parse a large file with total scores as much as 10.0" do
           file = "#{@s}/armstrong_2011.tab"
-          lambda { @t = @p.parse_file!(file) }.should_not raise_error
+          expect { @t = @p.parse_file!(file) }.not_to raise_error
         end
       end
 
@@ -678,7 +678,7 @@ KRAUSE
 001    1      Ui Laighleis,Gearoidin                                             0.5          2 b 0     2 w 0
 001    2      Or,Mark                                                            2.0          1 w 1     1 b 1
 KRAUSE
-          lambda { @p.parse!(@k) }.should raise_error(/total/)
+          expect { @p.parse!(@k) }.to raise_error(/total/)
         end
 
         it "cannot repair mismatched totals if totals are underestimated" do
@@ -688,7 +688,7 @@ KRAUSE
 001    1      Ui Laighleis,Gearoidin                                             0.0          2 b 0  0000 - -
 001    2      Orr,Mark                                                           1.5          1 w 1  0000 - +
 KRAUSE
-          lambda { @p.parse!(@k) }.should raise_error(/total/)
+          expect { @p.parse!(@k) }.to raise_error(/total/)
         end
 
         it "cannot repair overestimated totals if there are not enough byes" do
@@ -698,7 +698,7 @@ KRAUSE
 001    1      Ui Laighleis,Gearoidin                                             1.5          2 b 0  0000 - -
 001    2      Orr,Mark                                                           2.0          1 w 1  0000 - +
 KRAUSE
-          lambda { @p.parse!(@k) }.should raise_error(/total/)
+          expect { @p.parse!(@k) }.to raise_error(/total/)
         end
 
         it "can repair overestimated totals if there are enough byes" do
@@ -709,9 +709,9 @@ KRAUSE
 001    2      ORR,Mark                                                           2.0          1 w 1  0000 - +
 KRAUSE
           @t = @p.parse!(@k)
-          @t.should_not be_nil
+          expect(@t).not_to be_nil
           check_results(1, 2, 1.0)
-          @t.player(1).find_result(2).score.should == 'W'
+          expect(@t.player(1).find_result(2).score).to eq('W')
         end
 
         it "extreme example" do
@@ -724,11 +724,11 @@ KRAUSE
 001    4      Knox,Angela                                                        2.5       0000 - -     3 w 1  0000 - -
 KRAUSE
           @t = @p.parse!(@k)
-          @t.should_not be_nil
-          @t.player(1).results.map(&:score).join('').should == 'LWW'
-          @t.player(2).results.map(&:score).join('').should == 'WWD'
-          @t.player(3).results.map(&:score).join('').should == 'DLD'
-          @t.player(4).results.map(&:score).join('').should == 'WWD'
+          expect(@t).not_to be_nil
+          expect(@t.player(1).results.map(&:score).join('')).to eq('LWW')
+          expect(@t.player(2).results.map(&:score).join('')).to eq('WWD')
+          expect(@t.player(3).results.map(&:score).join('')).to eq('DLD')
+          expect(@t.player(4).results.map(&:score).join('')).to eq('WWD')
         end
 
         it "should work on the documentation example" do
@@ -745,7 +745,7 @@ KRAUSE
 001    1      Mouse,Minerva                                                      1.0    2     2 b 0  0000 - +
 001    2      Mouse,Mickey                                                       1.5    1     1 w 1  0000 - =
 KRAUSE
-          @t.serialize('Krause').should == output
+          expect(@t.serialize('Krause')).to eq(output)
         end
       end
 
@@ -758,17 +758,17 @@ KRAUSE
         it "should handle Bunratty Masters 2011" do
           file = "#{@s}/bunratty_masters_2011.tab"
           @t = @p.parse_file(file, :fed => :skip, :fide => true)
-          @t.should_not be_nil
-          @t.start.should == "2011-02-25"
-          @t.finish.should == "2011-02-27"
+          expect(@t).not_to be_nil
+          expect(@t.start).to eq("2011-02-25")
+          expect(@t.finish).to eq("2011-02-27")
           check_player(1, 'Nigel', 'Short', :gender => 'M', :fide_rating => 2658, :fed => 'ENG', :rating => nil, :rank => 5, :title => 'GM')
           check_results(1, 6, 4.0)
           check_player(16, 'Jonathan', "O'Connor", :gender => 'M', :fide_rating => 2111, :fed => nil, :rating => nil, :rank => 25, :title => nil)
           check_results(16, 6, 2.5)
-          @t.player(16).results.map(&:score).join('').should == 'DWLDDL'
+          expect(@t.player(16).results.map(&:score).join('')).to eq('DWLDDL')
           check_player(24, 'David', 'Murray', :gender => 'M', :fide_rating => 2023, :fed => nil, :rating => nil, :rank => 34, :title => nil)
           check_results(24, 2, 0.5)
-          @t.player(24).results.map(&:score).join('').should == 'LD'
+          expect(@t.player(24).results.map(&:score).join('')).to eq('LD')
           check_player(26, 'Alexandra', 'Wilson', :gender => 'F', :fide_rating => 2020, :fed => 'ENG', :rating => nil, :rank => 29, :title => 'WFM')
           check_results(26, 6, 2.0)
         end
@@ -776,9 +776,9 @@ KRAUSE
         it "should handle Bunratty Major 2011" do
           file = "#{@s}/bunratty_major_2011.tab"
           @t = @p.parse_file(file, :fed => :ignore)
-          @t.should_not be_nil
-          @t.start.should == "2011-02-25"
-          @t.finish.should == "2011-02-27"
+          expect(@t).not_to be_nil
+          expect(@t.start).to eq("2011-02-25")
+          expect(@t.finish).to eq("2011-02-27")
           check_player(1, 'Dan', 'Clancy', :gender => 'M', :fide_rating => nil, :fed => nil, :id => 204, :rating => nil, :rank => 12)
           check_results(1, 6, 4)
           check_player(10, 'Phillip', 'Foenander', :gender => 'M', :fide_rating => nil, :fed => nil, :id => 7168, :rating => nil, :rank => 18)
@@ -789,27 +789,27 @@ KRAUSE
 
         it "should handle bunratty_minor_2011.tab" do
           file = "#{@s}/bunratty_minor_2011.tab"
-          lambda { @p.parse_file!(file, :fed => :ignore) }.should_not raise_error
+          expect { @p.parse_file!(file, :fed => :ignore) }.not_to raise_error
         end
 
         it "should handle Bunratty Challengers 2011" do
           file = "#{@s}/bunratty_challengers_2011.tab"
-          lambda { @p.parse_file!(file, :fed => :ignore) }.should_not raise_error
+          expect { @p.parse_file!(file, :fed => :ignore) }.not_to raise_error
         end
 
         it "should handle Irish Intermediate Championships 2011" do
           file = "#{@s}/irish_intermediate_champs_2011.tab"
-          lambda { @p.parse_file!(file) }.should_not raise_error
+          expect { @p.parse_file!(file) }.not_to raise_error
         end
 
         it "should handle Irish Junior Championships 2011" do
           file = "#{@s}/irish_junior_champs_2011.tab"
-          lambda { @p.parse_file!(file) }.should_not raise_error
+          expect { @p.parse_file!(file) }.not_to raise_error
         end
 
         it "should handle a file with a BOM" do
           file = "#{@s}/armstrong_2012_with_bom.tab"
-          lambda { @p.parse_file!(file) }.should_not raise_error
+          expect { @p.parse_file!(file) }.not_to raise_error
         end
       end
     end

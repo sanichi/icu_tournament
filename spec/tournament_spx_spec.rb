@@ -49,72 +49,72 @@ EXPORT
         end
 
         it "should parse without exception" do
-          lambda { @p.parse!(@x, @opt) }.should_not raise_error
+          expect { @p.parse!(@x, @opt) }.not_to raise_error
         end
 
         it "should parse without error" do
           @p.parse(@x, @opt)
-          @p.error.should be_nil
+          expect(@p.error).to be_nil
         end
 
         it "players should have all the right names and numbers" do
-          @t.player(1).name.should == "Duck, Daffy"
-          @t.player(2).name.should == "Mouse, Minerva"
-          @t.player(3).name.should == "Mouse, Mickey"
+          expect(@t.player(1).name).to eq("Duck, Daffy")
+          expect(@t.player(2).name).to eq("Mouse, Minerva")
+          expect(@t.player(3).name).to eq("Mouse, Mickey")
         end
 
         it "players should have correct ICU IDs" do
-          @t.player(1).id.should == 12345
-          @t.player(2).id.should be_nil
-          @t.player(3).id.should be_nil
+          expect(@t.player(1).id).to eq(12345)
+          expect(@t.player(2).id).to be_nil
+          expect(@t.player(3).id).to be_nil
         end
 
         it "players should have correct FIDE IDs" do
-          @t.player(1).fide_id.should be_nil
-          @t.player(2).fide_id.should == 1234568
-          @t.player(3).fide_id.should == 1234567
+          expect(@t.player(1).fide_id).to be_nil
+          expect(@t.player(2).fide_id).to eq(1234568)
+          expect(@t.player(3).fide_id).to eq(1234567)
         end
 
         it "players should have correct ICU ratings" do
-          @t.player(1).rating.should == 2200
-          @t.player(2).rating.should be_nil
-          @t.player(3).rating.should be_nil
+          expect(@t.player(1).rating).to eq(2200)
+          expect(@t.player(2).rating).to be_nil
+          expect(@t.player(3).rating).to be_nil
         end
 
         it "players should have correct FIDE ratings" do
-          @t.player(1).fide_rating.should be_nil
-          @t.player(2).fide_rating.should == 1900
-          @t.player(3).fide_rating.should be_nil
+          expect(@t.player(1).fide_rating).to be_nil
+          expect(@t.player(2).fide_rating).to eq(1900)
+          expect(@t.player(3).fide_rating).to be_nil
         end
 
         it "players should have correct titles" do
-          @t.player(1).title.should == "IM"
-          @t.player(2).title.should be_nil
-          @t.player(3).title.should == "GM"
+          expect(@t.player(1).title).to eq("IM")
+          expect(@t.player(2).title).to be_nil
+          expect(@t.player(3).title).to eq("GM")
         end
 
         it "players should have correct federations" do
-          @t.player(1).fed.should == "IRL"
-          @t.player(2).fed.should be_nil
-          @t.player(3).fed.should == "USA"
+          expect(@t.player(1).fed).to eq("IRL")
+          expect(@t.player(2).fed).to be_nil
+          expect(@t.player(3).fed).to eq("USA")
         end
 
         it "players should have correct scores" do
-          @t.player(1).points.should == 2.0
-          @t.player(2).points.should == 1.5
-          @t.player(3).points.should == 1.0
+          expect(@t.player(1).points).to eq(2.0)
+          expect(@t.player(2).points).to eq(1.5)
+          expect(@t.player(3).points).to eq(1.0)
         end
 
         it "players should have correct ranks" do
-          @t.player(1).rank.should == 1
-          @t.player(2).rank.should == 2
-          @t.player(3).rank.should == 3
+          expect(@t.player(1).rank).to eq(1)
+          expect(@t.player(2).rank).to eq(2)
+          expect(@t.player(3).rank).to eq(3)
         end
 
         it "players should have correct results" do
-          @t.player(1).spx_signature2.should == '123|DWD|FTT'
-          @t.player(2).spx_signature2.should == '123|DDD|TFT'
-          @t.player(3).spx_signature2.should == '123|DLD|TTF'
+          expect(@t.player(1).spx_signature2).to eq('123|DWD|FTT')
+          expect(@t.player(2).spx_signature2).to eq('123|DDD|TFT')
+          expect(@t.player(3).spx_signature2).to eq('123|DLD|TTF')
         end
       end
 
@@ -135,43 +135,43 @@ EXPORT
         end
 
         it "should round trip" do
-          @p.error.should be_nil
-          @r.spx_signature.should == "Bangor Masters|3|2009-11-09|3"
-          @r.player(1).spx_signature.should == "Fischer, Bobby||1.5|123|DLW|---|TFT"
-          @r.player(2).spx_signature.should == "Kasparov, Garry||1.0|123|LWL|---|FTT"
-          @r.player(3).spx_signature.should == "Orr, Mark|1350|0.5|123|DLL|---|TTF"
+          expect(@p.error).to be_nil
+          expect(@r.spx_signature).to eq("Bangor Masters|3|2009-11-09|3")
+          expect(@r.player(1).spx_signature).to eq("Fischer, Bobby||1.5|123|DLW|---|TFT")
+          expect(@r.player(2).spx_signature).to eq("Kasparov, Garry||1.0|123|LWL|---|FTT")
+          expect(@r.player(3).spx_signature).to eq("Orr, Mark|1350|0.5|123|DLL|---|TTF")
         end
 
         it "should show all columns by default" do
-          @x.should match(/^No\s*Name\s*Feder\s*Intl Id\s*Loc Id\s*Rtg\s*Loc\s*Title\s*Total\s*1\s*2\s*3\s*/)
-          @x.should match(/1\s*Fischer,\s*Bobby\s*1\.5\s*3:D\s*0?:L?\s*2:W\s*/)
+          expect(@x).to match(/^No\s*Name\s*Feder\s*Intl Id\s*Loc Id\s*Rtg\s*Loc\s*Title\s*Total\s*1\s*2\s*3\s*/)
+          expect(@x).to match(/1\s*Fischer,\s*Bobby\s*1\.5\s*3:D\s*0?:L?\s*2:W\s*/)
         end
 
         it "can have custom columns" do
           @x = @t.serialize('SPExport', :only => [])
-          @x.should match(/^No\s*Name\s*1\s*2\s*3\s*/)
+          expect(@x).to match(/^No\s*Name\s*1\s*2\s*3\s*/)
           @x = @t.serialize('SPExport', :only => [:points])
-          @x.should match(/^No\s*Name\s*Total\s*1\s*2\s*3\s*/)
+          expect(@x).to match(/^No\s*Name\s*Total\s*1\s*2\s*3\s*/)
           @x = @t.serialize('SPExport', :only => [:points, :id])
-          @x.should match(/^No\s*Name\s*Loc Id\s*Total\s*1\s*2\s*3\s*/)
+          expect(@x).to match(/^No\s*Name\s*Loc Id\s*Total\s*1\s*2\s*3\s*/)
           @x = @t.serialize('SPExport', :only => [:points, :id, :fed])
-          @x.should match(/^No\s*Name\s*Feder\s*Loc Id\s*Total\s*1\s*2\s*3\s*/)
+          expect(@x).to match(/^No\s*Name\s*Feder\s*Loc Id\s*Total\s*1\s*2\s*3\s*/)
           @x = @t.serialize('SPExport', :only => [:points, :id, :fed, "fed", :rubbish, "fide_id"])
-          @x.should match(/^No\s*Name\s*Feder\s*Intl Id\s*Loc Id\s*Total\s*1\s*2\s*3\s*/)
+          expect(@x).to match(/^No\s*Name\s*Feder\s*Intl Id\s*Loc Id\s*Total\s*1\s*2\s*3\s*/)
           @x = @t.serialize('SPExport', :only => [:fed, "fide_id", :points, :id, :rating])
-          @x.should match(/^No\s*Name\s*Feder\s*Intl Id\s*Loc Id\s*Loc\s*Total\s*1\s*2\s*3\s*/)
+          expect(@x).to match(/^No\s*Name\s*Feder\s*Intl Id\s*Loc Id\s*Loc\s*Total\s*1\s*2\s*3\s*/)
           @x = @t.serialize('SPExport', :only => [:fed, :fide_id, "fide_rating", :points, :id, :rating])
-          @x.should match(/^No\s*Name\s*Feder\s*Intl Id\s*Loc Id\s*Rtg\s*Loc\s*Total\s*1\s*2\s*3\s*/)
-          @x.should match(/3\s*Orr,\s*Mark\s*IRL\s*2500035\s*1350\s*2250\s*2200\s*0.5\s*1:D\s*2:L\s*:\s*/)
+          expect(@x).to match(/^No\s*Name\s*Feder\s*Intl Id\s*Loc Id\s*Rtg\s*Loc\s*Total\s*1\s*2\s*3\s*/)
+          expect(@x).to match(/3\s*Orr,\s*Mark\s*IRL\s*2500035\s*1350\s*2250\s*2200\s*0.5\s*1:D\s*2:L\s*:\s*/)
         end
 
         it "the :only and :except options are logical opposites" do
-          @t.serialize('SPExport', :only => [:points, :id, "fed"]).should == @t.serialize('SPExport', :except => [:fide_id, :rating, "fide_rating", :title])
-          @t.serialize('SPExport', :only => ["points"]).should == @t.serialize('SPExport', :except => ["fide_id", :rating, :fide_rating, :title, :id, :fed])
-          @t.serialize('SPExport', :only => [:rating, :fide_rating, :title, :id, :fed, :points]).should == @t.serialize('SPExport', :except => [:fide_id])
-          @t.serialize('SPExport', :only => %w{rating fide_rating fide_id title id fed points}).should == @t.serialize('SPExport', :except => [])
-          @t.serialize('SPExport', :only => []).should == @t.serialize('SPExport', :except => [:rating, :fide_rating, :fide_id, :title, :id, :fed, :points])
-          @t.serialize('SPExport', :except => []).should == @t.serialize('SPExport')
+          expect(@t.serialize('SPExport', :only => [:points, :id, "fed"])).to eq(@t.serialize('SPExport', :except => [:fide_id, :rating, "fide_rating", :title]))
+          expect(@t.serialize('SPExport', :only => ["points"])).to eq(@t.serialize('SPExport', :except => ["fide_id", :rating, :fide_rating, :title, :id, :fed]))
+          expect(@t.serialize('SPExport', :only => [:rating, :fide_rating, :title, :id, :fed, :points])).to eq(@t.serialize('SPExport', :except => [:fide_id]))
+          expect(@t.serialize('SPExport', :only => %w{rating fide_rating fide_id title id fed points})).to eq(@t.serialize('SPExport', :except => []))
+          expect(@t.serialize('SPExport', :only => [])).to eq(@t.serialize('SPExport', :except => [:rating, :fide_rating, :fide_id, :title, :id, :fed, :points]))
+          expect(@t.serialize('SPExport', :except => [])).to eq(@t.serialize('SPExport'))
         end
       end
 
@@ -189,9 +189,9 @@ EXPORT
         end
 
         it "players should have correct results" do
-          @t.player(1).spx_signature2.should == '123|DWD|FTT'
-          @t.player(2).spx_signature2.should == '123|DDD|TFT'
-          @t.player(3).spx_signature2.should == '123|DLD|TTF'
+          expect(@t.player(1).spx_signature2).to eq('123|DWD|FTT')
+          expect(@t.player(2).spx_signature2).to eq('123|DDD|TFT')
+          expect(@t.player(3).spx_signature2).to eq('123|DLD|TTF')
         end
       end
 
@@ -209,9 +209,9 @@ EXPORT
         end
 
         it "players should have correct results" do
-          @t.player(1).spx_signature2.should == '123|WWD|FFF'
-          @t.player(2).spx_signature2.should == '123|WDD|FFF'
-          @t.player(3).spx_signature2.should == '123|DDL|FFF'
+          expect(@t.player(1).spx_signature2).to eq('123|WWD|FFF')
+          expect(@t.player(2).spx_signature2).to eq('123|WDD|FFF')
+          expect(@t.player(3).spx_signature2).to eq('123|DDL|FFF')
         end
       end
 
@@ -229,15 +229,15 @@ EXPORT
         end
 
         it "players should have canonicalised names" do
-          @t.player(1).name.should == 'Duck, Daffy'
-          @t.player(2).name.should == 'Mouse, Minerva'
-          @t.player(3).name.should == 'Mouse, Mickey'
+          expect(@t.player(1).name).to eq('Duck, Daffy')
+          expect(@t.player(2).name).to eq('Mouse, Minerva')
+          expect(@t.player(3).name).to eq('Mouse, Mickey')
         end
 
         it "players should have original names" do
-          @t.player(1).original_name.should == 'daffy duck'
-          @t.player(2).original_name.should == 'MOUSE, minerva'
-          @t.player(3).original_name.should == 'mouse, MICKEY'
+          expect(@t.player(1).original_name).to eq('daffy duck')
+          expect(@t.player(2).original_name).to eq('MOUSE, minerva')
+          expect(@t.player(3).original_name).to eq('mouse, MICKEY')
         end
       end
 
@@ -255,21 +255,21 @@ EXPORT
         end
 
         it "players should have all the right names and numbers" do
-          @t.player(1).name.should == "Duck, Daffy"
-          @t.player(2).name.should == "Mouse, Minerva"
-          @t.player(3).name.should == "Mouse, Mickey"
+          expect(@t.player(1).name).to eq("Duck, Daffy")
+          expect(@t.player(2).name).to eq("Mouse, Minerva")
+          expect(@t.player(3).name).to eq("Mouse, Mickey")
         end
 
         it "players should have correct results" do
-          @t.player(1).spx_signature2.should == '123|DWD|FFT'
-          @t.player(2).spx_signature2.should == '123|DLD|FFT'
-          @t.player(3).spx_signature2.should == '123|DLD|FFF'
+          expect(@t.player(1).spx_signature2).to eq('123|DWD|FFT')
+          expect(@t.player(2).spx_signature2).to eq('123|DLD|FFT')
+          expect(@t.player(3).spx_signature2).to eq('123|DLD|FFF')
         end
 
         it "players should have correct ranks given default name tie-break" do
-          @t.player(1).rank.should == 1
-          @t.player(2).rank.should == 3
-          @t.player(3).rank.should == 2
+          expect(@t.player(1).rank).to eq(1)
+          expect(@t.player(2).rank).to eq(3)
+          expect(@t.player(3).rank).to eq(2)
         end
       end
 
@@ -287,16 +287,16 @@ EXPORT
 
         it "UTF-8" do
           t = @p.parse(@x, @opt)
-          @p.error.should be_nil
-          t.player(1).name.should == "Dück, Dâffy"
-          t.player(2).name.should == "Möuse, Mickéy"
+          expect(@p.error).to be_nil
+          expect(t.player(1).name).to eq("Dück, Dâffy")
+          expect(t.player(2).name).to eq("Möuse, Mickéy")
         end
 
         it "Latin-1" do
           t = @p.parse(@x.encode("ISO-8859-1"), @opt)
-          @p.error.should be_nil
-          t.player(1).name.should == "Dück, Dâffy"
-          t.player(2).name.should == "Möuse, Mickéy"
+          expect(@p.error).to be_nil
+          expect(t.player(1).name).to eq("Dück, Dâffy")
+          expect(t.player(2).name).to eq("Möuse, Mickéy")
         end
       end
 
@@ -313,7 +313,7 @@ No	Name          	Total	1  	2
 1 	Duck, Daffy   	1.5  	2:W	2:D
 2 	Mouse, Mickey 	0.5  	1:L	1:D
 EXPORT
-          lambda { @p.parse!(data, @opt) }.should_not raise_error
+          expect { @p.parse!(data, @opt) }.not_to raise_error
         end
 
         it "no header" do
@@ -321,7 +321,7 @@ EXPORT
 1 	Duck, Daffy   	1.5  	2:W	2:D
 2 	Mouse, Mickey 	0.5  	1:L	1:L
 EXPORT
-          lambda { @p.parse!(data, @opt) }.should raise_error(/header/)
+          expect { @p.parse!(data, @opt) }.to raise_error(/header/)
         end
 
         it "invalid header" do
@@ -331,7 +331,7 @@ Xx	Name          	Total	1  	2
 1 	Duck, Daffy   	1.5  	2:W	2:D
 2 	Mouse, Mickey 	0.5  	1:L	1:D
 EXPORT
-          lambda { @p.parse!(data, @opt) }.should raise_error(/header/)
+          expect { @p.parse!(data, @opt) }.to raise_error(/header/)
         end
 
         it "missing round 1" do
@@ -341,7 +341,7 @@ No	Name          	Total	2  	3
 1 	Duck, Daffy   	1.5  	2:W	2:D
 2 	Mouse, Mickey 	0.0  	1:L	1:L
 EXPORT
-          lambda { @p.parse!(data, @opt) }.should raise_error(/round 1/)
+          expect { @p.parse!(data, @opt) }.to raise_error(/round 1/)
         end
 
         it "missing round 2" do
@@ -351,7 +351,7 @@ No	Name          	Total	1  	3
 1 	Duck, Daffy   	1.5  	2:W	2:D
 2 	Mouse, Mickey 	0.0  	1:L	1:L
 EXPORT
-          lambda { @p.parse!(data, @opt) }.should raise_error(/round 2/)
+          expect { @p.parse!(data, @opt) }.to raise_error(/round 2/)
         end
 
         it "incorrect total" do
@@ -361,7 +361,7 @@ No	Name          	Total	1  	2
 1 	Duck, Daffy   	1.5  	2:W	2:D
 2 	Mouse, Mickey 	1.0  	1:L	1:D
 EXPORT
-          lambda { @p.parse!(data, @opt) }.should raise_error(/total/)
+          expect { @p.parse!(data, @opt) }.to raise_error(/total/)
         end
 
 
@@ -372,7 +372,7 @@ No	Name          	Total	1  	2
 1 	Duck, Daffy   	1.5  	2:W	2:D
 2 	Mouse, Mickey 	0.0  	1:L	1:L
 EXPORT
-          lambda { @p.parse!(data, @opt) }.should raise_error(/result/)
+          expect { @p.parse!(data, @opt) }.to raise_error(/result/)
         end
 
         it "invalid attribute, title for example)" do
@@ -382,7 +382,7 @@ No	Name          	Title	Total	1  	2
 1 	Duck, Daffy   	mg   	1.5  	2:W	2:D
 2 	Mouse, Mickey 	     	0.5  	1:L	1:D
 EXPORT
-          lambda { @p.parse!(data, @opt) }.should raise_error(/title/)
+          expect { @p.parse!(data, @opt) }.to raise_error(/title/)
         end
       end
 
@@ -394,19 +394,19 @@ EXPORT
         end
 
         it "should parse and have the right basic details" do
-          @p.error.should be_nil
-          @t.spx_signature.should == "Gonzaga Chess Classic 2010 Challengers Section|6|2010-01-29|56"
+          expect(@p.error).to be_nil
+          expect(@t.spx_signature).to eq("Gonzaga Chess Classic 2010 Challengers Section|6|2010-01-29|56")
         end
 
         it "should have correct details for selected players" do
-          @t.player(2).spx_signature.should  == "Mullooly, Neil M.|6438|6.0|123456|WWWWWW|------|TTTTTT" # winner
-          @t.player(4).spx_signature.should  == "Gallagher, Mark|12138|4.0|123456|WLWWWL|------|FTTTTT"  # had one bye
-          @t.player(45).spx_signature.should == "Catre, Loredan||3.5|123456|WDLWLW|------|FTTTFT"        # had two byes
-          @t.player(56).spx_signature.should == "McDonnell, Cathal||0.0|123456|LLLLLL|------|FFFFFF"     # last, all defaults
+          expect(@t.player(2).spx_signature).to  eq("Mullooly, Neil M.|6438|6.0|123456|WWWWWW|------|TTTTTT") # winner
+          expect(@t.player(4).spx_signature).to  eq("Gallagher, Mark|12138|4.0|123456|WLWWWL|------|FTTTTT")  # had one bye
+          expect(@t.player(45).spx_signature).to eq("Catre, Loredan||3.5|123456|WDLWLW|------|FTTTFT")        # had two byes
+          expect(@t.player(56).spx_signature).to eq("McDonnell, Cathal||0.0|123456|LLLLLL|------|FFFFFF")     # last, all defaults
         end
 
         it "should have consistent ranks" do
-          @t.players.map{ |p| p.rank }.sort.join('').should == (1..@t.players.size).to_a.join('')
+          expect(@t.players.map{ |p| p.rank }.sort.join('')).to eq((1..@t.players.size).to_a.join(''))
         end
       end
     end

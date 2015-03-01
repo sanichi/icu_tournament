@@ -11,49 +11,49 @@ module ICU
       end
       
       it "should have a name" do
-        @t.name.should == 'Wandering Dragons'
+        expect(@t.name).to eq('Wandering Dragons')
       end
       
       it "should have some members" do
-        @t.should have(3).members
-        @t.include?(0).should be_true
-        @t.include?(3).should be_true
-        @t.include?(-7).should be_true
-        @t.include?(7).should be_false
+        expect(@t.members.size).to eq(3)
+        expect(@t.include?(0)).to be_truthy
+        expect(@t.include?(3)).to be_truthy
+        expect(@t.include?(-7)).to be_truthy
+        expect(@t.include?(7)).to be_falsey
       end
       
       it "should match names ignoring case and irrelevant whitespace" do
-        @t.matches('Wandering Dragons').should be_true
-        @t.matches('  wandering  dragons  ').should be_true
-        @t.matches('  wanderingdragons  ').should be_false
-        @t.matches('Blundering Bishops').should be_false
+        expect(@t.matches('Wandering Dragons')).to be_truthy
+        expect(@t.matches('  wandering  dragons  ')).to be_truthy
+        expect(@t.matches('  wanderingdragons  ')).to be_falsey
+        expect(@t.matches('Blundering Bishops')).to be_falsey
       end
       
       it "should have a changeable name with irrelevant whitespace being trimmed" do
         @t.name = '  blue    dragons   '
-        @t.name.should == 'blue dragons'
+        expect(@t.name).to eq('blue dragons')
       end
       
       it "should blowup if an attempt is made to blank the name" do
-        lambda { @t.name = '  ' }.should raise_error(/blank/)
+        expect { @t.name = '  ' }.to raise_error(/blank/)
       end
       
       it "should blowup if an attempt is made to add a non-number" do
-        lambda { @t.add_member('  ') }.should raise_error(/number/)
+        expect { @t.add_member('  ') }.to raise_error(/number/)
       end
 
       it "should blow up if an attempt is made to add a duplicate number" do
-        lambda { @t.add_member(3) }.should raise_error(/duplicate/)
+        expect { @t.add_member(3) }.to raise_error(/duplicate/)
       end
 
       it "should renumber successfully if the map has the relevant player numbers" do
         map = { 0 => 1, 3 => 2, -7 => 3 }
         @t.renumber(map)
-        @t.members.sort.join('').should == '123'
+        expect(@t.members.sort.join('')).to eq('123')
       end
 
       it "should raise exception if a player is missing from the renumber map" do
-        lambda { @t.renumber({ 5 => 1, 3 => 2 }) }.should raise_error(/player.*not found/)
+        expect { @t.renumber({ 5 => 1, 3 => 2 }) }.to raise_error(/player.*not found/)
       end
     end
   end

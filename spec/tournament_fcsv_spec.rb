@@ -6,15 +6,15 @@ module ICU
     describe ForeignCSV do
       def check_player(num, first, last, results, rateable, points, other={})
         p = @t.player(num)
-        p.first_name.should == first
-        p.last_name.should == last
-        p.id.should == other[:id]
-        p.fide_rating.should == other[:fide_rating]
-        p.fed.should == other[:fed]
-        p.title.should == other[:title]
-        p.results.size.should == results
-        p.results.select{|r| r.rateable}.size.should == rateable
-        p.points.should == points
+        expect(p.first_name).to eq(first)
+        expect(p.last_name).to eq(last)
+        expect(p.id).to eq(other[:id])
+        expect(p.fide_rating).to eq(other[:fide_rating])
+        expect(p.fed).to eq(other[:fed])
+        expect(p.title).to eq(other[:title])
+        expect(p.results.size).to eq(results)
+        expect(p.results.select{|r| r.rateable}.size).to eq(rateable)
+        expect(p.points).to eq(points)
       end
 
       context "a typical tournament" do
@@ -38,23 +38,23 @@ CSV
         end
 
         it "should have a name" do
-          @t.name.should == 'Bangor Open, 2003'
+          expect(@t.name).to eq('Bangor Open, 2003')
         end
 
         it "should have a start date" do
-          @t.start.should == '2003-07-01'
+          expect(@t.start).to eq('2003-07-01')
         end
 
         it "should have a number of rounds" do
-          @t.rounds.should == 4
+          expect(@t.rounds).to eq(4)
         end
 
         it "should have a website" do
-          @t.site.should == 'http://www.icu.ie/tournaments/display.php?id=371'
+          expect(@t.site).to eq('http://www.icu.ie/tournaments/display.php?id=371')
         end
 
         it "should have some players" do
-          @t.should have(4).players
+          expect(@t.players.size).to eq(4)
         end
 
         it "should have correct player details" do
@@ -65,7 +65,7 @@ CSV
         end
         
         it "should be valid" do
-          @t.invalid.should be_false
+          expect(@t.invalid).to be_falsey
         end
       end
 
@@ -98,29 +98,29 @@ CSV
         end
 
         it "should have correct basic details" do
-          @t.name.should == 'Isle of Man Masters, 2007'
-          @t.start.should == '2007-09-22'
-          @t.rounds.should == 9
-          @t.site.should == 'http://www.bcmchess.co.uk/monarch2007/'
+          expect(@t.name).to eq('Isle of Man Masters, 2007')
+          expect(@t.start).to eq('2007-09-22')
+          expect(@t.rounds).to eq(9)
+          expect(@t.site).to eq('http://www.bcmchess.co.uk/monarch2007/')
         end
 
         it "should have the right number of players in the right order" do
-          @t.players.size.should == 9
-          @t.players.inject(''){ |a,o| a << o.num.to_s }.should == '123456789'
+          expect(@t.players.size).to eq(9)
+          expect(@t.players.inject(''){ |a,o| a << o.num.to_s }).to eq('123456789')
         end
 
         it "should have the right details for the main player" do
-          @p.name.should == "Fox, Anthony"
+          expect(@p.name).to eq("Fox, Anthony")
           @p.results.size == 9
-          @p.results.find_all{ |r| r.rateable }.size.should == 8
-          @p.points.should == 4.0
+          expect(@p.results.find_all{ |r| r.rateable }.size).to eq(8)
+          expect(@p.points).to eq(4.0)
         end
 
         it "should have the right details for the opponents" do
-          @o.size.should == 8
-          @o.find_all{ |o| o.results.size == 1}.size.should == 8
-          @r.name.should == "Taylor, Peter P."
-          @r.results[0].rateable.should be_true
+          expect(@o.size).to eq(8)
+          expect(@o.find_all{ |o| o.results.size == 1}.size).to eq(8)
+          expect(@r.name).to eq("Taylor, Peter P.")
+          expect(@r.results[0].rateable).to be_truthy
         end
       end
 
@@ -148,14 +148,14 @@ CSV
         end
 
         it "should have the usual basic details" do
-          @t.name.should == 'Edinburgh Masters, 2007'
-          @t.start.should == '2007-01-03'
-          @t.rounds.should == 2
-          @t.site.should == 'http://www.chesscenter.com/twic/twic.html'
+          expect(@t.name).to eq('Edinburgh Masters, 2007')
+          expect(@t.start).to eq('2007-01-03')
+          expect(@t.rounds).to eq(2)
+          expect(@t.site).to eq('http://www.chesscenter.com/twic/twic.html')
         end
 
         it "should have the correct number of players" do
-          @t.should have(5).players
+          expect(@t.players.size).to eq(5)
         end
 
         it "should have correct player details" do
@@ -191,14 +191,14 @@ CSV
         end
 
         it "should have the usual basic details" do
-          @t.name.should == 'Bratto Open, 2001'
-          @t.start.should == '2001-03-07'
-          @t.rounds.should == 2
-          @t.site.should == 'http://www.federscacchi.it/'
+          expect(@t.name).to eq('Bratto Open, 2001')
+          expect(@t.start).to eq('2001-03-07')
+          expect(@t.rounds).to eq(2)
+          expect(@t.site).to eq('http://www.federscacchi.it/')
         end
 
         it "should have the correct number of players" do
-          @t.should have(4).players
+          expect(@t.players.size).to eq(4)
         end
 
         it "should have correct player details" do
@@ -231,14 +231,14 @@ CSV
         end
 
         it "should have the correct basic details" do
-          @t.name.should == 'Bratto Open, 2001'
-          @t.start.should == '2001-03-07'
-          @t.rounds.should == 2
-          @t.site.should == 'http://www.federscacchi.it/'
+          expect(@t.name).to eq('Bratto Open, 2001')
+          expect(@t.start).to eq('2001-03-07')
+          expect(@t.rounds).to eq(2)
+          expect(@t.site).to eq('http://www.federscacchi.it/')
         end
 
         it "should have the correct number of players" do
-          @t.should have(3).players
+          expect(@t.players.size).to eq(3)
         end
 
         it "should have correct player details" do
@@ -248,9 +248,9 @@ CSV
         end
         
         it "should still have original names" do
-          @t.player(1).original_name.should == "ui Laighleis, gearoidin"
-          @t.player(2).original_name.should == "kasparov, gary"
-          @t.player(3).original_name.should == "Orr, Mark"
+          expect(@t.player(1).original_name).to eq("ui Laighleis, gearoidin")
+          expect(@t.player(2).original_name).to eq("kasparov, gary")
+          expect(@t.player(3).original_name).to eq("Orr, Mark")
         end
       end
 
@@ -272,13 +272,13 @@ Player,3364,Ui Laighleis,Gearoidin
 2,=,B,Orr,Mark,2100,IM,IRL
 Total,1.0
 CSV
-          @f.parse(csv).should be_an_instance_of(ICU::Tournament)
-          @f.error.should be_nil
+          expect(@f.parse(csv)).to be_an_instance_of(ICU::Tournament)
+          expect(@f.error).to be_nil
         end
 
         it "should not throw an exception but return nil on error" do
-          @f.parse(' ').should be_nil
-          @f.error.should match(/event/)
+          expect(@f.parse(' ')).to be_nil
+          expect(@f.error).to match(/event/)
         end
       end
 
@@ -288,7 +288,7 @@ CSV
         end
 
         it "a blank file is invalid" do
-          lambda { @f.parse!(' ') }.should raise_error(/event/i)
+          expect { @f.parse!(' ') }.to raise_error(/event/i)
         end
 
         it "the event should come first" do
@@ -299,7 +299,7 @@ Event,"Bratto Open, 2001"
 Rounds,2
 Website,http://www.federscacchi.it/
 CSV
-          lambda { @f.parse!(csv) }.should raise_error(/line 1.*event/i)
+          expect { @f.parse!(csv) }.to raise_error(/line 1.*event/i)
         end
 
         it "the start should come next" do
@@ -310,7 +310,7 @@ Rounds,2
 Start,7th March 2001
 Website,http://www.federscacchi.it/
 CSV
-          lambda { @f.parse!(csv) }.should raise_error(/line 2.*start/i)
+          expect { @f.parse!(csv) }.to raise_error(/line 2.*start/i)
         end
 
         it "the end should come next" do
@@ -321,7 +321,7 @@ Rounds,2
 Start,7th March 2001
 Website,http://www.federscacchi.it/
 CSV
-          lambda { @f.parse!(csv) }.should raise_error(/line 3.*end/i)
+          expect { @f.parse!(csv) }.to raise_error(/line 3.*end/i)
         end
 
         it "the number of rounds should come next" do
@@ -332,7 +332,7 @@ End,7th March 2001
 Website,http://www.federscacchi.it/
 Rounds,2
 CSV
-          lambda { @f.parse!(csv) }.should raise_error(/line 4.*rounds/i)
+          expect { @f.parse!(csv) }.to raise_error(/line 4.*rounds/i)
         end
 
         it "there should be a web site" do
@@ -343,7 +343,7 @@ End,7th March 2001
 Rounds,2
 
 CSV
-          lambda { @f.parse!(csv) }.should raise_error(/line 5.*site/i)
+          expect { @f.parse!(csv) }.to raise_error(/line 5.*site/i)
         end
 
         it "should have at least one player" do
@@ -355,7 +355,7 @@ Rounds,2
 Website,http://www.federscacchi.it/
 
 CSV
-          lambda { @f.parse!(csv) }.should raise_error(/line 6.*no players/i)
+          expect { @f.parse!(csv) }.to raise_error(/line 6.*no players/i)
         end
 
         it "the player needs to have a valid ID number" do
@@ -368,7 +368,7 @@ Website,http://www.federscacchi.it/
 
 Player,0,Ui Laighleis,Gearoidin
 CSV
-          lambda { @f.parse!(csv) }.should raise_error(/line 7.*number/i)
+          expect { @f.parse!(csv) }.to raise_error(/line 7.*number/i)
         end
 
         it "should have the right number of results for each player" do
@@ -383,7 +383,7 @@ Player,3364,Ui Laighleis,Gearoidin
 1,=,W,Kasparov,Gary,2800,GM,RUS
 Total,0.5
 CSV
-          lambda { @f.parse!(csv) }.should raise_error(/line 9.*round/i)
+          expect { @f.parse!(csv) }.to raise_error(/line 9.*round/i)
         end
 
         it "should have correct totals" do
@@ -399,7 +399,7 @@ Player,3364,Ui Laighleis,Gearoidin
 2,=,B,Orr,Mark,2100,IM,IRL
 Total,1.5
 CSV
-          lambda { @f.parse!(csv) }.should raise_error(/line 10.*total/i)
+          expect { @f.parse!(csv) }.to raise_error(/line 10.*total/i)
         end
 
         it "players who match by name and federation should match in all other details" do
@@ -420,7 +420,7 @@ Player,1350,Orr,Mark
 2,=,B,Kasparov,Gary,2850,GM,RUS
 Total,1.0
 CSV
-          lambda { @f.parse!(csv) }.should raise_error(/line 14.*same name.*conflicting/i)
+          expect { @f.parse!(csv) }.to raise_error(/line 14.*same name.*conflicting/i)
         end
       end
 
@@ -448,7 +448,7 @@ CSV
         end
 
         it "should serialize back to the original" do
-          @f.serialize(@t).should == @csv
+          expect(@f.serialize(@t)).to eq(@csv)
         end
       end
 
@@ -527,7 +527,7 @@ CSV
         end
 
         it "should serialize to the expected string" do
-          @t.serialize('ForeignCSV').should == @csv
+          expect(@t.serialize('ForeignCSV')).to eq(@csv)
         end
       end
 
@@ -577,7 +577,7 @@ CSV
         end
 
         it "should serialize to the expected string" do
-          @t.serialize('ForeignCSV').should == @csv
+          expect(@t.serialize('ForeignCSV')).to eq(@csv)
         end
       end
 
@@ -599,20 +599,20 @@ CSV
         end
 
         it "should parse UTF-8" do
-          lambda { @t = @f.parse!(@csv) }.should_not raise_error
+          expect { @t = @f.parse!(@csv) }.not_to raise_error
           check_player(1, 'Gearoìdin', 'Uì Laighlèis', 2, 2, 1.0, :id => 3364)
           check_player(2, 'Gary', 'Kasparov', 1, 1, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
           check_player(3, 'Mârk', 'Örr', 1, 1, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
-          @t.name.should == "Brätto Open, 2001"
+          expect(@t.name).to eq("Brätto Open, 2001")
         end
 
         it "should parse Latin-1" do
           @csv = @csv.encode("ISO-8859-1")
-          lambda { @t = @f.parse!(@csv) }.should_not raise_error
+          expect { @t = @f.parse!(@csv) }.not_to raise_error
           check_player(1, 'Gearoìdin', 'Uì Laighlèis', 2, 2, 1.0, :id => 3364)
           check_player(2, 'Gary', 'Kasparov', 1, 1, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
           check_player(3, 'Mârk', 'Örr', 1, 1, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
-          @t.name.should == "Brätto Open, 2001"
+          expect(@t.name).to eq("Brätto Open, 2001")
         end
       end
 
@@ -624,49 +624,49 @@ CSV
 
         it "should error on a non-existant valid file" do
           file = "#{@s}/not_there.csv"
-          lambda { @p.parse_file!(file) }.should raise_error
+          expect { @p.parse_file!(file) }.to raise_error
           t = @p.parse_file(file)
-          t.should be_nil
-          @p.error.should match(/no such file/i)
+          expect(t).to be_nil
+          expect(@p.error).to match(/no such file/i)
         end
 
         it "should error on an invalid file" do
           file = "#{@s}/invalid.csv"
-          lambda { @p.parse_file!(file) }.should raise_error
+          expect { @p.parse_file!(file) }.to raise_error
           t = @p.parse_file(file)
-          t.should be_nil
-          @p.error.should match(/expected.*event.*name/i)
+          expect(t).to be_nil
+          expect(@p.error).to match(/expected.*event.*name/i)
         end
 
         it "should parse a valid file" do
           file = "#{@s}/valid.csv"
-          lambda { @p.parse_file!(file) }.should_not raise_error
+          expect { @p.parse_file!(file) }.not_to raise_error
           t = @p.parse_file(file)
-          t.should be_an_instance_of(ICU::Tournament)
-          t.players.size.should == 16
+          expect(t).to be_an_instance_of(ICU::Tournament)
+          expect(t.players.size).to eq(16)
         end
 
         it "should parse a file encoded in UTF-8" do
           file = "#{@s}/utf-8.csv"
-          lambda { @t = @p.parse_file!(file) }.should_not raise_error
+          expect { @t = @p.parse_file!(file) }.not_to raise_error
           check_player(1, 'Gearoìdin', 'Uì Laighlèis', 2, 2, 1.0, :id => 3364)
           check_player(2, 'Gary', 'Kasparov', 1, 1, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
           check_player(3, 'Mârk', 'Örr', 1, 1, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
-          @t.name.should == "Brätto Open, 2001"
+          expect(@t.name).to eq("Brätto Open, 2001")
         end
 
         it "should parse a file encoded in Latin-1" do
           file = "#{@s}/latin-1.csv"
-          lambda { @t = @p.parse_file!(file) }.should_not raise_error
+          expect { @t = @p.parse_file!(file) }.not_to raise_error
           check_player(1, 'Gearoìdin', 'Uì Laighlèis', 2, 2, 1.0, :id => 3364)
           check_player(2, 'Gary', 'Kasparov', 1, 1, 0.5, :fide_rating => 2800, :fed => 'RUS', :title => 'GM')
           check_player(3, 'Mârk', 'Örr', 1, 1, 0.5, :fide_rating => 2100, :fed => 'IRL', :title => 'IM')
-          @t.name.should == "Brätto Open, 2001"
+          expect(@t.name).to eq("Brätto Open, 2001")
         end
 
         it "should parse this practical example" do
           file = "#{@s}/4ncl.csv"
-          lambda { @t = @p.parse_file!(file) }.should_not raise_error
+          expect { @t = @p.parse_file!(file) }.not_to raise_error
           check_player(1, 'Ryan-Rhys', 'Griffiths', 3, 3, 1.5, :id => 6897)
         end
       end
@@ -690,31 +690,31 @@ CSV
         end
 
         it "should pass" do
-          @t.invalid.should be_false
-          @t.invalid(:type => @p).should be_false
+          expect(@t.invalid).to be_falsey
+          expect(@t.invalid(:type => @p)).to be_falsey
         end
 
         it "should fail if there's no site" do
           @t.site = nil;
-          @t.invalid(:type => @p).to_s.should match(/site/)
+          expect(@t.invalid(:type => @p).to_s).to match(/site/)
         end
 
         it "should fail if there are no ICU players" do
           [1, 2].each { |n| @t.player(n).id = nil }
           @t.player(2).id = nil;
-          @t.invalid(:type => @p).to_s.should match(/ID/)
+          expect(@t.invalid(:type => @p).to_s).to match(/ID/)
         end
 
         it "should fail unless all foreign players have a federation" do
           @t.player(10).fed = nil;
-          @t.invalid(:type => @p).to_s.should match(/federation/)
+          expect(@t.invalid(:type => @p).to_s).to match(/federation/)
         end
 
         it "should fail unless at least one ICU player has a result in every round" do
           @t.add_result(ICU::Result.new(3, 10, 'W', :opponent => 30, :colour => 'W'))
-          @t.invalid(:type => @p).to_s.should match(/at least one.*result.*every/)
+          expect(@t.invalid(:type => @p).to_s).to match(/at least one.*result.*every/)
           @t.add_result(ICU::Result.new(3, 1, 'W', :opponent => 20, :colour => 'W'))
-          @t.invalid(:type => @p).should be_false
+          expect(@t.invalid(:type => @p)).to be_falsey
         end
 
         it "should fail unless every ICU player's opponents have a federation" do
@@ -723,17 +723,17 @@ CSV
           @t.add_result(ICU::Result.new(2, 3, 'W', :opponent => 10, :colour => 'W'))
           @t.add_result(ICU::Result.new(3, 1, 'D', :opponent => 40, :colour => 'W'))
           @t.add_result(ICU::Result.new(3, 2, 'L', :opponent => 3,  :colour => 'B'))
-          @t.invalid(:type => @p).to_s.should match(/opponents.*federation/)
+          expect(@t.invalid(:type => @p).to_s).to match(/opponents.*federation/)
           @t.player(2).fed = 'IRL'
-          @t.invalid(:type => @p).to_s.should match(/opponents.*federation/)
+          expect(@t.invalid(:type => @p).to_s).to match(/opponents.*federation/)
           @t.player(3).fed = 'IRL'
-          @t.invalid(:type => @p).should be_false
+          expect(@t.invalid(:type => @p)).to be_falsey
         end
 
         it "should be serializable unless invalid" do
-          lambda { @p.serialize(@t) }.should_not raise_error
+          expect { @p.serialize(@t) }.not_to raise_error
           @t.site = nil;
-          lambda { @p.serialize(@t) }.should raise_error
+          expect { @p.serialize(@t) }.to raise_error
         end
       end
     end

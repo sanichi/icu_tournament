@@ -4,7 +4,7 @@ module ICU
   describe Tournament do
     context "a basic tournament" do
       it "has a name, start date, some players and some results" do
-        lambda do
+        expect do
           t = Tournament.new('Bangor Bash', '2009-11-09')
           t.add_player(Player.new('Bobby', 'Fischer', 1))
           t.add_player(Player.new('Garry', 'Kasparov', 2))
@@ -13,7 +13,7 @@ module ICU
           t.add_result(Result.new(2, 2, 'L', :opponent => 3, :colour => 'W'))
           t.add_result(Result.new(3, 3, 'W', :opponent => 1, :colour => 'W'))
           t.validate!
-        end.should_not raise_error
+        end.not_to raise_error
       end
     end
 
@@ -39,7 +39,7 @@ EOS
 
       it "should serialize to Krause" do
         parser = ICU::Tournament::Krause.new
-        parser.serialize(@t).should == @s
+        expect(parser.serialize(@t)).to eq(@s)
       end
     end
 
@@ -49,17 +49,17 @@ EOS
       end
 
       it "must be specified in constructor" do
-        @t.name.should == 'Edinburgh Masters'
+        expect(@t.name).to eq('Edinburgh Masters')
       end
 
       it "can be replaced by accessor" do
         @t.name = 'Bangor Bashers'
-        @t.name.should == 'Bangor Bashers'
+        expect(@t.name).to eq('Bangor Bashers')
       end
 
       it "should not be blank or without letters" do
-        lambda { Tournament.new('   ', '2009-11-09') }.should raise_error(/invalid.*name/)
-        lambda { @t.name = '333' }.should raise_error(/invalid.*name/)
+        expect { Tournament.new('   ', '2009-11-09') }.to raise_error(/invalid.*name/)
+        expect { @t.name = '333' }.to raise_error(/invalid.*name/)
       end
     end
 
@@ -69,21 +69,21 @@ EOS
       end
 
       it "may be specified in constructor" do
-        @t.city.should == 'Edinburgh'
+        expect(@t.city).to eq('Edinburgh')
       end
 
       it "can be replaced by accessor" do
         @t.city = 'Glasgow'
-        @t.city.should == 'Glasgow'
+        expect(@t.city).to eq('Glasgow')
       end
 
       it "can be set to nil" do
         @t.city = ''
-        @t.city.should be_nil
+        expect(@t.city).to be_nil
       end
 
       it "should not be without letters if set" do
-        lambda { @t.city = '123' }.should raise_error(/invalid.*city/)
+        expect { @t.city = '123' }.to raise_error(/invalid.*city/)
       end
     end
 
@@ -93,26 +93,26 @@ EOS
       end
 
       it "may be specified in constructor" do
-        @t.fed.should == 'SCO'
+        expect(@t.fed).to eq('SCO')
       end
 
       it "can be replaced by accessor" do
         @t.fed = 'IRL'
-        @t.fed.should == 'IRL'
+        expect(@t.fed).to eq('IRL')
       end
 
       it "can be set to nil" do
         @t.fed = ''
-        @t.fed.should be_nil
+        expect(@t.fed).to be_nil
       end
 
       it "three letters will automatically be upcased" do
         @t.fed = 'rus'
-        @t.fed.should == 'RUS'
+        expect(@t.fed).to eq('RUS')
       end
 
       it "should not be without letters if set" do
-        lambda { @t.fed = '123' }.should raise_error(/invalid.*federation/)
+        expect { @t.fed = '123' }.to raise_error(/invalid.*federation/)
       end
     end
 
@@ -122,17 +122,17 @@ EOS
       end
 
       it "must be specified in constructor" do
-        @t.start.should == '2009-11-09'
+        expect(@t.start).to eq('2009-11-09')
       end
 
       it "can be replaced by accessor" do
         @t.start = '16th June 2010'
-        @t.start.should == '2010-06-16'
+        expect(@t.start).to eq('2010-06-16')
       end
 
       it "should be a valid date" do
-        lambda { Tournament.new('Edinburgh Masters', '  ') }.should raise_error(/invalid.*date/)
-        lambda { @t.start = 'X' }.should raise_error(/invalid.*date/)
+        expect { Tournament.new('Edinburgh Masters', '  ') }.to raise_error(/invalid.*date/)
+        expect { @t.start = 'X' }.to raise_error(/invalid.*date/)
       end
     end
 
@@ -142,35 +142,35 @@ EOS
       end
 
       it "may be specified in constructor" do
-        @t.finish.should == '2009-11-12'
+        expect(@t.finish).to eq('2009-11-12')
       end
 
       it "can be replaced by accessor" do
         @t.finish = '16th December 2009'
-        @t.finish.should == '2009-12-16'
+        expect(@t.finish).to eq('2009-12-16')
       end
 
       it "can be set to nil" do
         @t.finish = ''
-        @t.finish.should be_nil
+        expect(@t.finish).to be_nil
       end
 
       it "should be a valid date" do
-        lambda { Tournament.new('Edinburgh Masters', '2009-11-09', :finish => 'next week') }.should raise_error(/invalid.*date/)
-        lambda { @t.finish = 'X' }.should raise_error(/invalid.*date/)
+        expect { Tournament.new('Edinburgh Masters', '2009-11-09', :finish => 'next week') }.to raise_error(/invalid.*date/)
+        expect { @t.finish = 'X' }.to raise_error(/invalid.*date/)
       end
     end
 
     context "rounds" do
       it "defaults to nil" do
-        Tournament.new('Edinburgh Masters', '2009-11-09').rounds.should be_nil
+        expect(Tournament.new('Edinburgh Masters', '2009-11-09').rounds).to be_nil
       end
 
       it "should be a positive integer or nil" do
-        Tournament.new('Edinburgh Masters', '2009-11-09', :rounds => 3).rounds.should == 3
-        Tournament.new('Edinburgh Masters', '2009-11-09', :rounds => ' 10 ').rounds.should == 10
-        Tournament.new('Edinburgh Masters', '2009-11-09', :rounds => nil).rounds.should be_nil
-        lambda { Tournament.new('Edinburgh Masters', '2009-11-09', :rounds => ' 0 ') }.should raise_error(/invalid.*rounds/)
+        expect(Tournament.new('Edinburgh Masters', '2009-11-09', :rounds => 3).rounds).to eq(3)
+        expect(Tournament.new('Edinburgh Masters', '2009-11-09', :rounds => ' 10 ').rounds).to eq(10)
+        expect(Tournament.new('Edinburgh Masters', '2009-11-09', :rounds => nil).rounds).to be_nil
+        expect { Tournament.new('Edinburgh Masters', '2009-11-09', :rounds => ' 0 ') }.to raise_error(/invalid.*rounds/)
       end
     end
 
@@ -183,13 +183,13 @@ EOS
       end
 
       it "depends on the players results" do
-        @t.last_round.should == 0
+        expect(@t.last_round).to eq(0)
         @t.add_result(Result.new(1, 1, 'W', :opponent => 2))
-        @t.last_round.should == 1
+        expect(@t.last_round).to eq(1)
         @t.add_result(Result.new(2, 2, 'D', :opponent => 3))
-        @t.last_round.should == 2
+        expect(@t.last_round).to eq(2)
         @t.add_result(Result.new(5, 3, 'L', :opponent => 1))
-        @t.last_round.should == 5
+        expect(@t.last_round).to eq(5)
       end
     end
 
@@ -199,26 +199,26 @@ EOS
       end
 
       it "should default to none" do
-        @t.round_dates.size.should == 0
+        expect(@t.round_dates.size).to eq(0)
       end
 
       it "should be added one by one in the correct order" do
         @t.add_round_date('09/11/2009')
         @t.add_round_date('10th November 2009')
         @t.add_round_date('2009-11-11')
-        @t.round_dates.join('|').should == '2009-11-09|2009-11-10|2009-11-11'
+        expect(@t.round_dates.join('|')).to eq('2009-11-09|2009-11-10|2009-11-11')
       end
     end
 
     context "site" do
       it "defaults to nil" do
-        Tournament.new('Edinburgh Masters', '2009-11-09').site.should be_nil
+        expect(Tournament.new('Edinburgh Masters', '2009-11-09').site).to be_nil
       end
 
       it "should be a reasonably valid looking URL" do
-        Tournament.new('Edinburgh Masters', '2009-11-09', :site => 'https://www.bbc.co.uk').site.should == 'https://www.bbc.co.uk'
-        Tournament.new('Edinburgh Masters', '2009-11-09', :site => 'www.icu.ie/event.php?id=1').site.should == 'http://www.icu.ie/event.php?id=1'
-        lambda { Tournament.new('Edinburgh Masters', '2009-11-09', :site => 'X') }.should raise_error(/invalid.*site/)
+        expect(Tournament.new('Edinburgh Masters', '2009-11-09', :site => 'https://www.bbc.co.uk').site).to eq('https://www.bbc.co.uk')
+        expect(Tournament.new('Edinburgh Masters', '2009-11-09', :site => 'www.icu.ie/event.php?id=1').site).to eq('http://www.icu.ie/event.php?id=1')
+        expect { Tournament.new('Edinburgh Masters', '2009-11-09', :site => 'X') }.to raise_error(/invalid.*site/)
       end
     end
 
@@ -228,39 +228,39 @@ EOS
       end
 
       it "may be specified in constructor" do
-        @t.type.should == 'Swiss'
-        @t.arbiter.should == 'Gerry Graham'
-        @t.deputy.should == 'Herbert Scarry'
-        @t.time_control.should == '120 minutes'
+        expect(@t.type).to eq('Swiss')
+        expect(@t.arbiter).to eq('Gerry Graham')
+        expect(@t.deputy).to eq('Herbert Scarry')
+        expect(@t.time_control).to eq('120 minutes')
       end
 
       it "can be replaced by accessor" do
         @t.type = 'all-play-all'
-        @t.type.should == 'all-play-all'
+        expect(@t.type).to eq('all-play-all')
         @t.arbiter = 'Michael Crowe'
-        @t.arbiter.should == 'Michael Crowe'
+        expect(@t.arbiter).to eq('Michael Crowe')
         @t.deputy = 'Mark Orr'
-        @t.deputy.should == 'Mark Orr'
+        expect(@t.deputy).to eq('Mark Orr')
         @t.time_control = '90 minutes'
-        @t.time_control.should == '90 minutes'
+        expect(@t.time_control).to eq('90 minutes')
       end
 
       it "can be set to nil" do
         @t.type = ''
-        @t.type.should be_nil
+        expect(@t.type).to be_nil
         @t.arbiter = ''
-        @t.arbiter.should be_nil
+        expect(@t.arbiter).to be_nil
         @t.deputy = ''
-        @t.deputy.should be_nil
+        expect(@t.deputy).to be_nil
         @t.time_control = ''
-        @t.time_control.should be_nil
+        expect(@t.time_control).to be_nil
       end
 
       it "should be valid" do
-        lambda { @t.type         = '123' }.should raise_error(/invalid.*type/)
-        lambda { @t.arbiter      = '123' }.should raise_error(/invalid.*arbiter/)
-        lambda { @t.deputy       = '123' }.should raise_error(/invalid.*deputy/)
-        lambda { @t.time_control = 'abc' }.should raise_error(/invalid.*time.*control/)
+        expect { @t.type         = '123' }.to raise_error(/invalid.*type/)
+        expect { @t.arbiter      = '123' }.to raise_error(/invalid.*arbiter/)
+        expect { @t.deputy       = '123' }.to raise_error(/invalid.*deputy/)
+        expect { @t.time_control = 'abc' }.to raise_error(/invalid.*time.*control/)
       end
     end
 
@@ -270,28 +270,28 @@ EOS
       end
 
       it "should an empty tie breaks list by default" do
-        @t.tie_breaks.should be_an_instance_of(Array)
-        @t.tie_breaks.should be_empty
+        expect(@t.tie_breaks).to be_an_instance_of(Array)
+        expect(@t.tie_breaks).to be_empty
       end
 
       it "should be settable to one or more valid tie break methods" do
         @t.tie_breaks = [:neustadtl]
-        @t.tie_breaks.join('|').should == "neustadtl"
+        expect(@t.tie_breaks.join('|')).to eq("neustadtl")
         @t.tie_breaks = [:neustadtl, :blacks]
-        @t.tie_breaks.join('|').should == "neustadtl|blacks"
+        expect(@t.tie_breaks.join('|')).to eq("neustadtl|blacks")
         @t.tie_breaks = ['Wins', 'Sonneborn-Berger', :harkness]
-        @t.tie_breaks.join('|').should == "wins|neustadtl|harkness"
+        expect(@t.tie_breaks.join('|')).to eq("wins|neustadtl|harkness")
         @t.tie_breaks = []
-        @t.tie_breaks.join('|').should == ""
+        expect(@t.tie_breaks.join('|')).to eq("")
       end
 
       it "should rasie an error is not given an array" do
-        lambda { @t.tie_breaks = :neustadtl }.should raise_error(/array/i)
+        expect { @t.tie_breaks = :neustadtl }.to raise_error(/array/i)
       end
 
       it "should rasie an error is given any invalid tie-break methods" do
-        lambda { @t.tie_breaks = ["My Bum"] }.should raise_error(/invalid/i)
-        lambda { @t.tie_breaks = [:neustadtl, "Your arse"] }.should raise_error(/invalid/i)
+        expect { @t.tie_breaks = ["My Bum"] }.to raise_error(/invalid/i)
+        expect { @t.tie_breaks = [:neustadtl, "Your arse"] }.to raise_error(/invalid/i)
       end
     end
 
@@ -302,15 +302,15 @@ EOS
 
       it "should have unique numbers" do
         @t.add_player(Player.new('Mark', 'Orr', 1))
-        lambda { @t.add_player(Player.new('Bobby', 'Fischer', 1)) }.should raise_error(/player.*unique/)
+        expect { @t.add_player(Player.new('Bobby', 'Fischer', 1)) }.to raise_error(/player.*unique/)
       end
 
       it "can be added one at a time" do
         @t.add_player(Player.new('Mark', 'Orr', -1))
         @t.add_player(Player.new('Gary', 'Kasparov', -2))
         @t.add_player(Player.new('Bobby', 'Fischer', -3))
-        @t.players.size.should == 3
-        @t.player(-1).first_name.should == 'Mark'
+        expect(@t.players.size).to eq(3)
+        expect(@t.player(-1).first_name).to eq('Mark')
       end
     end
 
@@ -326,38 +326,38 @@ EOS
         @t.add_result(Result.new(1, 1, 'W', :opponent => 2))
         @t.add_result(Result.new(2, 2, 'D', :opponent => 3))
         @t.add_result(Result.new(3, 3, 'L', :opponent => 1, :rateable => false))
-        @mark.results.size.should == 2
-        @mark.points.should == 2.0
-        @gary.results.size.should == 2
-        @gary.points.should == 0.5
-        @boby.results.size.should == 2
-        @boby.points.should == 0.5
+        expect(@mark.results.size).to eq(2)
+        expect(@mark.points).to eq(2.0)
+        expect(@gary.results.size).to eq(2)
+        expect(@gary.points).to eq(0.5)
+        expect(@boby.results.size).to eq(2)
+        expect(@boby.points).to eq(0.5)
       end
 
       it "results with asymmetric scores cannot be added unless both results are unrateable" do
         @t.add_result(Result.new(1, 1, 'W', :opponent => 2))
-        lambda { @t.add_result(Result.new(1, 2, 'D', :opponent => 1)) }.should raise_error(/result.*match/)
-        lambda { @t.add_result(Result.new(1, 2, 'L', :opponent => 1, :rateable => false)) }.should raise_error(/result.*match/)
-        lambda { @t.add_result(Result.new(3, 3, 'L', :opponent => 1, :rateable => false)) }.should_not raise_error
+        expect { @t.add_result(Result.new(1, 2, 'D', :opponent => 1)) }.to raise_error(/result.*match/)
+        expect { @t.add_result(Result.new(1, 2, 'L', :opponent => 1, :rateable => false)) }.to raise_error(/result.*match/)
+        expect { @t.add_result(Result.new(3, 3, 'L', :opponent => 1, :rateable => false)) }.not_to raise_error
       end
 
       it "should have a defined player" do
-        lambda { @t.add_result(Result.new(1, 4, 'L', :opponent => 1)) }.should raise_error(/player.*exist/)
+        expect { @t.add_result(Result.new(1, 4, 'L', :opponent => 1)) }.to raise_error(/player.*exist/)
       end
 
       it "should have a defined opponent" do
-        lambda { @t.add_result(Result.new(1, 1, 'W', :opponent => 4)) }.should raise_error(/opponent.*exist/)
+        expect { @t.add_result(Result.new(1, 1, 'W', :opponent => 4)) }.to raise_error(/opponent.*exist/)
       end
 
       it "should be consistent with the tournament's number of rounds" do
-        lambda { @t.add_result(Result.new(4, 1, 'W', :opponent => 2)) }.should raise_error(/round/)
+        expect { @t.add_result(Result.new(4, 1, 'W', :opponent => 2)) }.to raise_error(/round/)
       end
 
       it "documentation example should ne correct" do
         @t.add_result(ICU::Result.new(3, 2, 'L', :opponent => 1, :rateable => false))
         @t.add_result(ICU::Result.new(3, 1, 'L', :opponent => 2, :rateable => false))
-        @t.player(1).results.first.points.should == 0.0
-        @t.player(2).results.first.points.should == 0.0
+        expect(@t.player(1).results.first.points).to eq(0.0)
+        expect(@t.player(2).results.first.points).to eq(0.0)
       end
     end
 
@@ -370,10 +370,10 @@ EOS
       end
 
       it "should find players based on loose equality" do
-        @t.find_player(Player.new('Mark', 'Orr', 4, :fed => 'IRL')).num.should == 3
-        @t.find_player(Player.new('Mark', 'Orr', 4, :fed => 'USA')).should be_nil
-        @t.find_player(Player.new('Mark', 'Sax', 4, :fed => 'IRL')).should be_nil
-        @t.find_player(Player.new('John', 'Orr', 4, :fed => 'IRL')).should be_nil
+        expect(@t.find_player(Player.new('Mark', 'Orr', 4, :fed => 'IRL')).num).to eq(3)
+        expect(@t.find_player(Player.new('Mark', 'Orr', 4, :fed => 'USA'))).to be_nil
+        expect(@t.find_player(Player.new('Mark', 'Sax', 4, :fed => 'IRL'))).to be_nil
+        expect(@t.find_player(Player.new('John', 'Orr', 4, :fed => 'IRL'))).to be_nil
       end
     end
 
@@ -384,21 +384,21 @@ EOS
 
       it "should be able to create a new team, add it and retrieve it" do
         team = Team.new('Wandering Dragons')
-        @t.add_team(team).should be_an_instance_of Team
-        @t.get_team('  wandering  dragons  ').should be_an_instance_of Team
-        @t.get_team('Blundering Bishops').should be_nil
+        expect(@t.add_team(team)).to be_an_instance_of Team
+        expect(@t.get_team('  wandering  dragons  ')).to be_an_instance_of Team
+        expect(@t.get_team('Blundering Bishops')).to be_nil
       end
 
       it "should be able to create and add a new team and retrieve it" do
-        @t.add_team('Blundering Bishops').should be_an_instance_of Team
-        @t.get_team('  blundering  bishops  ').should be_an_instance_of Team
-        @t.get_team('Wandering Dragons').should be_nil
+        expect(@t.add_team('Blundering Bishops')).to be_an_instance_of Team
+        expect(@t.get_team('  blundering  bishops  ')).to be_an_instance_of Team
+        expect(@t.get_team('Wandering Dragons')).to be_nil
       end
 
       it "should throw and exception if there is an attempt to add a team with a name that matches an existing team" do
-        lambda { @t.add_team('Blundering Bishops') }.should_not raise_error
-        lambda { @t.add_team('Wandering Dragons') }.should_not raise_error
-        lambda { @t.add_team('  wandering   dragons  ') }.should raise_error(/similar.*exists/)
+        expect { @t.add_team('Blundering Bishops') }.not_to raise_error
+        expect { @t.add_team('Wandering Dragons') }.not_to raise_error
+        expect { @t.add_team('  wandering   dragons  ') }.to raise_error(/similar.*exists/)
       end
     end
 
@@ -417,42 +417,42 @@ EOS
       end
 
       it "should be valid" do
-        @t.invalid.should be_false
+        expect(@t.invalid).to be_falsey
       end
 
       it "should have side effect of setting number of rounds" do
-        @t.rounds.should be_nil
+        expect(@t.rounds).to be_nil
         @t.invalid
-        @t.rounds.should == 3
+        expect(@t.rounds).to eq(3)
       end
 
       it "should detect an inconsistent start date" do
         @t.start = '2009-11-10'
-        lambda { @t.validate! }.should raise_error(/first round.*not match.*start/)
+        expect { @t.validate! }.to raise_error(/first round.*not match.*start/)
       end
 
       it "should detect an inconsistent finish date" do
         @t.finish = '2009-11-10'
-        lambda { @t.validate! }.should raise_error(/last round.*not match.*end/)
+        expect { @t.validate! }.to raise_error(/last round.*not match.*end/)
       end
 
       it "should have side effect of setting missing finish date" do
-        @t.finish.should be_nil
+        expect(@t.finish).to be_nil
         @t.invalid
-        @t.finish.should == '2009-11-11'
+        expect(@t.finish).to eq('2009-11-11')
       end
 
       it "should detect inconsistent round dates" do
         @t.add_round_date('2009-11-12')
-        lambda { @t.validate! }.should raise_error(/round dates.*match.*rounds/)
+        expect { @t.validate! }.to raise_error(/round dates.*match.*rounds/)
       end
 
       it "should have the side effect of providing missing ranks if the rerank option is set" do
-        @t.players.select{ |p| p.rank }.size.should == 0
+        expect(@t.players.select{ |p| p.rank }.size).to eq(0)
         @t.invalid(:rerank => true)
-        @t.player(1).rank.should == 1
-        @t.player(2).rank.should == 2
-        @t.player(3).rank.should == 3
+        expect(@t.player(1).rank).to eq(1)
+        expect(@t.player(2).rank).to eq(2)
+        expect(@t.player(3).rank).to eq(3)
       end
 
       it "should have the side effect of correcting bad ranks if the rerank option is set" do
@@ -460,16 +460,16 @@ EOS
         @t.player(2).rank = 1
         @t.player(3).rank = 3
         @t.invalid(:rerank => true)
-        @t.player(1).rank.should == 1
-        @t.player(2).rank.should == 2
-        @t.player(3).rank.should == 3
+        expect(@t.player(1).rank).to eq(1)
+        expect(@t.player(2).rank).to eq(2)
+        expect(@t.player(3).rank).to eq(3)
       end
 
       it "should detect missranked players" do
         @t.player(1).rank = 2
         @t.player(2).rank = 1
         @t.player(3).rank = 3
-        lambda { @t.validate! }.should raise_error(/player 2.*above.*player 1/)
+        expect { @t.validate! }.to raise_error(/player 2.*above.*player 1/)
       end
 
       it "should be valid if there are teams, every player is in one of them, and no team has an invalid member" do
@@ -477,13 +477,13 @@ EOS
         team2 = Team.new('World Champions')
         @t.add_team(team1)
         @t.add_team(team2)
-        @t.invalid.should match(/not.*member/)
+        expect(@t.invalid).to match(/not.*member/)
         team1.add_member(1)
         team2.add_member(2)
         team2.add_member(3)
-        @t.invalid.should be_false
+        expect(@t.invalid).to be_falsey
         team1.add_member(4)
-        @t.invalid.should match(/not.*valid/)
+        expect(@t.invalid).to match(/not.*valid/)
       end
 
       it "should not be valid if one player is in more than one team" do
@@ -494,25 +494,25 @@ EOS
         team2.add_member(3)
         @t.add_team(team1)
         @t.add_team(team2)
-        @t.invalid.should be_false
+        expect(@t.invalid).to be_falsey
         team1.add_member(2)
-        @t.invalid.should match(/already.*member/)
+        expect(@t.invalid).to match(/already.*member/)
       end
 
       it "should not be valid if two players share the same ICU or FIDE ID" do
         @t.player(1).id = 1350
         @t.player(2).id = 1350
-        @t.invalid.should match(/duplicate.*ICU/)
+        expect(@t.invalid).to match(/duplicate.*ICU/)
       end
 
       it "should allow players to have no results" do
         (1..3).each { |r| @t.player(1).remove_result(r) }
-        @t.invalid.should be_false
+        expect(@t.invalid).to be_falsey
       end
 
       it "should not allow asymmetric scores for rateable results" do
         @t.player(1).find_result(1).score = 'L'
-        @t.invalid.should match(/result.*reverse/)
+        expect(@t.invalid).to match(/result.*reverse/)
       end
 
       it "should allow asymmetric scores for unrateable results" do
@@ -522,7 +522,7 @@ EOS
           r.rateable = false
           r.score = 'L'
         end
-        @t.invalid.should be_false
+        expect(@t.invalid).to be_falsey
       end
     end
 
@@ -538,39 +538,39 @@ EOS
       end
 
       it "sample tournament is valid but unranked" do
-        @t.invalid.should be_false
-        @t.player(10).rank.should be_nil
-        @t.players.map{ |p| p.num }.join('|').should == '10|20|30'
-        @t.players.map{ |p| p.last_name }.join('|').should == 'Fischer|Orr|Kasparov'
+        expect(@t.invalid).to be_falsey
+        expect(@t.player(10).rank).to be_nil
+        expect(@t.players.map{ |p| p.num }.join('|')).to eq('10|20|30')
+        expect(@t.players.map{ |p| p.last_name }.join('|')).to eq('Fischer|Orr|Kasparov')
       end
 
       it "should be renumberable by name in the absence of ranking" do
         @t.renumber
-        @t.invalid.should be_false
-        @t.players.map{ |p| p.num }.join('|').should == '1|2|3'
-        @t.players.map{ |p| p.last_name }.join('|').should == 'Fischer|Kasparov|Orr'
+        expect(@t.invalid).to be_falsey
+        expect(@t.players.map{ |p| p.num }.join('|')).to eq('1|2|3')
+        expect(@t.players.map{ |p| p.last_name }.join('|')).to eq('Fischer|Kasparov|Orr')
       end
 
       it "should be renumberable by rank if the tournament is ranked" do
         @t.rerank.renumber
-        @t.invalid.should be_false
-        @t.players.map{ |p| p.num }.join('|').should == '1|2|3'
-        @t.players.map{ |p| p.rank }.join('|').should == '1|2|3'
-        @t.players.map{ |p| p.last_name }.join('|').should == 'Orr|Kasparov|Fischer'
+        expect(@t.invalid).to be_falsey
+        expect(@t.players.map{ |p| p.num }.join('|')).to eq('1|2|3')
+        expect(@t.players.map{ |p| p.rank }.join('|')).to eq('1|2|3')
+        expect(@t.players.map{ |p| p.last_name }.join('|')).to eq('Orr|Kasparov|Fischer')
       end
 
       it "should be renumberable by name even if the tourament is ranked" do
         @t.rerank.renumber(:name)
-        @t.invalid.should be_false
-        @t.players.map{ |p| p.num }.join('|').should == '1|2|3'
-        @t.players.map{ |p| p.last_name }.join('|').should == 'Fischer|Kasparov|Orr'
+        expect(@t.invalid).to be_falsey
+        expect(@t.players.map{ |p| p.num }.join('|')).to eq('1|2|3')
+        expect(@t.players.map{ |p| p.last_name }.join('|')).to eq('Fischer|Kasparov|Orr')
       end
 
       it "should be renumberable by order" do
         @t.rerank.renumber(:order)
-        @t.invalid.should be_false
-        @t.players.map{ |p| p.num }.join('|').should == '1|2|3'
-        @t.players.map{ |p| p.last_name }.join('|').should == 'Fischer|Orr|Kasparov'
+        expect(@t.invalid).to be_falsey
+        expect(@t.players.map{ |p| p.num }.join('|')).to eq('1|2|3')
+        expect(@t.players.map{ |p| p.last_name }.join('|')).to eq('Fischer|Orr|Kasparov')
       end
     end
 
@@ -595,34 +595,34 @@ EOS
       end
 
       it "should initially be valid but unranked" do
-        @t.invalid.should be_false
-        @t.player(1).rank.should be_nil
+        expect(@t.invalid).to be_falsey
+        expect(@t.player(1).rank).to be_nil
       end
 
       it "should have correct default tie break scores" do
         scores = @t.tie_break_scores
-        scores[1].should == 'Fischer, Bobby'
-        scores[5].should == 'Ui Laighleis, Gearoidin'
+        expect(scores[1]).to eq('Fischer, Bobby')
+        expect(scores[5]).to eq('Ui Laighleis, Gearoidin')
       end
 
       it "should have correct actual scores" do
-        @t.player(1).points.should == 3.0
-        @t.player(2).points.should == 3.0
-        @t.player(3).points.should == 1.0
-        @t.player(4).points.should == 1.0
-        @t.player(5).points.should == 0.5
-        @t.player(6).points.should == 0.5
+        expect(@t.player(1).points).to eq(3.0)
+        expect(@t.player(2).points).to eq(3.0)
+        expect(@t.player(3).points).to eq(1.0)
+        expect(@t.player(4).points).to eq(1.0)
+        expect(@t.player(5).points).to eq(0.5)
+        expect(@t.player(6).points).to eq(0.5)
       end
 
       it "should have correct Buchholz tie break scores" do
         @t.tie_breaks = ["Buchholz"]
         scores = @t.tie_break_scores
-        scores[1].should == 2.0
-        scores[2].should == 2.5
-        scores[3].should == 7.0
-        scores[4].should == 4.5
-        scores[5].should == 6.5
-        scores[6].should == 4.5
+        expect(scores[1]).to eq(2.0)
+        expect(scores[2]).to eq(2.5)
+        expect(scores[3]).to eq(7.0)
+        expect(scores[4]).to eq(4.5)
+        expect(scores[5]).to eq(6.5)
+        expect(scores[6]).to eq(4.5)
       end
 
       it "Buchholz should be sensitive to unplayed games" do
@@ -630,45 +630,45 @@ EOS
         @t.player(6).find_result(1).opponent = nil
         @t.tie_breaks = ["Buchholz"]
         scores = @t.tie_break_scores
-        scores[1].should == 1.5  # 0.5 from Orr changed to 0
-        scores[2].should == 2.5  # didn't play Fischer or Orr so unaffected
-        scores[3].should == 6.5  # 3 from Fischer's changed to 2.5
-        scores[4].should == 5.0  # 0.5 from Orr changed to 1 (because Orr's unrated loss to Fischer now counts as a draw)
-        scores[5].should == 6.5  # 3 from Fischer changed to 2.5, 0.5 from Orr changed to 1 (cancels out)
-        scores[6].should == 1.5  # 3 from Fischer changed to 0
+        expect(scores[1]).to eq(1.5)  # 0.5 from Orr changed to 0
+        expect(scores[2]).to eq(2.5)  # didn't play Fischer or Orr so unaffected
+        expect(scores[3]).to eq(6.5)  # 3 from Fischer's changed to 2.5
+        expect(scores[4]).to eq(5.0)  # 0.5 from Orr changed to 1 (because Orr's unrated loss to Fischer now counts as a draw)
+        expect(scores[5]).to eq(6.5)  # 3 from Fischer changed to 2.5, 0.5 from Orr changed to 1 (cancels out)
+        expect(scores[6]).to eq(1.5)  # 3 from Fischer changed to 0
       end
 
       it "should have correct progressive tie break scores" do
         @t.tie_breaks = [:progressive]
         scores = @t.tie_break_scores
-        scores[1].should == 6.0
-        scores[2].should == 6.0
-        scores[3].should == 3.0
-        scores[4].should == 1.0
-        scores[5].should == 1.0
-        scores[6].should == 1.0
+        expect(scores[1]).to eq(6.0)
+        expect(scores[2]).to eq(6.0)
+        expect(scores[3]).to eq(3.0)
+        expect(scores[4]).to eq(1.0)
+        expect(scores[5]).to eq(1.0)
+        expect(scores[6]).to eq(1.0)
       end
 
       it "should have correct ratings tie break scores" do
         @t.tie_breaks = ['ratings']
         scores = @t.tie_break_scores
-        scores[1].should == 4000
-        scores[2].should == 3200
-        scores[3].should == 6800
-        scores[4].should == 5000
-        scores[5].should == 7600
-        scores[6].should == 5800
+        expect(scores[1]).to eq(4000)
+        expect(scores[2]).to eq(3200)
+        expect(scores[3]).to eq(6800)
+        expect(scores[4]).to eq(5000)
+        expect(scores[5]).to eq(7600)
+        expect(scores[6]).to eq(5800)
       end
 
       it "should have correct Neustadtl tie break scores" do
         @t.tie_breaks = [:neustadtl]
         scores = @t.tie_break_scores
-        scores[1].should == 2.0
-        scores[2].should == 2.5
-        scores[3].should == 1.0
-        scores[4].should == 0.5
-        scores[5].should == 0.25
-        scores[6].should == 0.25
+        expect(scores[1]).to eq(2.0)
+        expect(scores[2]).to eq(2.5)
+        expect(scores[3]).to eq(1.0)
+        expect(scores[4]).to eq(0.5)
+        expect(scores[5]).to eq(0.25)
+        expect(scores[6]).to eq(0.25)
       end
 
       it "Neustadtl should be sensitive to unplayed games" do
@@ -676,41 +676,41 @@ EOS
         @t.player(6).find_result(1).opponent = nil
         @t.tie_breaks = ["Neustadtl"]
         scores = @t.tie_break_scores
-        scores[1].should == 1.5  # 0.5 from Orr changed to 0
-        scores[2].should == 2.5  # didn't play Fischer or Orr so unaffected
-        scores[3].should == 1.0  # win against Minnie unaffected
-        scores[4].should == 1.0  # 0.5 from Orr changed to 1 (because Orr's unrated loss to Fischer now counts as a draw)
-        scores[5].should == 0.5  # 0.25 from Orr changed to 0.5
-        scores[6].should == 0.25 # loss against Fisher and unplayed against Fisher equivalent
+        expect(scores[1]).to eq(1.5)  # 0.5 from Orr changed to 0
+        expect(scores[2]).to eq(2.5)  # didn't play Fischer or Orr so unaffected
+        expect(scores[3]).to eq(1.0)  # win against Minnie unaffected
+        expect(scores[4]).to eq(1.0)  # 0.5 from Orr changed to 1 (because Orr's unrated loss to Fischer now counts as a draw)
+        expect(scores[5]).to eq(0.5)  # 0.25 from Orr changed to 0.5
+        expect(scores[6]).to eq(0.25) # loss against Fisher and unplayed against Fisher equivalent
       end
 
       it "should have correct Harkness tie break scores" do
         @t.tie_breaks = ['harkness']
         scores = @t.tie_break_scores
-        scores[1].should == 0.5
-        scores[2].should == 1.0
-        scores[3].should == 3.0
-        scores[4].should == 1.0
-        scores[5].should == 3.0
-        scores[6].should == 1.0
+        expect(scores[1]).to eq(0.5)
+        expect(scores[2]).to eq(1.0)
+        expect(scores[3]).to eq(3.0)
+        expect(scores[4]).to eq(1.0)
+        expect(scores[5]).to eq(3.0)
+        expect(scores[6]).to eq(1.0)
       end
 
       it "should have correct Modified Median tie break scores" do
         @t.tie_breaks = ['Modified Median']
         scores = @t.tie_break_scores
-        scores[1].should == 1.5
-        scores[2].should == 2.0
-        scores[3].should == 4.0
-        scores[4].should == 1.5
-        scores[5].should == 3.5
-        scores[6].should == 1.5
+        expect(scores[1]).to eq(1.5)
+        expect(scores[2]).to eq(2.0)
+        expect(scores[3]).to eq(4.0)
+        expect(scores[4]).to eq(1.5)
+        expect(scores[5]).to eq(3.5)
+        expect(scores[6]).to eq(1.5)
       end
 
       it "should have correct tie break scores for number of blacks" do
         @t.tie_breaks = ['Blacks']
         scores = @t.tie_break_scores
-        scores[3].should == 0
-        scores[4].should == 2
+        expect(scores[3]).to eq(0)
+        expect(scores[4]).to eq(2)
       end
 
       it "number of blacks should should be sensitive to unplayed games" do
@@ -718,15 +718,15 @@ EOS
         @t.player(4).find_result(1).opponent = nil
         @t.tie_breaks = [:blacks]
         scores = @t.tie_break_scores
-        scores[3].should == 0
-        scores[4].should == 1
+        expect(scores[3]).to eq(0)
+        expect(scores[4]).to eq(1)
       end
 
       it "should have correct tie break scores for number of wins" do
         @t.tie_breaks = [:wins]
         scores = @t.tie_break_scores
-        scores[1].should == 3
-        scores[6].should == 0
+        expect(scores[1]).to eq(3)
+        expect(scores[6]).to eq(0)
       end
 
       it "number of wins should should be sensitive to unplayed games" do
@@ -734,101 +734,101 @@ EOS
         @t.player(6).find_result(1).opponent = nil
         @t.tie_breaks = ['WINS']
         scores = @t.tie_break_scores
-        scores[1].should == 2
-        scores[6].should == 0
+        expect(scores[1]).to eq(2)
+        expect(scores[6]).to eq(0)
       end
 
       it "should use names for tie breaking by default" do
         @t.rerank
-        @t.player(1).rank.should == 1  # 3.0/"Fischer"
-        @t.player(2).rank.should == 2  # 3.0/"Kasparov"
-        @t.player(3).rank.should == 3  # 1.0/"Mouse,Mickey"
-        @t.player(4).rank.should == 4  # 1.0/"Mouse,Minnie"
-        @t.player(6).rank.should == 5  # 0.5/"Ui"
-        @t.player(5).rank.should == 6  # 0.5/"Orr"
+        expect(@t.player(1).rank).to eq(1)  # 3.0/"Fischer"
+        expect(@t.player(2).rank).to eq(2)  # 3.0/"Kasparov"
+        expect(@t.player(3).rank).to eq(3)  # 1.0/"Mouse,Mickey"
+        expect(@t.player(4).rank).to eq(4)  # 1.0/"Mouse,Minnie"
+        expect(@t.player(6).rank).to eq(5)  # 0.5/"Ui"
+        expect(@t.player(5).rank).to eq(6)  # 0.5/"Orr"
       end
 
       it "should be configurable to use Buchholz" do
         @t.tie_breaks = ['Buchholz']
         @t.rerank
-        @t.player(2).rank.should == 1  # 3.0/2.5
-        @t.player(1).rank.should == 2  # 3.0/2.0
-        @t.player(3).rank.should == 3  # 1.0/7.0
-        @t.player(4).rank.should == 4  # 1.0/4.5
-        @t.player(5).rank.should == 5  # 0.5/6.5
-        @t.player(6).rank.should == 6  # 0.5/4.5
+        expect(@t.player(2).rank).to eq(1)  # 3.0/2.5
+        expect(@t.player(1).rank).to eq(2)  # 3.0/2.0
+        expect(@t.player(3).rank).to eq(3)  # 1.0/7.0
+        expect(@t.player(4).rank).to eq(4)  # 1.0/4.5
+        expect(@t.player(5).rank).to eq(5)  # 0.5/6.5
+        expect(@t.player(6).rank).to eq(6)  # 0.5/4.5
       end
 
       it "should be configurable to use Neustadtl" do
         @t.tie_breaks = [:neustadtl]
         @t.rerank
-        @t.player(2).rank.should == 1  # 3.0/2.5
-        @t.player(1).rank.should == 2  # 3.0/2.0
-        @t.player(3).rank.should == 3  # 1.0/1.0
-        @t.player(4).rank.should == 4  # 1.0/0.5
-        @t.player(6).rank.should == 5  # 0.5/0.25/"Orr"
-        @t.player(5).rank.should == 6  # 0.5/0.25/"Ui"
+        expect(@t.player(2).rank).to eq(1)  # 3.0/2.5
+        expect(@t.player(1).rank).to eq(2)  # 3.0/2.0
+        expect(@t.player(3).rank).to eq(3)  # 1.0/1.0
+        expect(@t.player(4).rank).to eq(4)  # 1.0/0.5
+        expect(@t.player(6).rank).to eq(5)  # 0.5/0.25/"Orr"
+        expect(@t.player(5).rank).to eq(6)  # 0.5/0.25/"Ui"
       end
 
       it "should be configurable to use number of blacks" do
         @t.tie_breaks = [:blacks]
         @t.rerank
-        @t.player(2).rank.should == 1  # 3.0/2
-        @t.player(1).rank.should == 2  # 3.0/1
-        @t.player(4).rank.should == 3  # 1.0/2
-        @t.player(3).rank.should == 4  # 1.0/1
-        @t.player(6).rank.should == 5  # 0.5/2
-        @t.player(5).rank.should == 6  # 0.5/1
+        expect(@t.player(2).rank).to eq(1)  # 3.0/2
+        expect(@t.player(1).rank).to eq(2)  # 3.0/1
+        expect(@t.player(4).rank).to eq(3)  # 1.0/2
+        expect(@t.player(3).rank).to eq(4)  # 1.0/1
+        expect(@t.player(6).rank).to eq(5)  # 0.5/2
+        expect(@t.player(5).rank).to eq(6)  # 0.5/1
       end
 
       it "should be configurable to use number of wins" do
         @t.tie_breaks = [:wins]
         @t.rerank
-        @t.player(1).rank.should == 1  # 3.0/3/"Fi"
-        @t.player(2).rank.should == 2  # 3.0/3/"Ka"
-        @t.player(3).rank.should == 3  # 1.0/1/"Mic"
-        @t.player(4).rank.should == 4  # 1.0/1/"Min"
-        @t.player(6).rank.should == 5  # 0.5/0/"Orr"
-        @t.player(5).rank.should == 6  # 0.5/0/"Ui"
+        expect(@t.player(1).rank).to eq(1)  # 3.0/3/"Fi"
+        expect(@t.player(2).rank).to eq(2)  # 3.0/3/"Ka"
+        expect(@t.player(3).rank).to eq(3)  # 1.0/1/"Mic"
+        expect(@t.player(4).rank).to eq(4)  # 1.0/1/"Min"
+        expect(@t.player(6).rank).to eq(5)  # 0.5/0/"Orr"
+        expect(@t.player(5).rank).to eq(6)  # 0.5/0/"Ui"
       end
 
       it "should exhibit equivalence between Neustadtl and Sonneborn-Berger" do
         @t.tie_breaks = ['Sonneborn-Berger']
         @t.rerank
-        (1..6).inject(''){ |t,r| t << @t.player(r).rank.to_s }.should == '213465'
+        expect((1..6).inject(''){ |t,r| t << @t.player(r).rank.to_s }).to eq('213465')
       end
 
       it "should be able to use more than one method" do
         @t.tie_breaks = [:neustadtl, :buchholz]
         @t.rerank
-        @t.player(2).rank.should == 1  # 3.0/2.5
-        @t.player(1).rank.should == 2  # 3.0/2.0
-        @t.player(3).rank.should == 3  # 1.0/1.0
-        @t.player(4).rank.should == 4  # 1.0/0.5
-        @t.player(5).rank.should == 5  # 0.5/0.25/6.5
-        @t.player(6).rank.should == 6  # 0.5/0.25/4.5
+        expect(@t.player(2).rank).to eq(1)  # 3.0/2.5
+        expect(@t.player(1).rank).to eq(2)  # 3.0/2.0
+        expect(@t.player(3).rank).to eq(3)  # 1.0/1.0
+        expect(@t.player(4).rank).to eq(4)  # 1.0/0.5
+        expect(@t.player(5).rank).to eq(5)  # 0.5/0.25/6.5
+        expect(@t.player(6).rank).to eq(6)  # 0.5/0.25/4.5
       end
 
       it "should be possible as a side effect of validation" do
         @t.tie_breaks = [:buchholz]
-        @t.invalid(:rerank => true).should be_false
-        @t.player(2).rank.should == 1  # 3/3
-        @t.player(1).rank.should == 2  # 3/2
-        @t.player(3).rank.should == 3  # 1/7
-        @t.player(4).rank.should == 4  # 1/4
-        @t.player(5).rank.should == 5  # 1/6
-        @t.player(6).rank.should == 6  # 0/5
+        expect(@t.invalid(:rerank => true)).to be_falsey
+        expect(@t.player(2).rank).to eq(1)  # 3/3
+        expect(@t.player(1).rank).to eq(2)  # 3/2
+        expect(@t.player(3).rank).to eq(3)  # 1/7
+        expect(@t.player(4).rank).to eq(4)  # 1/4
+        expect(@t.player(5).rank).to eq(5)  # 1/6
+        expect(@t.player(6).rank).to eq(6)  # 0/5
       end
 
       it "should be possible as a side effect of validation with multiple tie break methods" do
         @t.tie_breaks = [:neustadtl, :buchholz]
-        @t.invalid(:rerank => true).should be_false
-        @t.player(2).rank.should == 1  # 3/3
-        @t.player(1).rank.should == 2  # 3/2
-        @t.player(3).rank.should == 3  # 1/7
-        @t.player(4).rank.should == 4  # 1/4
-        @t.player(5).rank.should == 5  # 1/6
-        @t.player(6).rank.should == 6  # 0/5
+        expect(@t.invalid(:rerank => true)).to be_falsey
+        expect(@t.player(2).rank).to eq(1)  # 3/3
+        expect(@t.player(1).rank).to eq(2)  # 3/2
+        expect(@t.player(3).rank).to eq(3)  # 1/7
+        expect(@t.player(4).rank).to eq(4)  # 1/4
+        expect(@t.player(5).rank).to eq(5)  # 1/6
+        expect(@t.player(6).rank).to eq(6)  # 0/5
       end
     end
 
@@ -840,49 +840,49 @@ EOS
 
       it "should parse a valid SwissPerfect file" do
         t = nil
-        lambda { t = @c.parse_file!("#{@s}/sp/nccz.zip", 'SwissPerfect', :start => '2010-05-08') }.should_not raise_error
-        t.players.size.should == 77
-        t.start.should == '2010-05-08'
+        expect { t = @c.parse_file!("#{@s}/sp/nccz.zip", 'SwissPerfect', :start => '2010-05-08') }.not_to raise_error
+        expect(t.players.size).to eq(77)
+        expect(t.start).to eq('2010-05-08')
       end
 
       it "should parse a valid CSV file" do
         t = nil
-        lambda { t = @c.parse_file!("#{@s}/fcsv/valid.csv", 'ForeignCSV') }.should_not raise_error
-        t.players.size.should == 16
+        expect { t = @c.parse_file!("#{@s}/fcsv/valid.csv", 'ForeignCSV') }.not_to raise_error
+        expect(t.players.size).to eq(16)
       end
 
       it "should parse a valid Krause file" do
         t = nil
-        lambda { t = @c.parse_file!("#{@s}/krause/valid.tab", 'Krause') }.should_not raise_error
-        t.players.size.should == 12
+        expect { t = @c.parse_file!("#{@s}/krause/valid.tab", 'Krause') }.not_to raise_error
+        expect(t.players.size).to eq(12)
       end
 
       it "should ignore options where appropriate" do
         t = nil
-        lambda { t = @c.parse_file!("#{@s}/krause/valid.tab", 'Krause', :start => '2010-05-08') }.should_not raise_error
-        t.start.should == '2008-02-01'
+        expect { t = @c.parse_file!("#{@s}/krause/valid.tab", 'Krause', :start => '2010-05-08') }.not_to raise_error
+        expect(t.start).to eq('2008-02-01')
       end
 
       it "should raise exceptions for invalid files" do
-        lambda { @c.parse_file!("#{@s}/sp/notenoughfiles.zip", 'SwissPerfect', :start => '2010-05-08') }.should raise_error(/files/)
-        lambda { @c.parse_file!("#{@s}/krause/invalid.tab", 'Krause') }.should raise_error(/name/)
-        lambda { @c.parse_file!("#{@s}/fcsv/invalid.csv", 'ForeignCSV') }.should raise_error(/termination/)
+        expect { @c.parse_file!("#{@s}/sp/notenoughfiles.zip", 'SwissPerfect', :start => '2010-05-08') }.to raise_error(/files/)
+        expect { @c.parse_file!("#{@s}/krause/invalid.tab", 'Krause') }.to raise_error(/name/)
+        expect { @c.parse_file!("#{@s}/fcsv/invalid.csv", 'ForeignCSV') }.to raise_error(/termination/)
       end
 
       it "should raise exceptions if the wrong type is used" do
-        lambda { @c.parse_file!("#{@s}/krause/valid.tab", 'ForeignCSV') }.should raise_error(/expected/)
-        lambda { @c.parse_file!("#{@s}/fcsv/valid.csv", 'SwissPerfect') }.should raise_error(/cannot/)
-        lambda { @c.parse_file!("#{@s}/sp/nccz.zip", 'Krause') }.should raise_error(/(invalid|conversion)/i)
+        expect { @c.parse_file!("#{@s}/krause/valid.tab", 'ForeignCSV') }.to raise_error(/expected/)
+        expect { @c.parse_file!("#{@s}/fcsv/valid.csv", 'SwissPerfect') }.to raise_error(/cannot/)
+        expect { @c.parse_file!("#{@s}/sp/nccz.zip", 'Krause') }.to raise_error(/(invalid|conversion)/i)
       end
 
       it "should raise an exception if file does not exist" do
-        lambda { @c.parse_file!("#{@s}/nosuchfile.cvs", 'ForeignCSV') }.should raise_error(/no such file/i)
-        lambda { @c.parse_file!("#{@s}/nosuchfile.zip", 'SwissPerfect') }.should raise_error(/invalid/i)
-        lambda { @c.parse_file!("#{@s}/nosuchfile.tab", 'Krause') }.should raise_error(/no such file/i)
+        expect { @c.parse_file!("#{@s}/nosuchfile.cvs", 'ForeignCSV') }.to raise_error(/no such file/i)
+        expect { @c.parse_file!("#{@s}/nosuchfile.zip", 'SwissPerfect') }.to raise_error(/invalid/i)
+        expect { @c.parse_file!("#{@s}/nosuchfile.tab", 'Krause') }.to raise_error(/no such file/i)
       end
 
       it "should raise an exception if an invalid type is used" do
-        lambda { @c.parse_file!("#{@s}/krause/valid.tab", 'NoSuchType') }.should raise_error(/invalid format/i)
+        expect { @c.parse_file!("#{@s}/krause/valid.tab", 'NoSuchType') }.to raise_error(/invalid format/i)
       end
     end
 
@@ -898,12 +898,12 @@ EOS
       end
 
       it "should pass generic validation" do
-        @t.invalid.should be_false
+        expect(@t.invalid).to be_falsey
       end
 
       it "should fail type-specific validation when the type supplied is inappropriate" do
-        @t.invalid(:type => String).should match(/invalid type/)
-        @t.invalid(:type => "AbCd").should match(/invalid type/)
+        expect(@t.invalid(:type => String)).to match(/invalid type/)
+        expect(@t.invalid(:type => "AbCd")).to match(/invalid type/)
       end
     end
   end

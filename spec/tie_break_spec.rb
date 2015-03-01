@@ -4,84 +4,84 @@ module ICU
   describe TieBreak do
     context "#identify which rule" do
       it "should recognize Buchholz" do
-        TieBreak.identify(:buchholz).id.should == :buchholz
-        TieBreak.identify(" BucholtS ").id.should == :buchholz
-        TieBreak.identify(" bh ").id.should == :buchholz
-        TieBreak.identify(" buccholts ").code.should == "BH"
+        expect(TieBreak.identify(:buchholz).id).to eq(:buchholz)
+        expect(TieBreak.identify(" BucholtS ").id).to eq(:buchholz)
+        expect(TieBreak.identify(" bh ").id).to eq(:buchholz)
+        expect(TieBreak.identify(" buccholts ").code).to eq("BH")
       end
 
       it "should recognize Harkness (Median)" do
-        TieBreak.identify(:harkness).id.should == :harkness
-        TieBreak.identify("median").id.should == :harkness
-        TieBreak.identify(" hARKNES ").id.should == :harkness
-        TieBreak.identify("HK").id.should == :harkness
-        TieBreak.identify("MEDIAN").code.should == "HK"
+        expect(TieBreak.identify(:harkness).id).to eq(:harkness)
+        expect(TieBreak.identify("median").id).to eq(:harkness)
+        expect(TieBreak.identify(" hARKNES ").id).to eq(:harkness)
+        expect(TieBreak.identify("HK").id).to eq(:harkness)
+        expect(TieBreak.identify("MEDIAN").code).to eq("HK")
       end
 
       it "should recognize Modified Median" do
-        TieBreak.identify(:modified).id.should == :modified_median
-        TieBreak.identify(" modified  MEDIAN ").id.should == :modified_median
-        TieBreak.identify("MM").code.should == "MM"
+        expect(TieBreak.identify(:modified).id).to eq(:modified_median)
+        expect(TieBreak.identify(" modified  MEDIAN ").id).to eq(:modified_median)
+        expect(TieBreak.identify("MM").code).to eq("MM")
       end
 
       it "should recognize Number of Blacks" do
-        TieBreak.identify(:blacks).id.should == :blacks
-        TieBreak.identify("number\tof\tblacks\n").id.should == :blacks
-        TieBreak.identify("\tnb\t").id.should == :blacks
-        TieBreak.identify("number_blacks").code.should == "NB"
+        expect(TieBreak.identify(:blacks).id).to eq(:blacks)
+        expect(TieBreak.identify("number\tof\tblacks\n").id).to eq(:blacks)
+        expect(TieBreak.identify("\tnb\t").id).to eq(:blacks)
+        expect(TieBreak.identify("number_blacks").code).to eq("NB")
       end
 
       it "should recognize Number of Wins" do
-        TieBreak.identify(:wins).id.should == :wins
-        TieBreak.identify(" number-of-wins ").id.should == :wins
-        TieBreak.identify("NUMBER WINS\r\n").id.should == :wins
-        TieBreak.identify("nw").code.should == "NW"
+        expect(TieBreak.identify(:wins).id).to eq(:wins)
+        expect(TieBreak.identify(" number-of-wins ").id).to eq(:wins)
+        expect(TieBreak.identify("NUMBER WINS\r\n").id).to eq(:wins)
+        expect(TieBreak.identify("nw").code).to eq("NW")
       end
 
       it "should recognize Player's of Name" do
-        TieBreak.identify(:name).id.should == :name
-        TieBreak.identify("Player's Name").id.should == :name
-        TieBreak.identify("players_name").id.should == :name
-        TieBreak.identify("PN").id.should == :name
-        TieBreak.identify("PLAYER-NAME").code.should == "PN"
+        expect(TieBreak.identify(:name).id).to eq(:name)
+        expect(TieBreak.identify("Player's Name").id).to eq(:name)
+        expect(TieBreak.identify("players_name").id).to eq(:name)
+        expect(TieBreak.identify("PN").id).to eq(:name)
+        expect(TieBreak.identify("PLAYER-NAME").code).to eq("PN")
       end
 
       it "should recognize Sonneborn-Berger" do
-        TieBreak.identify(:sonneborn_berger).id.should == :neustadtl
-        TieBreak.identify(:neustadtl).id.should == :neustadtl
-        TieBreak.identify("  SONNEBORN\nberger").id.should == :neustadtl
-        TieBreak.identify("\t  soneborn_berger  \t").id.should == :neustadtl
-        TieBreak.identify("sb").id.should == :neustadtl
-        TieBreak.identify("NESTADL").code.should == "SB"
+        expect(TieBreak.identify(:sonneborn_berger).id).to eq(:neustadtl)
+        expect(TieBreak.identify(:neustadtl).id).to eq(:neustadtl)
+        expect(TieBreak.identify("  SONNEBORN\nberger").id).to eq(:neustadtl)
+        expect(TieBreak.identify("\t  soneborn_berger  \t").id).to eq(:neustadtl)
+        expect(TieBreak.identify("sb").id).to eq(:neustadtl)
+        expect(TieBreak.identify("NESTADL").code).to eq("SB")
       end
 
       it "should recognize Sum of Progressive Scores" do
-        TieBreak.identify(:progressive).id.should == :progressive
-        TieBreak.identify("CUMULATIVE").id.should == :progressive
-        TieBreak.identify("sum of progressive scores").id.should == :progressive
-        TieBreak.identify("SUM-cumulative_SCORE").id.should == :progressive
-        TieBreak.identify(:cumulative_score).id.should == :progressive
-        TieBreak.identify("SumOfCumulative").id.should == :progressive
-        TieBreak.identify("SP").code.should == "SP"
+        expect(TieBreak.identify(:progressive).id).to eq(:progressive)
+        expect(TieBreak.identify("CUMULATIVE").id).to eq(:progressive)
+        expect(TieBreak.identify("sum of progressive scores").id).to eq(:progressive)
+        expect(TieBreak.identify("SUM-cumulative_SCORE").id).to eq(:progressive)
+        expect(TieBreak.identify(:cumulative_score).id).to eq(:progressive)
+        expect(TieBreak.identify("SumOfCumulative").id).to eq(:progressive)
+        expect(TieBreak.identify("SP").code).to eq("SP")
       end
 
       it "should recognize Sum of Opponents' Ratings" do
-        TieBreak.identify(:ratings).id.should == :ratings
-        TieBreak.identify("sum of opponents ratings").id.should == :ratings
-        TieBreak.identify("Opponents' Ratings").id.should == :ratings
-        TieBreak.identify("SR").id.should == :ratings
-        TieBreak.identify("SUMOPPONENTSRATINGS").code.should == "SR"
+        expect(TieBreak.identify(:ratings).id).to eq(:ratings)
+        expect(TieBreak.identify("sum of opponents ratings").id).to eq(:ratings)
+        expect(TieBreak.identify("Opponents' Ratings").id).to eq(:ratings)
+        expect(TieBreak.identify("SR").id).to eq(:ratings)
+        expect(TieBreak.identify("SUMOPPONENTSRATINGS").code).to eq("SR")
       end
 
       it "should recognize player's name" do
-        TieBreak.identify(:name).id.should == :name
-        TieBreak.identify(" player's  NAME ").id.should == :name
-        TieBreak.identify("pn").code.should == "PN"
+        expect(TieBreak.identify(:name).id).to eq(:name)
+        expect(TieBreak.identify(" player's  NAME ").id).to eq(:name)
+        expect(TieBreak.identify("pn").code).to eq("PN")
       end
 
       it "should return nil for unrecognized tie breaks" do
-        TieBreak.identify("XYZ").should be_nil
-        TieBreak.identify(nil).should be_nil
+        expect(TieBreak.identify("XYZ")).to be_nil
+        expect(TieBreak.identify(nil)).to be_nil
       end
     end
     
@@ -91,9 +91,9 @@ module ICU
       end
 
       it "should be an array in a specific order" do
-        @rules.size.should == 9
-        @rules.first.name.should == "Buchholz"
-        @rules.map(&:code).join("|").should == "BH|HK|MM|NB|NW|PN|SB|SR|SP"
+        expect(@rules.size).to eq(9)
+        expect(@rules.first.name).to eq("Buchholz")
+        expect(@rules.map(&:code).join("|")).to eq("BH|HK|MM|NB|NW|PN|SB|SR|SP")
       end
     end
   end
