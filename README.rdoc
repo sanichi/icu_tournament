@@ -1,3 +1,8 @@
+= New Home
+
+This repository was forked in late 2015 and is now maintained at
+https://github.com/ninkibah/icu_tournament.
+
 = ICU Tournament
 
 For reading or writing files of chess tournament data. Original project name on github was _chess_icu_.
